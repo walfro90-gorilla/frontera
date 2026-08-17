@@ -102,6 +102,14 @@ los efectos puntuales usan `pip(freq, vol, tipo)` con osciladores de vida corta.
 `ui.aviso` = pantalla grande de arresto/noqueo. El minimapa se redibuja completo cada frame en
 `minimapa()` con culling manual por distancia.
 
+## Contexto narrativo
+
+`HISTORIA.md` es la biblia del juego: Ciudad Juárez 2008–2012, dramatización de la guerra del narco.
+**Leerlo antes de tocar texto, personajes, facciones o misiones.** Reglas que no se negocian y que
+ese archivo detalla: organizaciones con nombre real, personas reales con nombre paródico, víctimas
+reales fuera del contenido jugable, y matar civiles cuesta en vez de pagar. Su sección *Reskin de
+sistemas* mapea cada mecánica ya existente a su significado narrativo.
+
 ## Contexto adicional
 
 El README lista la lista de pendientes (motos, misiones de persecución, tiendas, radio, reputación)
