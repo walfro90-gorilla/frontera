@@ -43,11 +43,32 @@ Todo vive dentro de un IIFE al final de `index.html`, dividido en secciones con 
 único índice del archivo. Identificadores en español, estilo compacto (varias sentencias por línea,
 poco espacio en blanco) — igualarlo.
 
+Para reencontrar los banners: `grep -n '/\* ═' index.html`. **El orden importa** — el archivo se
+ejecuta de arriba abajo y buena parte del mundo se construye en tiempo de carga, no en funciones.
+Las secciones que dependen de otras:
+
+| Sección | Depende de |
+|---|---|
+| `GEOGRAFÍA` | nada — es la base, define `ejeX`/`ejeZ`/`PUENTES`/`Z*` |
+| `ZONAS Y CONTROL DE PLAZA` | `GEOGRAFÍA` |
+| `SUELO HORNEADO` | `ZONAS` (hornea el canvas con las zonas ya sorteadas) |
+| `EDIFICIOS Y PROPS` | `ZONAS`, `TEXTURAS` — llena `edificios[]` y `luminarias[]` |
+| `RÍO, BORDO, VALLA Y PUENTES` | `EDIFICIOS` (usa `matPoste`, `geoCaja`) y llena `vallaTramos[]` |
+| `ACTOS Y ENCARGOS` | declara `acto`, que `PERSONAS` usa al poblar |
+| `POBLAR LA CIUDAD` | **todo lo anterior** — corre `PUENTES.forEach(puente)` y crea autos y peatones |
+| `PRUEBAS` / `ARRANQUE` | el final, ya con todo construido |
+
+Las declaraciones `const`/`let` a nivel de sección tienen TDZ: mover una sección hacia arriba o
+usar un array antes de declararlo revienta al cargar, sin síntoma en el navegador más que pantalla
+negra. `node prueba.js` lo detecta en un segundo — ya cazó exactamente ese bug con `vallaTramos`.
+
 ### Sistema de coordenadas
 
 La rejilla **no es uniforme**: `EJESX` y `EJESZ` son tablas `[coordenada, nombre, ancho]` con las
 avenidas reales de Juárez en su orden y separación relativa. 9 ejes X × 8 ejes Z → 8 × 7 manzanas.
-**Norte = −Z.** Toda posición nueva pasa por estos accesores, nunca por aritmética a mano:
+**Norte = −Z.** Plano del mapa con nombres y zonas: `HISTORIA.md` §7.
+
+Toda posición nueva pasa por estos accesores, nunca por aritmética a mano:
 
 - `ejeX(i)` / `ejeZ(j)` — eje central de calzada
 - `cenX(i)` / `cenZ(j)` — centro de manzana
@@ -123,8 +144,13 @@ Solo se dispara a pie.
 `acto` (0–3) indexa todo: encargos, pago por sicario, qué cuerpo policiaco patrulla, cuánta valla
 hay levantada (`actoValla()`, porque la valla se construyó de verdad entre 2008 y 2009), cuánto ha
 avanzado Sinaloa (`avanzaPlaza()`) y qué dice la radio. Cada `ENCARGOS_POR_ACTO` completados,
-`avanzarActo()` congela el juego y saca la placa. **Agregar contenido de época = agregar una fila,
-no código.**
+`avanzarActo()` congela el juego (`jugando=false`) y saca la placa; el botón *SEGUIR* la reanuda y
+pide el siguiente encargo. **Agregar contenido de época = agregar una fila, no código.**
+
+El acto IV no termina: `avanzarActo()` está guardado por `acto<ACTOS.length-1`, así que al llegar a
+2011 el juego sigue dando encargos indefinidamente. Es a propósito —no hay final en el que ganes la
+plaza, ver `HISTORIA.md` §10— pero **falta el cierre**: la placa final con las cifras reales y la
+sentencia de 2024 que pide la regla de tono 6.
 
 ### Dos calores
 

@@ -196,6 +196,38 @@ orden y con su separación relativa; las distancias están apretadas para que qu
 No usa datos de OpenStreetMap: habrían costado megas, el archivo único y reescribir el grafo de
 tráfico para polilíneas arbitrarias, a cambio de un mapa más grande y más aburrido.
 
+```
+                        N ↑   ( −Z )
+        ┌──────────────────────────────────────────────────────────────┐
+        │          E L   P A S O ,   T E X A S      (no jugable)       │
+        │   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  valla  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   │
+        │   ≈≈≈≈≈≈≈≈≈≈≈≈≈  Río Bravo · canal revestido  ≈≈≈≈≈≈≈≈≈≈≈≈   │
+        │   ══════╤═════╤══════════════════╤══════════════════╤══════  │  bordo
+        └────────┼─────┼──────────────────┼──────────────────┼────────┘
+              Stanton  Paso del Norte   Puente Libre      Zaragoza
+              (entra)  (sale a EE.UU.)  (Chamizal)        (carga)
+                 │        │                  │                  │
+   Av. →      Serna  Marisc Lerdo Juárez Villa Raza Lincoln Améric Waterfill
+   Malecón ──────┬──────┬─────┬─────┬─────┬─────┬─────┬──────┬──────┤
+                 │colonia│colon│CENTRO CENTRO│colon│CHAMIZAL CHAMIZAL│
+   16 de Sept ───┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+                 │colonia│colon│CENTRO CENTRO│colon│colonia│colonia │
+   V. Guerrero ──┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+                 │      colonia / lote baldío / parque, sorteado      │
+   A. González ──┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+                 │      colonia / lote baldío / parque, sorteado      │
+   Insurgentes ──┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+                 │            maquila / colonia (mitad y mitad)       │
+   Triunfo ──────┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+                 │            maquila / colonia (mitad y mitad)       │
+   Tecnológico ──┼──────┼─────┼─────┼─────┼─────┼─────┼──────┼──────┤
+    ⛰ Sierra     │            maquila / colonia (mitad y mitad)       │
+    de Juárez    Panamericana ─────────────────────────────────────────
+```
+
+El Centro y el Chamizal están fijos donde van; el resto de las manzanas se sortea en cada partida
+dentro de la regla de su franja. La Sierra de Juárez queda al poniente, fuera del área jugable.
+
 **Poniente → oriente:** Rafael Pérez Serna · Ignacio Mariscal · **Lerdo** · **Juárez** ·
 Francisco Villa · de la Raza · **Abraham Lincoln** · de las Américas · **Waterfill**.
 
