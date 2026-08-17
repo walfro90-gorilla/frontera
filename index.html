@@ -33,6 +33,9 @@
     color:var(--oro);text-shadow:0 0 18px rgba(255,194,51,.35);font-weight:700}
   #estrellas{margin-top:6px;font-size:17px;letter-spacing:4px;color:rgba(255,255,255,.14)}
   #estrellas b{color:var(--rojo);text-shadow:0 0 12px rgba(255,77,94,.7);font-weight:400}
+  #arma{margin-top:7px;font-size:10px;letter-spacing:.16em;color:var(--neon);
+    pointer-events:auto;cursor:pointer}
+  #arma::before{content:"▮ "}
 
   /* minimapa */
   #tr{position:absolute;top:14px;right:14px;padding:8px}
@@ -108,7 +111,7 @@
   .tbtn{position:absolute;right:22px;width:74px;height:74px;border-radius:50%;
     border:1px solid var(--linea);background:rgba(10,13,20,.5);color:var(--texto);
     font-family:var(--cond);font-size:15px;letter-spacing:.06em}
-  #bA{bottom:104px} #bB{bottom:22px;right:110px}
+  #bA{bottom:104px} #bB{bottom:22px;right:110px} #bC{bottom:186px}
   @media (max-width:640px){#bl{max-width:190px}#mm{width:120px;height:120px}#vel{font-size:30px}}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -121,6 +124,7 @@
     <div class="eyebrow">Efectivo</div>
     <div id="dinero">$0</div>
     <div id="estrellas">★★★★★</div>
+    <div id="arma" title="Q para cambiar">PISTOLA</div>
   </div>
 
   <div id="tr" class="panel">
@@ -150,6 +154,7 @@
   <div id="stick"><i></i></div>
   <button class="tbtn" id="bA">GAS</button>
   <button class="tbtn" id="bB">F</button>
+  <button class="tbtn" id="bC">FUEGO</button>
 </div>
 
 <div id="intro">
@@ -165,6 +170,8 @@
     <span><i>Shift</i> Correr</span>
     <span><i>Espacio</i> Saltar / freno de mano</span>
     <span><i>F</i> Subir o bajar del auto</span>
+    <span><i>E</i> Disparar</span>
+    <span><i>Q</i> Cambiar arma</span>
     <span><i>Mouse</i> Arrastra para girar cámara</span>
     <span><i>Rueda</i> Acercar o alejar</span>
     <span><i>R</i> Enderezar auto</span>
@@ -474,6 +481,15 @@ function persona(esJugador){
     b.geometry.translate(0,-0.39,0);b.position.set(s*0.52,1.72,0);g.add(b);brazos.push(b);
   }
   g.userData={piernas,brazos};
+  if(esJugador){                                     // arma pegada al brazo derecho
+    const arma=new THREE.Mesh(new THREE.BoxGeometry(0.13,0.17,0.52),
+      new THREE.MeshLambertMaterial({color:0x23262c}));
+    arma.position.set(0,-0.72,0.22);brazos[1].add(arma);
+    const fog=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,5),
+      new THREE.MeshBasicMaterial({color:0xffd68a,transparent:true,opacity:0.9,depthWrite:false}));
+    fog.position.set(0,-0.72,0.62);fog.visible=false;brazos[1].add(fog);
+    g.userData.fogonazo=fog;
+  }
   sombra(g,1.3,1.3);
   scene.add(g);return g;
 }
@@ -499,6 +515,43 @@ const jugador={
   vy:0, y:0, salud:100, dinero:0, estrellas:0, auto:null, fase:0, vel:0
 };
 jugador.malla.position.set(jugador.x,0,jugador.z);
+
+/* ══════════════════════════ ARMAS ══════════════════════════ */
+const ARMAS=[
+  {nombre:'PISTOLA', alcance:42, cono:0.11, blancos:1, cadencia:0.30, retro:0.10, tono:620},
+  {nombre:'ESCOPETA',alcance:18, cono:0.45, blancos:4, cadencia:0.85, retro:0.26, tono:170},
+];
+const PAGO_BAJA=45;
+let armaIdx=0, recarga=0, apuntando=0, fogonazoT=0;
+
+// disparo hitscan: cono al frente de la cámara, sin proyectiles ni raycaster
+function enMira(w,ox,oz,ang,x,z){
+  return dist2(x,z,ox,oz)<w.alcance*w.alcance
+      && Math.abs(angDif(ang,Math.atan2(x-ox,z-oz)))<w.cono;
+}
+function cambiarArma(){
+  armaIdx=(armaIdx+1)%ARMAS.length;
+  aviso3(ARMAS[armaIdx].nombre);pip(760,0.06);
+}
+// baja de un peatón: paga y lo tumba. El calor lo sube quien llama (un disparo = una estrella).
+function matar(p){
+  p.caido=10;p.malla.rotation.z=Math.PI/2;p.malla.position.y=0.5;
+  jugador.dinero+=PAGO_BAJA;
+}
+function disparar(){
+  if(jugador.auto||bloqueo>0||recarga>0)return;
+  const w=ARMAS[armaIdx];
+  recarga=w.cadencia;apuntando=0.45;fogonazoT=0.06;temblor=w.retro;
+  jugador.ang=camAng;
+  const fog=jugador.malla.userData.fogonazo;if(fog)fog.visible=true;
+  pip(w.tono,0.22,'square');
+  const blancos=peatones
+    .filter(p=>p.caido<=0&&enMira(w,jugador.x,jugador.z,camAng,p.x,p.z))
+    .sort((a,b)=>dist2(a.x,a.z,jugador.x,jugador.z)-dist2(b.x,b.z,jugador.x,jugador.z))
+    .slice(0,w.blancos);
+  blancos.forEach(matar);
+  if(blancos.length){subirEstrella();aviso3('+$'+PAGO_BAJA*blancos.length);}
+}
 
 /* ══════════════════════════ MARCADOR DE MISIÓN ══════════════════════════ */
 const marcador=new THREE.Group();
@@ -593,6 +646,8 @@ addEventListener('keydown',e=>{
   teclas[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyF'].indexOf(e.code)>=0)e.preventDefault();
   if(e.code==='KeyF')entrarSalir();
+  if(e.code==='KeyE')disparar();
+  if(e.code==='KeyQ')cambiarArma();
   if(e.code==='KeyM')silenciar();
   if(e.code==='KeyR'&&jugador.auto){jugador.auto.vel=0;}
 });
@@ -629,6 +684,7 @@ if(esTactil)document.getElementById('touch').classList.add('on');
   bA.addEventListener('pointerdown',()=>{inp.z=1;});
   bA.addEventListener('pointerup',()=>{inp.z=0;});
   bB.addEventListener('pointerdown',entrarSalir);
+  document.getElementById('bC').addEventListener('pointerdown',disparar);
 })();
 
 function leerTeclas(){
@@ -699,8 +755,9 @@ const ui={
   hora:document.getElementById('hora'),pista:document.getElementById('pista'),
   pistaTxt:document.getElementById('pistaTxt'),toast:document.getElementById('toast'),
   aviso:document.getElementById('aviso'),avisoT:document.getElementById('avisoT'),
-  avisoS:document.getElementById('avisoS')
+  avisoS:document.getElementById('avisoS'),arma:document.getElementById('arma')
 };
+ui.arma.addEventListener('pointerdown',cambiarArma);
 let toastT=0;
 function aviso3(txt){ui.toast.textContent=txt;ui.toast.classList.add('on');toastT=1.6;}
 
@@ -731,6 +788,7 @@ function actJugador(dt){
   const ud=j.malla.userData;
   ud.piernas[0].rotation.x=sw;ud.piernas[1].rotation.x=-sw;
   ud.brazos[0].rotation.x=-sw*0.8;ud.brazos[1].rotation.x=sw*0.8;
+  if(apuntando>0){apuntando-=dt;ud.brazos[1].rotation.x=-1.45;}   // brazo al frente al disparar
   j.malla.position.set(j.x,j.y,j.z);j.malla.rotation.y=j.ang;
 }
 
@@ -762,7 +820,7 @@ function actAutoJugador(dt){
   for(const p of peatones){
     if(p.caido>0)continue;
     if(dist2(p.x,p.z,a.x,a.z)<5.2&&Math.abs(a.vel)>6){
-      p.caido=6;p.malla.rotation.z=Math.PI/2;p.malla.position.y=0.5;
+      matar(p);
       subirEstrella();a.vel*=0.82;temblor=0.25;pip(140,0.16,'square');
     }
   }
@@ -863,7 +921,13 @@ function actPeatones(dt){
   for(const p of peatones){
     if(p.caido>0){
       p.caido-=dt;
-      if(p.caido<=0){p.malla.rotation.z=0;p.malla.position.y=0;}
+      if(p.caido<=0){
+        p.malla.rotation.z=0;p.malla.position.y=0;
+        // ponytail: el cuerpo reaparece como peatón nuevo en otra manzana en vez de
+        // gestionar pools de spawn/despawn. Puede verse el salto si sigues ahí parado.
+        p.bi=rndi(0,MANZANAS-1);p.bj=rndi(0,MANZANAS-1);p.esq=rndi(0,3);
+        const e=esquina(p.bi,p.bj,p.esq);p.x=p.tx=e.x;p.z=p.tz=e.z;
+      }
       continue;
     }
     const huye=jugador.estrellas>1&&dist2(px,pz,p.x,p.z)<900;
@@ -1028,6 +1092,10 @@ function actHUD(dt){
     ui.pistaTxt.textContent=jugador.auto?'Bajar del auto':'Subir al auto';
   }else if(quiere){ui.pistaTxt.textContent=jugador.auto?'Bajar del auto':'Subir al auto';}
   if(toastT>0){toastT-=dt;if(toastT<=0)ui.toast.classList.remove('on');}
+  ui.arma.textContent=ARMAS[armaIdx].nombre;
+  if(recarga>0)recarga-=dt;
+  if(fogonazoT>0){fogonazoT-=dt;
+    if(fogonazoT<=0){const f=jugador.malla.userData.fogonazo;if(f)f.visible=false;}}
 }
 
 /* ══════════════════════════ BUCLE ══════════════════════════ */
@@ -1049,6 +1117,16 @@ function bucle(now){
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
+if(location.hash==='#test'){                         // abre index.html#test y mira la consola
+  const P=ARMAS[0],E=ARMAS[1];
+  console.assert(enMira(P,0,0,0,0,10),'blanco al frente');
+  console.assert(!enMira(P,0,0,0,0,-10),'blanco a la espalda');
+  console.assert(!enMira(P,0,0,0,0,999),'fuera de alcance');
+  console.assert(!enMira(P,0,0,0,10,10),'fuera del cono de la pistola');
+  console.assert(enMira(E,0,0,0,4,10),'dentro del cono de la escopeta');
+  console.log('armas: pruebas ok');
+}
+
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);

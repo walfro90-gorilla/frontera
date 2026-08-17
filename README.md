@@ -14,7 +14,9 @@ por código en tiempo de carga.
 - **A pie y al volante.** Te subes a cualquier auto con `F`, incluidos los del tráfico en movimiento.
 - **Ciudad viva.** Los autos de tráfico navegan un grafo de intersecciones y frenan por el de
   adelante; los peatones recorren el perímetro de su manzana y huyen cuando sube el escándalo.
-- **Nivel de búsqueda.** Atropellar o chocar sube estrellas. Aparecen patrullas que persiguen con
+- **Armas.** Pistola de un blanco a distancia y escopeta de cono corto que tumba a varios de un
+  tiro. Cada baja paga $45 y sube el calor.
+- **Nivel de búsqueda.** Disparar, atropellar o chocar sube estrellas. Aparecen patrullas que persiguen con
   volumen de sirena según distancia. Trece segundos sin contacto visual y baja una estrella.
 - **Encargos de entrega.** El pago escala con la distancia y la racha; el reloj corre y perderlo
   cuesta el multiplicador.
@@ -30,12 +32,15 @@ por código en tiempo de carga.
 | `Shift` | Correr |
 | `Espacio` | Saltar / freno de mano |
 | `F` | Subir o bajar del auto |
+| `E` | Disparar (solo a pie) |
+| `Q` | Cambiar de arma |
 | Arrastrar mouse | Girar cámara |
 | Rueda | Acercar o alejar |
 | `R` | Enderezar auto |
 | `M` | Silenciar |
 
-En dispositivos táctiles aparece un joystick virtual con botones de gas y acción.
+En dispositivos táctiles aparece un joystick virtual con botones de gas, acción y fuego; el nombre
+del arma en el HUD es tocable para cambiarla.
 
 ## Correrlo local
 
@@ -58,6 +63,8 @@ Three.js r128 desde CDN, todo lo demás es código propio.
   cuesta casi nada en GPU integrada.
 - **Colisiones.** Círculo contra AABB con resolución por el eje de menor penetración. Sin motor
   de física.
+- **Disparo.** Hitscan por cono: alcance y ángulo contra la dirección de la cámara. Sin proyectiles,
+  sin raycaster, sin recorrer geometría.
 - **Audio.** Motor con oscilador sierra filtrado por lowpass mapeado a velocidad; sirena de dos
   tonos; efectos con osciladores de vida corta. Todo Web Audio, cero archivos.
 
