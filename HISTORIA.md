@@ -1,7 +1,8 @@
 # FRONTERA — Contexto, historia y personajes
 
 Biblia narrativa del juego. Documento de diseño, no de código. El mapeo a los sistemas que ya
-existen en `index.html` está en la sección **Reskin de sistemas**.
+Biblia narrativa del juego. Documento de diseño, no de código. El mapa está en la sección **7**; el
+estado de implementación de cada mecánica, en la **8**.
 
 ---
 
@@ -33,7 +34,7 @@ Esto es **dramatización**, no documental ni acusación.
   las desaparecidas de Juárez, ni los periodistas asesinados aparecen como contenido jugable,
   objetivo ni recompensa. Entran como **eco**: una vela, una cruz rosa, un periódico, un noticiero
   de fondo. El jugador nunca dispara a una víctima real dramatizada.
-- **Los civiles no son puntos.** Ver sección 7: matar civiles cuesta, no paga.
+- **Los civiles no son puntos.** Matar civiles cuesta dinero y calor, no paga. Ya está así en el código.
 
 ---
 
@@ -187,25 +188,61 @@ el juego: lo hizo la historia.
 
 ---
 
-## 7. Reskin de sistemas existentes
+## 7. El mapa
 
-Lo que ya está codeado en `index.html` y qué significa ahora. Nada de esto exige motor nuevo.
+Recreación **comprimida** de Juárez, no un levantamiento topográfico. A 1:1 la ciudad son ~25 km de
+ancho y el 95% del mapa sería colonia repetida. Los ejes son avenidas reales con su nombre, en su
+orden y con su separación relativa; las distancias están apretadas para que quepa en 1.2 × 1 km.
+No usa datos de OpenStreetMap: habrían costado megas, el archivo único y reescribir el grafo de
+tráfico para polilíneas arbitrarias, a cambio de un mapa más grande y más aburrido.
 
-| Sistema actual | Nuevo significado | Cambio de código |
+**Poniente → oriente:** Rafael Pérez Serna · Ignacio Mariscal · **Lerdo** · **Juárez** ·
+Francisco Villa · de la Raza · **Abraham Lincoln** · de las Américas · **Waterfill**.
+
+**Norte → sur:** Malecón · **16 de Septiembre** · Vicente Guerrero · Abraham González ·
+Insurgentes · **Paseo Triunfo de la República** · Tecnológico · Panamericana.
+
+**Los cuatro puentes**, en las avenidas que de verdad les corresponden:
+
+| Puente | Avenida | Del otro lado | Sentido real |
+|---|---|---|---|
+| Paso del Norte (Santa Fe) | Av. Juárez | El Paso St. | Salida a EE. UU. |
+| Stanton – Lerdo | Av. Lerdo (al poniente de Juárez) | Stanton St. | Entrada a México |
+| Córdova – Las Américas | Av. Abraham Lincoln, en el Chamizal | I-110 | Libre, sin caseta |
+| Zaragoza – Ysleta | Av. Waterfill, al oriente | Av. Zaragoza | Carga y local |
+
+Al norte, en orden: el bordo mexicano, el **canal revestido** del Bravo (por aquí el río no es río,
+es concreto), la **valla** del lado gringo y El Paso. La valla se construyó de verdad entre mediados
+de 2008 y 2009, así que en el acto I está a un cuarto y para el acto III está completa.
+
+Al poniente, la **Sierra de Juárez** con el letrero de *LA BIBLIA ES LA VERDAD ¡LÉELA!* — de 1987,
+así que es de época. **La X de Sebastián no aparece: se inauguró en mayo de 2013**, después de que
+termina el juego.
+
+Llegas a cualquier garita y ahí te quedas. El Paso se ve, no se pisa: eso no es una limitación
+técnica, es la premisa.
+
+## 8. Reskin de sistemas — qué ya está y qué falta
+
+| Sistema | Significado | Estado |
 |---|---|---|
-| `mision` (entrega, pago por distancia) | **Encargo**: sobres, cuota, mensaje, paquete. Mismo bucle, texto nuevo por acto. | Solo strings + una tabla de encargos por acto. |
-| `estrellas` (0–5) | **Dos calores separados**: *federal* (retenes, convoyes) y *plaza* (la facción rival te manda gente). Se suben con acciones distintas. | Duplicar el contador y `actPolicia`. |
-| `PAGO_BAJA` = $45 por peatón | **Invertir**: matar sicarios paga, **matar civiles cuesta dinero y sube calor federal de golpe**. Un civil muerto también cierra negocios cerca (menos encargos en esa zona). | `matar()` ya es una sola función: ahí se decide según el tipo de la víctima. |
-| `peatones[]` uniformes | Tres tipos: **civil**, **halcón** (te marca y sube calor si te ve), **sicario** (armado, de una facción). | Un campo `tipo` en el peatón. |
-| `tipo[i][j]` (parque/lote/ciudad) | Añadir **control de plaza** por manzana: Línea / Gente Nueva / disputada. Cambia quién patrulla, quién te dispara y cuánto paga la cuota. | Segunda matriz del mismo tamaño. |
-| `horaDia` (ciclo de 4 min) | **Toque de queda de facto**: de noche desaparecen los civiles, suben los sicarios, cierran los negocios. La ciudad vacía de noche es histórica, no estética. | Escalar densidades con `noche`. |
-| Patrullas genéricas | **Municipal** (comprable con dinero, es La Línea de uniforme) y **Federal** (no comprable, más agresiva, y en el acto IV deja pasar a Gente Nueva). | `clase` del auto ya es la máquina de estados: agregar dos valores. |
-| Arresto / hospital | **Levantón** y **Cruz Roja**. Perder no es morir: es despertar en otro lado sin dinero y con una deuda. | Solo texto y penalizaciones. |
-| Marcador dorado de misión | **Veladora** cuando el destino es un memorial. Mismo objeto, otro color, misión sin pago. | Color del material. |
+| `mision` → **encargo** | Sobres, cuota, mensaje, paquete, flores. Mismo bucle, texto por acto. | ✅ Hecho (textos generados; falta guion) |
+| `estrellas` → **dos calores** | *Federal* (retenes, convoyes) y *plaza* (la facción rival te manda gente). Suben por razones distintas y se enfrían a ritmos distintos. | ✅ Hecho |
+| Pago por baja **invertido** | Sicario paga; civil cuesta $300, truena el calor federal y cierra los negocios de la cuadra. | ✅ Hecho |
+| `peatones[]` **tipados** | Civil, halcón (te reporta), sicario (te dispara si le pegaste a los suyos). | ✅ Hecho |
+| **Control de plaza** por manzana | Línea / Gente Nueva / disputada. Se ve en el minimapa; Sinaloa avanza acto por acto. | ✅ Hecho |
+| Patrullas por **corporación** | Militar y municipal hasta 2010; Policía Federal después, porque el 9 de abril de 2010 relevó al Ejército. | ✅ Hecho |
+| Arresto → **levantón**, hospital → **Cruz Roja** | Perder no es morir: es despertar en otro lado sin dinero. | ✅ Hecho |
+| Marcador **veladora** | Cuando el destino es un memorial: otro color, sin pago. | ✅ Hecho |
+| **Cuatro actos** con placa histórica | Año, encargos, corporación, valla y avance de plaza cambian por acto. | ✅ Hecho |
+| **Radio** del carro | Noticias reales del año, incluidas las que el juego no dramatiza. | ✅ Hecho (texto; falta locutor) |
+| Municipal **comprable** | Es La Línea de uniforme: debería aceptar mordida. La federal no. | ⬜ Falta |
+| **Toque de queda** de facto | De noche se vacían los civiles y suben los sicarios. Histórico, no estético. | ⬜ Falta |
+| Personajes con los que se hable | Doña Chayo, Marisol, El Diablo, Luz. | ⬜ Falta |
 
 ---
 
-## 8. Reglas de tono
+## 9. Reglas de tono
 
 1. **La violencia se registra, no se premia.** Sin cámara lenta, sin combos, sin gore de lucimiento.
    La cámara no se acerca a los cuerpos.
@@ -221,7 +258,7 @@ Lo que ya está codeado en `index.html` y qué significa ahora. Nada de esto exi
 
 ---
 
-## 9. Qué queda explícitamente fuera
+## 10. Qué queda explícitamente fuera
 
 - Recrear Villas de Salvárcar como nivel jugable, o cualquier masacre real con sus víctimas.
 - Feminicidios como contenido, misión, coleccionable o fondo decorativo. La cruz rosa se ve, no se
