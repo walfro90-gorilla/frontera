@@ -82,6 +82,16 @@
   #radio.on{opacity:1}
   #radio::before{content:"◉ ";color:var(--rojo)}
 
+  /* sitios con dato */
+  #sitio{position:absolute;left:14px;top:50%;transform:translateY(-50%) translateX(-14px);
+    padding:12px 15px;width:min(300px,32vw);opacity:0;transition:opacity .3s,transform .3s;
+    pointer-events:none}
+  #sitio.on{opacity:1;transform:translateY(-50%) translateX(0)}
+  #sitioNombre{font-family:var(--cond);font-size:19px;letter-spacing:.03em;color:var(--neon);
+    line-height:1.05;margin-top:3px}
+  #sitioTexto{font-size:11px;line-height:1.65;color:var(--texto);opacity:.85;margin-top:8px}
+  @media (max-width:860px){#sitio{display:none}}
+
   /* diálogo */
   #dialogo{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);
     padding:12px 18px 10px;width:min(560px,86vw);opacity:0;transition:opacity .2s;
@@ -222,6 +232,11 @@
   </div>
 
   <div id="radio" class="panel"></div>
+  <div id="sitio" class="panel">
+    <div class="eyebrow" id="sitioTipo"></div>
+    <div id="sitioNombre"></div>
+    <p id="sitioTexto"></p>
+  </div>
   <div id="dialogo" class="panel">
     <div id="diQuien"></div>
     <div id="diPapel"></div>
@@ -303,6 +318,11 @@ const angLerp=(a,b,t)=>a+angDif(a,b)*t;
 const dist2=(ax,az,bx,bz)=>{const dx=ax-bx,dz=az-bz;return dx*dx+dz*dz;};
 const TAU=Math.PI*2;
 
+// Sitios con dato: al acercarte, el HUD te dice qué es y por qué importa. Cada
+// sección empuja los suyos, así no hay una lista central que se desincronice.
+const SITIOS=[];
+const sitio=o=>{SITIOS.push(o);return o;};
+
 /* ══════════════════════════ GEOGRAFÍA ══════════════════════════
    Recreación comprimida de Ciudad Juárez, no un levantamiento topográfico.
    Las avenidas son reales y guardan su orden y posición relativa; las distancias
@@ -350,10 +370,16 @@ const enTramoJuarez=(i,j)=>(i===JU-1||i===JU)&&(j===0||j===1);
 const sobreLaJuarez=(x,z)=>Math.abs(x-ejeX(JU))<34 && z>ejeZ(0)-8 && z<ejeZ(2);
 
 const PUENTES=[
-  {i:2,nombre:'Puente Lerdo – Stanton',   nota:'ENTRADA DESDE EL PASO'},
-  {i:3,nombre:'Puente Paso del Norte',    nota:'SALIDA A EE. UU.'},
-  {i:6,nombre:'Puente Córdova – Américas',nota:'PUENTE LIBRE'},
-  {i:8,nombre:'Puente Zaragoza – Ysleta', nota:'CARGA Y LOCAL'},
+  {i:2,nombre:'Puente Lerdo – Stanton',   nota:'ENTRADA DESDE EL PASO',
+   dato:'Entra de Stanton Street a la Avenida Lerdo. Un solo sentido: de Estados Unidos a México.'},
+  {i:3,nombre:'Puente Paso del Norte',    nota:'SALIDA A EE. UU.',
+   dato:'También le dicen Santa Fe. Une la Avenida Juárez con El Paso Street, en un solo sentido '+
+        'hacia el otro lado; para regresar hay que dar la vuelta por el Stanton.'},
+  {i:6,nombre:'Puente Córdova – Américas',nota:'PUENTE LIBRE',
+   dato:'Le dicen Puente Libre porque no cobra caseta. Va de la Avenida Abraham Lincoln a la '+
+        'I-110, cruzando el Chamizal.'},
+  {i:8,nombre:'Puente Zaragoza – Ysleta', nota:'CARGA Y LOCAL',
+   dato:'Al oriente de la ciudad, une la Avenida Waterfill con la Zaragoza. Es el de los tráileres.'},
 ];
 
 const ZRIO=-425, ANCHO_RIO=42;                 // canal revestido del Bravo
@@ -560,8 +586,21 @@ function bloque(cx,cz,w,d,h,fam,idx,tapa){
   const techo=tapa||matTecho;
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[mat,mat,techo,techo,mat,mat]);
   m.position.set(cx,h/2,cz);scene.add(m);
-  edificios.push({x:cx,z:cz,hw:w/2,hd:d/2});
+  edificios.push({x:cx,z:cz,hw:w/2,hd:d/2,malla:m});
   return m;
+}
+
+// Los landmarks van en coordenadas a mano y las manzanas se generan al azar, así
+// que una casa puede caerles encima —igual que les pasaba a los personajes—. En
+// vez de mover el monumento, se le quita de encima lo que el generador ya puso.
+function liberar(x,z,hw,hd){
+  for(let i=edificios.length-1;i>=0;i--){
+    const e=edificios[i];
+    if(Math.abs(x-e.x)<hw+e.hw && Math.abs(z-e.z)<hd+e.hd){
+      if(e.malla)scene.remove(e.malla);
+      edificios.splice(i,1);
+    }
+  }
 }
 
 const matTronco=new THREE.MeshLambertMaterial({color:0x6b4a2f});
@@ -636,6 +675,7 @@ for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++)
 // Catedral de Nuestra Señora de Guadalupe + la Misión, en el corazón del Centro.
 (()=>{
   const cx=ejeX(3)+34, cz=ejeZ(1)+40;
+  liberar(cx,cz,26,30);
   const matPiedra=new THREE.MeshLambertMaterial({color:0xd8cdb4});
   const nave=new THREE.Mesh(new THREE.BoxGeometry(26,13,40),matPiedra);
   nave.position.set(cx,6.5,cz);scene.add(nave);
@@ -648,6 +688,11 @@ for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++)
   }
   const cruz=new THREE.Mesh(new THREE.BoxGeometry(0.7,5,0.7),matPiedra);
   cruz.position.set(cx,41,cz-16);scene.add(cruz);
+  sitio({x:cx,z:cz,r:48,tipo:'Zona Centro',
+    nombre:'Catedral y Misión de Guadalupe',
+    texto:'De la misión que fray García de San Francisco fundó el 8 de diciembre de 1659 nació '+
+          'esta ciudad; la catedral de al lado es de 1935. Alrededor está el mercado, y a dos '+
+          'cuadras arranca la Avenida Juárez rumbo al puente.'});
 })();
 
 // La lonchería de Doña Chayo, en la esquina donde arrancas. Es el termómetro del
@@ -655,6 +700,7 @@ for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++)
 // Nadie te lo dice; lo ves al pasar.
 const loncheria=(()=>{
   const x=ejeX(3)+22, z=ejeZ(2)+26;
+  liberar(x,z,16,16);
   const matMuro=new THREE.MeshLambertMaterial({color:0xe0c98a});
   const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(14,4.2,9),
     [matMuro,matMuro,matTecho,matTecho,matMuro,matMuro]);
@@ -674,6 +720,12 @@ const loncheria=(()=>{
   cortina.position.set(x,2,z+4.5);cortina.visible=false;scene.add(cortina);
   return {matMuro,rotulo,cortina,x,z};
 })();
+sitio({x:loncheria.x,z:loncheria.z+7,r:22,tipo:'Negocio de la esquina',
+  nombre:'Lonchería La Frontera',
+  texto:'Doña Chayo lleva treinta años dando de comer aquí. Paga cuota desde 2009, como ocho de '+
+        'cada diez negocios de la ciudad. Entre 2008 y 2009 cerraron diez mil changarros en '+
+        'Juárez; a varios los quemaron por no pagar.'});
+
 function actoLoncheria(){
   loncheria.rotulo.visible  = acto<3;
   loncheria.cortina.visible = acto>=2;
@@ -746,6 +798,7 @@ const bandera=new THREE.Mesh(geoBandera,
 bandera.position.set(FX+BW/2,ASTA-BH/2-3,FZ);
 scene.add(bandera);
 (()=>{                                                        // asta y base
+  liberar(FX,FZ,14,14);
   const matAsta=new THREE.MeshLambertMaterial({color:0xd6dae0});
   const a=new THREE.Mesh(new THREE.CylinderGeometry(0.7,1.6,ASTA,10),matAsta);
   a.position.set(FX,ASTA/2,FZ);scene.add(a);
@@ -754,6 +807,12 @@ scene.add(bandera);
   base.position.set(FX,1.5,FZ);scene.add(base);
   edificios.push({x:FX,z:FZ,hw:8,hd:8});
 })();
+sitio({x:FX,z:FZ,r:130,tipo:'Monumento · El Chamizal',
+  nombre:'Asta Bandera Monumental',
+  texto:'Cien metros de asta y una bandera de cincuenta por veintiocho, izada el 24 de junio de '+
+        '1997 a quinientos metros de la línea. La pusieron para celebrar que este suelo volvió a '+
+        'México sin que nadie disparara un tiro. Once años después, la ciudad que se ve desde '+
+        'aquí enterraba a diez personas al día.'});
 let manchaBandera=0;
 function actoBandera(){
   // el acumulado real del año, más un poco de lo que llevas puesto tú
@@ -788,12 +847,19 @@ function actBandera(){
   }
   // Museo de Arqueología e Historia de El Chamizal, edificio de 1978
   const mx=ejeX(5)+52, mz=cenZ(0);
+  liberar(mx,mz,28,20);
   const matMuseo=new THREE.MeshLambertMaterial({color:0xcfc6b4});
   const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(46,9,30),matMuseo);
   cuerpo.position.set(mx,4.5,mz);scene.add(cuerpo);
   edificios.push({x:mx,z:mz,hw:23,hd:15});
   const cupula=new THREE.Mesh(new THREE.ConeGeometry(17,10,4),matMuseo);
   cupula.position.set(mx,14,mz);cupula.rotation.y=Math.PI/4;scene.add(cupula);
+  sitio({x:mx,z:mz,r:52,tipo:'Museo · INAH',
+    nombre:'Museo de Arqueología e Historia de El Chamizal',
+    texto:'Abrió en 1964; este edificio es de 1978, de Juan José Díaz Infante. Una de sus salas '+
+          'cuenta la disputa: en la creciente de 1864 el río se movió y dejó ciento setenta y '+
+          'siete hectáreas del otro lado. México las recuperó el 28 de octubre de 1967, tras cien '+
+          'años de reclamos y arbitrajes.'});
 })();
 
 /* ══════════════════════════ AVENIDA JUÁREZ ══════════════════════════ */
@@ -895,6 +961,23 @@ const antros=[];
   }
 })();
 
+// Los dos que son patrimonio de la calle avisan qué son.
+(()=>{
+  const datos={
+    'KENTUCKY CLUB':['Cantina · desde 1920',
+      'Abrió en octubre de 1920, cuando la Ley Seca del otro lado convirtió a Juárez en algo así '+
+      'como Las Vegas. Aquí se inventó la margarita. Por aquí pasaron Al Capone y Marilyn Monroe. '+
+      'De los bares legendarios de la frontera, es el último que sigue de pie.'],
+    'NOA NOA':['Salón de baile',
+      'Aquí empezó a cantar Juan Gabriel, a media cuadra del Kentucky. Le escribió una canción y '+
+      'el salón se hizo más famoso que la avenida. Ya no existe.'],
+  };
+  for(const a of antros){
+    const d=datos[a.nombre];
+    if(d)sitio({x:a.x,z:a.z,r:26,tipo:d[0],nombre:a.nombre,texto:d[1]});
+  }
+})();
+
 function actoJuarez(){
   const u=AGUANTE[acto];
   for(const a of antros){
@@ -952,6 +1035,13 @@ const vallaTramos=[];
   }
 })();
 
+sitio({x:ejeX(JU),z:ZBORDO-6,r:70,tipo:'Frontera',
+  nombre:'El bordo y la valla',
+  texto:'Por aquí el Bravo no es río: es un canal de concreto. La valla del otro lado se levantó '+
+        'entre mediados de 2008 y 2009 con la Secure Fence Act: acero de cuatro y medio a cinco '+
+        'metros, cámaras, sensores y luz de estadio toda la noche. Del lado de allá hubo dos '+
+        'asesinatos en 2010. De este lado, tres mil seiscientos veintidós.'});
+
 const garitas=[];
 function puente(p){
   const x=ejeX(p.i), ancho=anchoX(p.i)+10;
@@ -975,6 +1065,8 @@ function puente(p){
   pluma.position.set(x,2.4,ZBORDO-26);scene.add(pluma);
   edificios.push({x:x,z:ZBORDO-28,hw:ancho/2+2,hd:5});      // bloquea de verdad
   garitas.push({x:x,z:ZBORDO-24,nombre:p.nombre,nota:p.nota});
+  sitio({x:x,z:ZBORDO+14,r:34,tipo:'Puente internacional · '+p.nota,
+    nombre:p.nombre,texto:p.dato+' Del otro lado está El Paso. Tú no cruzas.'});
   // la fila eterna hacia el puente
   for(let k=0;k<5;k++) nuevoAuto(x-4+(k%2)*8, ZBORDO+10+k*7, Math.PI, 'parado');
 }
@@ -1013,12 +1105,21 @@ function puente(p){
   g.fillStyle='rgba(0,0,0,0)';g.fillRect(0,0,512,128);
   g.fillStyle='#f2f0e6';g.font='bold 40px '+'Arial Narrow, Impact, sans-serif';
   g.textAlign='center';
-  g.fillText('LA BIBLIA ES LA VERDAD',256,56);
-  g.fillText('¡LÉELA!',256,104);
+  g.font='bold 30px '+'Arial Narrow, Impact, sans-serif';
+  g.fillText('CD JUAREZ',256,36);
+  g.font='bold 40px '+'Arial Narrow, Impact, sans-serif';
+  g.fillText('LA BIBLIA ES LA VERDAD',256,80);
+  g.fillText('LEELA',256,120);
   const t=new THREE.CanvasTexture(c);
-  const letrero=new THREE.Mesh(new THREE.PlaneGeometry(230,58),
-    new THREE.MeshBasicMaterial({map:t,transparent:true}));
+  const letrero=new THREE.Mesh(new THREE.PlaneGeometry(240,60),
+    new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide}));
   letrero.position.set(XMIN-300,96,-30);letrero.rotation.y=Math.PI/2.35;scene.add(letrero);
+  sitio({x:XMIN+40,z:-30,r:110,tipo:'Cerro Bola · Sierra de Juárez',
+    nombre:'CD JUÁREZ · LA BIBLIA ES LA VERDAD · LÉELA',
+    texto:'Lo propuso el pastor Gerardo Bermúdez en 1987, en la Fiesta Juárez, con doscientas '+
+          'congregaciones reunidas en el Estadio Olímpico. Está hecho de piedra y lo retocan con '+
+          'cal. Cada letra mide veinticinco por veinte metros y el conjunto ocupa cinco '+
+          'hectáreas: se lee desde toda la ciudad y desde el avión.'});
 })();
 
 /* ══════════════════════════ AUTOS ══════════════════════════ */
@@ -1874,7 +1975,9 @@ const ui={
   cuenta:document.getElementById('cuenta'),
   dialogo:document.getElementById('dialogo'),diQuien:document.getElementById('diQuien'),
   diPapel:document.getElementById('diPapel'),diTexto:document.getElementById('diTexto'),
-  diMas:document.getElementById('diMas'),mapa:document.getElementById('mapa')
+  diMas:document.getElementById('diMas'),mapa:document.getElementById('mapa'),
+  sitio:document.getElementById('sitio'),sitioTipo:document.getElementById('sitioTipo'),
+  sitioNombre:document.getElementById('sitioNombre'),sitioTexto:document.getElementById('sitioTexto')
 };
 ui.arma.addEventListener('pointerdown',cambiarArma);
 ui.dinero.addEventListener('pointerdown',mordida);
@@ -2121,6 +2224,31 @@ function actPeatones(dt){
 }
 
 // Voltean hacia ti cuando te acercas. Es lo único que los anima, y basta.
+// Sitios: el más cercano dentro de su radio se anuncia solo. Sustituye al aviso
+// especial que tenían las garitas, que era el mismo mecanismo para un solo caso.
+let sitioActual=null, sitioT=0, sitioVisible=false;
+function actSitios(dt){
+  const b=posJugador();
+  let mejor=null, md=1e9;
+  for(const s of SITIOS){
+    const d=dist2(s.x,s.z,b.x,b.z);
+    if(d<s.r*s.r && d<md){md=d;mejor=s;}
+  }
+  if(mejor!==sitioActual){
+    sitioActual=mejor;sitioT=0;
+    if(sitioVisible){ui.sitio.classList.remove('on');sitioVisible=false;}
+  }
+  if(charla&&sitioVisible){ui.sitio.classList.remove('on');sitioVisible=false;return;}
+  if(!mejor||charla)return;
+  sitioT+=dt;
+  if(sitioT>0.4&&!sitioVisible){
+    ui.sitioTipo.textContent=mejor.tipo;
+    ui.sitioNombre.textContent=mejor.nombre;
+    ui.sitioTexto.textContent=mejor.texto;
+    ui.sitio.classList.add('on');sitioVisible=true;pip(720,0.05);
+  }
+}
+
 function actPersonajes(dt){
   for(const p of PERSONAJES){
     if(!p.malla.visible)continue;
@@ -2416,7 +2544,7 @@ document.getElementById('mapaCerrar').addEventListener('pointerdown',cerrarMapa)
 ui.mapa.addEventListener('pointerdown',e=>{if(e.target===ui.mapa)cerrarMapa();});
 
 /* ══════════════════════════ HUD POR CUADRO ══════════════════════════ */
-let pistaOn=false, avisoGarita=0;
+let pistaOn=false;
 function marcas(n,ch){
   let s='';for(let i=0;i<5;i++)s+= i<n?'<b>'+ch+'</b>':ch;
   return s;
@@ -2443,15 +2571,6 @@ function actHUD(dt){
   if(quiere)ui.pistaTxt.textContent = conQuien ? 'Hablar con '+conQuien.nombre
                                    : jugador.auto ? 'Bajar del auto' : 'Subir al auto';
   if(charla)ui.pista.classList.remove('on');
-  // la garita: se ve, no se cruza
-  if(avisoGarita>0)avisoGarita-=dt;
-  else for(const g of garitas){
-    if(dist2(b.x,b.z,g.x,g.z)<2600){
-      avisoGarita=8;aviso3(g.nombre+' · '+g.nota);
-      radio('Del otro lado está El Paso. Tú no cruzas.');
-      break;
-    }
-  }
   if(toastT>0){toastT-=dt;if(toastT<=0)ui.toast.classList.remove('on');}
   if(radioT>0){radioT-=dt;if(radioT<=0)ui.radio.classList.remove('on');}
   ui.arma.textContent=ARMAS[armaIdx].nombre;
@@ -2474,7 +2593,7 @@ function bucle(now){
     actTrafico(dt);actPeatones(dt);actPersecucion(dt);actPersonajes(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
-  actCamara(dt);actDiaNoche(dt);actBandera();actAudio();actHUD(dt);minimapa();
+  actCamara(dt);actDiaNoche(dt);actBandera();actSitios(dt);actAudio();actHUD(dt);minimapa();
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}
   renderer.render(scene,camera);
@@ -2503,11 +2622,11 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
-    bandera,geoBandera,SANGRE,
+    bandera,geoBandera,SANGRE,SITIOS,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
-                 mancha:manchaBandera,
+                 mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 

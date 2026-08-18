@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2531 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2650 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -211,6 +211,27 @@ la plática sola si te alejas o te subes al carro.
 hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
 hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
 llamarla directo desde entradas** — todo pasa por `accionF()`.
+
+### Sitios
+
+`SITIOS[]` es un registro al que **cada sección empuja los suyos** con `sitio({x,z,r,tipo,nombre,
+texto})`, en vez de una lista central que se desincroniza. `actSitios()` busca el más cercano dentro
+de su radio y lo anuncia en el panel `#sitio` tras 0.4 s; se oculta al salir o al abrir una plática.
+Corre en el grupo que siempre se ejecuta, así que funciona manejando y con la simulación congelada.
+
+Sustituyó al aviso especial que tenían las garitas: era el mismo mecanismo resuelto para un solo
+caso. Si agregas un monumento, agrega su `sitio()` al lado y ya.
+
+`prueba.js` se para frente a los doce y falla si alguno no se anuncia, si le falta dato, o si está
+metido en un edificio con un radio que no alcanza a salir de él.
+
+### Landmarks fijos contra el generador
+
+**`liberar(x,z,hw,hd)` antes de construir cualquier landmark de coordenada fija.** Las manzanas se
+generan al azar y una casa puede caer encima de la catedral, la lonchería, el museo o el asta —el
+mismo problema que tenían los personajes, resuelto al revés: en vez de mover el monumento, se le
+quita de encima lo que el generador ya puso. Por eso `bloque()` guarda `malla` en el registro de
+`edificios[]`: sin esa referencia no se podría sacar de la escena.
 
 ### El Chamizal y la bandera
 

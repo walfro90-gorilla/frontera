@@ -143,9 +143,11 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 //   1) calentarse a pie          2) quedarse quieto y ver si las patrullas llegan
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
-const CUADROS=34000, CERCO_INI=2500, CERCO_FIN=11000;
+const CUADROS=34000, CERCO_INI=1400, CERCO_FIN=9500;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
+const sitiosVistos=new Set();
+const SIT_INI=400, SIT_PASO=44;
 let mapaProbado='no se probó';
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
@@ -156,13 +158,22 @@ try{
     t+=16.7;ahora=t;
     for(let k=temporizadores.length-1;k>=0;k--)
       if(temporizadores[k].t<=ahora){const x=temporizadores.splice(k,1)[0];x.fn();}
+    // recorrido de sitios: pararse frente a cada uno y ver si el panel lo anuncia
+    const SIT_FIN=SIT_INI+SIT_PASO*F.SITIOS.length;
+    const enSitios = f>=SIT_INI && f<SIT_FIN;
+    if(enSitios){
+      const k=Math.floor((f-SIT_INI)/SIT_PASO), fase=(f-SIT_INI)%SIT_PASO, s0=F.SITIOS[k];
+      if(fase===0){ if(F.jugador.auto)F.accionF(); F.jugador.x=s0.x; F.jugador.z=s0.z+2; }
+      if(fase===SIT_PASO-3 && el('sitio').__cls.has('on') &&
+         el('sitioNombre').textContent===s0.nombre) sitiosVistos.add(s0.nombre);
+    }
     const cerco = f>=CERCO_INI && f<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
     if(f%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});  // disparar: calienta
     if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
     if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
     if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
-    if(!cerco&&f%400===0){                                 // empujón al marcador
+    if(!cerco&&!enSitios&&f%400===0){                      // empujón al marcador
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
     }
@@ -172,7 +183,7 @@ try{
     }
     // El marcador de recogida ES el personaje que da el encargo, así que basta con
     // apretar F ahí mismo. Nada de teletransportes extra: eso trababa la partida.
-    if(!cerco&&f%400===3){
+    if(!cerco&&!enSitios&&f%400===3){
       if(F.jugador.auto)F.accionF();                   // bajarse para poder hablar
       for(let k=0;k<5;k++){
         F.accionF();
@@ -237,6 +248,7 @@ const est={
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
+  sitios:sitiosVistos.size+' de '+F.SITIOS.length,
   horasVistas:horasVistas.size,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
@@ -278,6 +290,22 @@ const zs=F.geoBandera.attributes.position;
 let onda=0;
 for(let i=0;i<zs.count;i++)onda=Math.max(onda,Math.abs(zs.getZ(i)));
 exige(onda>0.5,'la bandera del Chamizal ondea (amplitud '+onda.toFixed(2)+' m)');
+// todos los sitios deben tener dato y poder anunciarse: uno mudo o metido en un
+// edificio no se descubre nunca y el dato se pierde
+const sitiosSinDato=F.SITIOS.filter(s=>!s.nombre||!s.texto||!s.tipo||s.texto.length<40);
+exige(!sitiosSinDato.length,'todos los sitios traen dato ('+sitiosSinDato.map(s=>s.nombre)+')');
+// Un sitio SÍ puede estar centrado en su monumento —la bandera, la catedral—; lo
+// que no puede es que el radio no alcance a salir del muro, porque entonces no hay
+// dónde pararse para que se anuncie.
+const sitiosEncerrados=F.SITIOS.filter(s=>{
+  const e=F.edificios.find(e=>Math.abs(s.x-e.x)<e.hw&&Math.abs(s.z-e.z)<e.hd);
+  return e && s.r <= Math.max(e.hw,e.hd)+8;
+});
+exige(!sitiosEncerrados.length,'todo sitio dentro de un edificio tiene radio para salir de él ('+
+  sitiosEncerrados.map(s=>s.nombre)+')');
+exige(sitiosVistos.size===F.SITIOS.length,'cada sitio se anuncia al pararte enfrente ('+
+  sitiosVistos.size+' de '+F.SITIOS.length+'; faltaron: '+
+  F.SITIOS.filter(s=>!sitiosVistos.has(s.nombre)).map(s=>s.nombre)+')');
 exige(manchas.length>=3&&manchas[manchas.length-1]>manchas[0],
   'la bandera se va manchando acto por acto ('+manchas.map(v=>v.toFixed(2)).join(' → ')+')');
 exige(!relojMal,'el reloj cuadra con la luz del cielo ('+relojMal+')');
