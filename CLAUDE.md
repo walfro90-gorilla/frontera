@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3063 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3222 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -133,6 +133,28 @@ mañana con el cielo negro. `prueba.js` compara la hora contra `esNoche` y falla
 `matEdificio()` cachea en `cacheMat` por `(paleta, repeatU, repeatV)`: las fachadas comparten
 material a propósito. **Geometría emisiva nueva debe registrar su material en uno de esos arrays o
 no se encenderá de noche.**
+
+### Cámaras y el bucle de la nota
+
+**El jugador es reportero y no puede matar a nadie.** `CAMARAS[]` sustituyó a las armas conservando
+los mismos campos geométricos (`alcance`, `cono`) porque el problema es idéntico: qué entra en el
+encuadre. Lo que cambió es qué pasa al apretar. `ARMAS` sigue existiendo como alias de `CAMARAS`
+para no romper llamadas viejas, y `disparar()` como alias de `fotografiar()`.
+
+El bucle tiene **tres tramos**, no dos: `mision.estado` va `'asignacion'` → `'escena'` → `'cierre'`.
+En la escena hay que llamar `fotografiar()` con el asunto en el encuadre `mision.pide` veces;
+`cerrarEscena()` reapunta el marcador a la redacción. El color del marcador dice en qué tramo vas:
+oro, azul, verde.
+
+Cada fila de `encargos` es `[titulo, texto, dadorId, lugarClave, fotos]`, y **cada una es una
+noticia real de ese año**. `lugarDe(clave)` resuelve contra `LUGARES`, un registro que cada sección
+llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace falta, un
+`LUGARES.x` donde se construye el lugar.
+
+`enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+Lo único que queda de violencia del jugador es `atropellar()`, que es un accidente y **siempre
+cuesta**: nunca paga. `prueba.js` falla si alguien reintroduce una recompensa por víctimas.
 
 ### Armas
 

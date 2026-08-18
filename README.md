@@ -1,12 +1,13 @@
 # FRONTERA
 
 Sandbox 3D de mundo abierto en un solo archivo HTML. **Ciudad Juárez, 2008–2012**: la guerra
-del narco dramatizada como juego. Avenidas reales, el Río Bravo, la valla y los cuatro puentes
+del narco dramatizada como juego. Eres **Jaime «Jimmy News» Nieves**, fotorreportero de policiaca
+de El Diario de Juárez. No traes pistola: traes dos lentes y una hora de cierre. Avenidas reales, el Río Bravo, la valla y los cuatro puentes
 internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin dependencias
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 145 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 155 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -30,6 +31,15 @@ tiempo de carga.
 - **El coche bomba y Salvárcar.** Al entrar a 2010 truena algo en el centro y la radio lo cuenta;
   después puedes ir a ver lo que quedó en 16 de Septiembre y Francisco Villa. Y en el sureste
   aparece un memorial de quince cruces **sin un solo nombre**. Ninguno de los dos se juega.
+- **La cámara en lugar del arma.** Gran angular y teleobjetivo. Mismo problema geométrico que
+  tenía el arma —alcance y cono— y exactamente el sentido contrario: en vez de quitar a alguien del
+  mundo, lo dejas registrado. No hay forma de matar a nadie a propósito en todo el juego.
+- **Cada encargo es una noticia real de ese año.** La entrada del Ejército, la manta de las dos
+  listas en el Monumento al Policía Caído, el asesinato del reportero de policiaca, Campo
+  Algodonero, un colgado en el puente, Villas de Salvárcar, el coche bomba, la caída del jefe de
+  La Línea, la plana de «¿Qué quieren de nosotros?».
+- **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
+  la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
 - **Diecinueve sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué
   importa: el asta del Chamizal y su museo, el Estadio Olímpico Benito Juárez, el Monumento a los
   Trabajadores de la maquila, el Umbral del Milenio, el Kentucky Club, el Noa Noa, la catedral y la
@@ -92,8 +102,8 @@ tiempo de carga.
 | `Shift` | Correr |
 | `Espacio` | Saltar / freno de mano |
 | `F` | Hablar, o subir y bajar del auto (según lo que tengas enfrente) |
-| `E` | Disparar (solo a pie) |
-| `Q` | Cambiar de arma |
+| `E` | Disparar la cámara (solo a pie) |
+| `Q` | Cambiar de lente |
 | `G` | Dar mordida a la municipal ($400) |
 | `T` o clic al minimapa | Abrir el mapa grande |
 | `Esc` | Cerrar el mapa |

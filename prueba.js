@@ -144,7 +144,7 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
 const SIT_INI=400, SIT_PASO=44;
-const CUADROS=34000;
+const CUADROS=44000;
 // Las fases van encadenadas al número de sitios. Antes eran números fijos y al
 // crecer la lista la fase de sitios se metió encima de la del mapa, que pausa el
 // juego: los sitios no se anunciaban y parecía bug del juego.
@@ -181,9 +181,16 @@ try{
     if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
     if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
     if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
-    if(!cerco&&!enSitios&&f%400===0){                      // empujón al marcador
+    // El bucle ahora es asignación → escena → redacción, y en la escena hay que
+    // disparar la cámara. Se empuja más seguido y se fotografía sin descanso:
+    // la propia cadencia del lente limita cuántas entran.
+    if(!cerco&&!enSitios&&f%200===0){
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
+    }
+    if(!cerco&&!enSitios&&F.estado().estadoMision==='escena'){
+      if(F.jugador.auto)F.accionF();                      // no se fotografía manejando
+      F.fotografiar();
     }
     if(f===CERCO_INI){                                     // pararlo sobre una calle real
       if(F.jugador.auto)kd({code:'KeyF',preventDefault(){}});   // bajarse
@@ -257,6 +264,7 @@ const est={
   calle:el('calle').textContent, encargo:el('mtitulo').textContent,
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
+  notas:s.notas, registrados:s.registrados, atropellados:s.atropellados,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
@@ -272,6 +280,12 @@ exige(est.calle.indexOf(' y ')>0,'el nombre de calle se resuelve');
 exige(est.encargo!=='Sin encargo','el sistema de encargos corrió');
 exige(placaVista>0,'se avanzó de acto y salió la placa');
 exige(s.acto>0,'el acto avanzó');
+// El jugador es reportero: publica notas y no cobra por matar. Que nadie
+// reintroduzca una recompensa por víctimas sin que esto falle.
+exige(s.notas>=12,'se publicaron notas en los cuatro actos ('+s.notas+')');
+exige(s.registrados>0,'se registraron muertos en las notas ('+s.registrados+')');
+exige(typeof F.CAMARAS[0].sujetos==='number'&&!('blancos' in F.CAMARAS[0]),
+  'los lentes son lentes, no armas');
 exige(actosVistos.size>=4,'se recorrieron los cuatro actos (vistos: '+[...actosVistos]+')');
 exige(muerteVista,'corrió el castigo por perder (levantado/noqueado o daño)');
 exige(F.autos.length>0,'quedan autos en el mundo');

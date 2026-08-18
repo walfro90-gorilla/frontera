@@ -153,9 +153,17 @@ desaparece en el acto IV. Los demás son voz de radio y contexto, a propósito.
 
 Marcados con **·en el juego·** los que ya tienen esquina fija, líneas por acto y dan encargos.
 
-- **Nicolás "Nico" Terrazas**, 24 — protagonista. Operador de línea en una maquila de arneses hasta
-  el paro de 2009. Sabe manejar y sabe callarse. Empieza de **halcón** porque paga el doble que el
-  turno de noche.
+- **Jaime "Jimmy News" Nieves**, 27 — **·el jugador·** fotorreportero de policiaca de *El Diario de
+  Juárez*. «Jimmy News» es su apodo de redacción, como al de verdad le decían «El Choco». Su trabajo
+  es llegar antes de que levanten el cordón, traer la foto y cerrar la nota. No porta arma, y el
+  juego no le da ninguna.
+
+  **Por qué el protagonista dejó de ser delincuente.** Con un criminal, la tesis y la mecánica
+  peleaban: el documento decía que la violencia se registra y no se premia, y el juego pagaba por
+  matar. Hubo que contenerlo con reglas —matar civiles cuesta, no se puede colgar a nadie, Salvárcar
+  fuera de pantalla—. Con un reportero, **mecánica y tesis apuntan al mismo lado**: el verbo del
+  juego es mirar y dejar constancia. El contador de muertos deja de ser tu marcador y pasa a ser lo
+  que era en la vida real: la cuenta que llevaba el periódico.
 - **Yolanda "Yoli" Terrazas**, 19 — **·en el juego·** hermana. Estudia enfermería. Es el reloj moral: cada acto está
   un poco más cerca de la puerta que Nico abrió.
 - **Doña Chayo** — **·en el juego·** dueña de la lonchería *La Frontera*, en la esquina donde arranca el juego. Paga

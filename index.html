@@ -203,7 +203,7 @@
     <div id="dinero">$0</div>
     <div class="calor" id="calorFed"><u>Federal</u><span>★★★★★</span></div>
     <div class="calor" id="calorPlaza"><u>Plaza</u><span>◆◆◆◆◆</span></div>
-    <div id="arma" title="Q para cambiar">PISTOLA</div>
+    <div id="arma" title="Q para cambiar">GRAN ANGULAR</div>
   </div>
 
   <div id="tc" class="panel">
@@ -252,7 +252,7 @@
   <div id="stick"><i></i></div>
   <button class="tbtn" id="bA">GAS</button>
   <button class="tbtn" id="bB">F</button>
-  <button class="tbtn" id="bC">FUEGO</button>
+  <button class="tbtn" id="bC">FOTO</button>
 </div>
 
 <div id="mapa">
@@ -278,15 +278,17 @@
     <h1>FRONTERA</h1>
   </div>
   <p class="desc">La ciudad más letal del mundo, a trescientos metros de la más segura de Estados
-    Unidos. No eres un capo: eres un juarense que se quedó sin chamba cuando la maquila despidió y
-    acabó manejando para gente que no eligió. Cuatro puentes al norte y ninguno es para ti.</p>
+    Unidos. Eres Jaime <b>«Jimmy News»</b> Nieves, fotorreportero de policiaca de El Diario de
+    Juárez. Tu trabajo es llegar antes de que levanten el cordón, traer la foto y cerrar la nota.
+    No traes pistola: traes dos lentes y una fecha de cierre. Cada encargo es algo que de verdad
+    pasó en esta ciudad entre 2008 y 2012.</p>
   <div class="ctrls">
     <span><i>W A S D</i> Caminar / conducir</span>
     <span><i>Shift</i> Correr</span>
     <span><i>Espacio</i> Saltar / freno de mano</span>
     <span><i>F</i> Subir o bajar del auto</span>
-    <span><i>E</i> Disparar</span>
-    <span><i>Q</i> Cambiar arma</span>
+    <span><i>E</i> Tomar la foto</span>
+    <span><i>Q</i> Cambiar de lente</span>
     <span><i>G</i> Dar mordida a la municipal</span>
     <span><i>Mouse</i> Arrastra para girar cámara</span>
     <span><i>Rueda</i> Acercar o alejar</span>
@@ -322,6 +324,7 @@ const TAU=Math.PI*2;
 // sección empuja los suyos, así no hay una lista central que se desincronice.
 const SITIOS=[];
 const sitio=o=>{SITIOS.push(o);return o;};
+const LUGARES={};   // puntos con nombre a los que un encargo puede mandarte
 
 /* ══════════════════════════ GEOGRAFÍA ══════════════════════════
    Recreación comprimida de Ciudad Juárez, no un levantamiento topográfico.
@@ -729,6 +732,7 @@ const loncheria=(()=>{
   cortina.position.set(x,2,z+4.5);cortina.visible=false;scene.add(cortina);
   return {matMuro,rotulo,cortina,x,z};
 })();
+LUGARES.loncheria={x:loncheria.x,z:loncheria.z+7};
 sitio({x:loncheria.x,z:loncheria.z+7,r:22,tipo:'Negocio de la esquina',
   nombre:'Lonchería La Frontera',
   texto:'Doña Chayo lleva treinta años dando de comer aquí. Paga cuota desde 2009, como ocho de '+
@@ -816,6 +820,7 @@ scene.add(bandera);
   base.position.set(FX,1.5,FZ);scene.add(base);
   edificios.push({x:FX,z:FZ,hw:8,hd:8});
 })();
+LUGARES.bandera={x:FX,z:FZ+22};
 sitio({x:FX,z:FZ,r:130,tipo:'Monumento · El Chamizal',
   nombre:'Asta Bandera Monumental',
   texto:'Cien metros de asta y una bandera de cincuenta por veintiocho, izada el 24 de junio de '+
@@ -825,8 +830,7 @@ sitio({x:FX,z:FZ,r:130,tipo:'Monumento · El Chamizal',
 let manchaBandera=0;
 function actoBandera(){
   // el acumulado real del año, más un poco de lo que llevas puesto tú
-  manchaBandera=Math.min(1, SANGRE[acto] + Math.min(0.12,
-    (muertos.civil*3+muertos.sicario+muertos.halcon)/300));
+  manchaBandera=Math.min(1, SANGRE[acto] + Math.min(0.10, registrados/260));
   pintarBandera(manchaBandera);
   texBandera.needsUpdate=true;
 }
@@ -1083,6 +1087,7 @@ function actColgados(){
     const t=a*TAU/14;
     edificios.push({x:ex+Math.cos(t)*RX,z:ez+Math.sin(t)*RZ,hw:9,hd:9});
   }
+  LUGARES.estadio={x:ex,z:ez+RZ+16};
   sitio({x:ex,z:ez+RZ+16,r:88,tipo:'Deportivo · desde 1981',
     nombre:'Estadio Olímpico Benito Juárez',
     texto:'Se estrenó el 12 de mayo de 1981 con México contra el Atlético de Madrid, que quedó en '+
@@ -1114,6 +1119,7 @@ function actColgados(){
   const eng=new THREE.Mesh(new THREE.TorusGeometry(4.6,0.9,6,14),matBronce);
   eng.position.set(mx,17.5,mz);eng.rotation.x=Math.PI/2.6;scene.add(eng);
   edificios.push({x:mx,z:mz,hw:8,hd:8});
+  LUGARES.trabajadores={x:mx,z:mz+13};
   sitio({x:mx,z:mz+13,r:44,tipo:'Monumento · 1988',
     nombre:'Monumento a los Trabajadores',
     texto:'Se inauguró el 1 de enero de 1988, en Tecnológico y De las Fuentes, en honor a quienes '+
@@ -1144,6 +1150,110 @@ function actColgados(){
           'personas hicieron el recorrido al revés.'});
 })();
 
+/* ══════════════════════════ REDACCIONES ══════════════════════════ */
+// Los dos periódicos donde Jimmy entrega. El Diario perdió a su reportero de
+// policiaca en noviembre de 2008 y a su fotógrafo en septiembre de 2010, y en esa
+// segunda ocasión publicó en primera plana «¿Qué quieren de nosotros?», dirigida
+// a los cárteles porque el Estado no contestaba.
+function redaccion(x,z,nombre,lema,color,clave){
+  liberar(x,z,22,20);
+  const mat=new THREE.MeshLambertMaterial({color:0xc6ccd4});
+  bloque(x,z,26,18,13,'centro',2);
+  const c=lienzo(256,64),g=c.getContext('2d');
+  g.fillStyle=color;g.fillRect(0,0,256,64);
+  g.fillStyle='#0b0e14';g.textAlign='center';
+  g.font='bold 30px "Arial Narrow", Impact, sans-serif';g.fillText(nombre,128,38);
+  g.font='11px ui-monospace, monospace';g.fillText(lema,128,54);
+  const tex=new THREE.CanvasTexture(c);
+  const rot=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),
+    new THREE.MeshLambertMaterial({map:tex,emissive:0xffffff,emissiveMap:tex,
+      emissiveIntensity:0,side:THREE.DoubleSide}));
+  rot.position.set(x,10,z+9.4);scene.add(rot);
+  materialesFachada.push(rot.material);
+  LUGARES[clave]={x:x,z:z+13};
+  return {x,z,nombre};
+}
+const DIARIO=redaccion(ejeX(4)+36,ejeZ(2)-34,'EL DIARIO','DE CIUDAD JUÁREZ','#e8eef6','diario');
+const NORTE =redaccion(ejeX(2)+34,ejeZ(1)+38,'EL NORTE','DE CIUDAD JUÁREZ','#ffc233','norte');
+sitio({x:DIARIO.x,z:DIARIO.z+14,r:34,tipo:'Redacción',nombre:'El Diario de Juárez',
+  texto:'Aquí trabajas. El 13 de noviembre de 2008 mataron a su reportero de policiaca al salir '+
+        'de su casa, con sus hijas en el carro. En septiembre de 2010 mataron a su fotógrafo, de '+
+        'veintiuno. Al día siguiente el periódico publicó en primera plana una pregunta dirigida '+
+        'a los cárteles: qué quieren de nosotros. No se la hicieron al gobierno porque el '+
+        'gobierno no contestaba.'});
+sitio({x:NORTE.x,z:NORTE.z+14,r:34,tipo:'Redacción',nombre:'El Norte de Ciudad Juárez',
+  texto:'El otro periódico de la ciudad. En estos años la competencia entre redacciones deja de '+
+        'ser por la exclusiva y pasa a ser por quién aguanta publicando.'});
+
+/* ══════════════════════════ MONUMENTO AL POLICÍA CAÍDO ══════════════════════════ */
+// En enero de 2008 el Cártel de Sinaloa colgó una manta en este monumento con dos
+// listas: «para los que no creyeron», con cuatro policías ya asesinados, y «para
+// los que todavía no creen», con diecisiete que seguían vivos. Fue la declaración
+// de guerra que abre todo lo demás. Escribieron su amenaza sobre el memorial de
+// los caídos del bando contrario, que es el gesto entero.
+//
+// La escena va como la veía quien llegaba: acordonada. Bultos cubiertos con lona,
+// marcadores numerados y la manta. Lo que hay debajo de la lona no se dibuja: eso
+// no es censura, es lo que de verdad se alcanzaba a ver, y pega más. Reglas de
+// tono 1 y §10 de HISTORIA.md.
+const POLICIA={x:PEATONALES[0].x-30,z:PEATONALES[0].z-26};
+const escenaPolicia=new THREE.Group();
+(()=>{
+  liberar(POLICIA.x,POLICIA.z,24,22);
+  const matPiedra=new THREE.MeshLambertMaterial({color:0xb9bec6});
+  const base=new THREE.Mesh(new THREE.BoxGeometry(11,1.4,11),matPiedra);
+  base.position.set(POLICIA.x,0.7,POLICIA.z);scene.add(base);
+  const est=new THREE.Mesh(new THREE.BoxGeometry(3,9,3),matPiedra);
+  est.position.set(POLICIA.x,5.4,POLICIA.z);scene.add(est);
+  const gorra=new THREE.Mesh(new THREE.BoxGeometry(5,1,5),matPiedra);
+  gorra.position.set(POLICIA.x,10.4,POLICIA.z);scene.add(gorra);
+  edificios.push({x:POLICIA.x,z:POLICIA.z,hw:6,hd:6});
+
+  // la manta: dos encabezados reales y los nombres tachados. No van nombres.
+  const c=lienzo(256,192), g=c.getContext('2d');
+  g.fillStyle='#e8e4d8';g.fillRect(0,0,256,192);
+  for(let i=0;i<240;i++){g.fillStyle='rgba(90,80,60,'+(Math.random()*0.10).toFixed(2)+')';
+    g.fillRect(Math.random()*256,Math.random()*192,3,3);}
+  g.fillStyle='#15161a';g.textAlign='center';
+  g.font='bold 17px "Arial Narrow", Impact, sans-serif';
+  g.fillText('PARA LOS QUE NO CREYERON',128,24);
+  for(let i=0;i<4;i++){g.fillRect(56,32+i*11,144,6);}          // cuatro, ya muertos
+  g.fillText('PARA LOS QUE TODAVÍA NO CREEN',128,96);
+  for(let i=0;i<17;i++){                                       // diecisiete, todavía vivos
+    const col=i%2, fila=Math.floor(i/2);
+    g.fillRect(28+col*104,106+fila*9,96,5);
+  }
+  const manta=new THREE.Mesh(new THREE.PlaneGeometry(9,6.8),
+    new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(c),side:THREE.DoubleSide}));
+  manta.position.set(POLICIA.x,4.5,POLICIA.z+1.8);escenaPolicia.add(manta);
+
+  const matLona=new THREE.MeshLambertMaterial({color:0x2f4f7a});
+  const matCinta=new THREE.MeshLambertMaterial({color:0xd8c37a});
+  for(let k=0;k<3;k++){                                        // bultos cubiertos
+    const b=new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,1.5),matLona);
+    b.position.set(POLICIA.x-5+k*4.5,0.35,POLICIA.z+9);
+    b.rotation.y=rnd(-0.3,0.3);escenaPolicia.add(b);
+    const n=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.5,0.05),
+      new THREE.MeshLambertMaterial({color:0xf0e8d0}));
+    n.position.set(POLICIA.x-4+k*4.5,0.25,POLICIA.z+7.4);escenaPolicia.add(n);
+  }
+  for(let k=0;k<16;k++){                                       // acordonamiento
+    const t=k*TAU/16;
+    const p=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,1.1,5),matCinta);
+    p.position.set(POLICIA.x+Math.cos(t)*15,0.55,POLICIA.z+Math.sin(t)*14);
+    escenaPolicia.add(p);
+  }
+  scene.add(escenaPolicia);
+  LUGARES.monumento={x:POLICIA.x,z:POLICIA.z+12};
+  sitio({x:POLICIA.x,z:POLICIA.z+13,r:40,tipo:'Enero de 2008',
+    nombre:'Monumento al Policía Caído',
+    texto:'Aquí el Cártel de Sinaloa colgó una manta con dos listas. La primera decía «para los '+
+          'que no creyeron» y traía cuatro policías ya asesinados. La segunda, «para los que '+
+          'todavía no creen», traía diecisiete que seguían vivos, todos señalados como La Línea. '+
+          'Escribieron la amenaza sobre el memorial de los caídos del otro bando. Con eso empezó '+
+          'todo. Los nombres no van aquí.'});
+})();
+
 /* ══════════════════════════ SUCESOS DE 2010 ══════════════════════════ */
 // Los dos hechos que parten el acto III. Ninguno se juega: uno se oye a lo lejos
 // y se visita después; el otro pasa fuera de pantalla, en la radio, y lo único
@@ -1171,6 +1281,7 @@ const restosBomba=new THREE.Group();
   }
   restosBomba.visible=false;scene.add(restosBomba);
   edificios.push({x:BOMBA.x,z:BOMBA.z,hw:3,hd:3});
+  LUGARES.bomba={x:BOMBA.x,z:BOMBA.z+16};
   sitio({x:BOMBA.x,z:BOMBA.z+16,r:40,tipo:'15 de julio de 2010',
     nombre:'Aquí estalló el coche bomba',
     texto:'Diez kilos de C-4 detonados con un teléfono celular contra agentes federales, en '+
@@ -1199,6 +1310,7 @@ const memorial=new THREE.Group();
     luminarias.push(vela);
   }
   memorial.visible=false;scene.add(memorial);
+  LUGARES.memorial={x:MEMORIAL.x,z:MEMORIAL.z+14};
   sitio({x:MEMORIAL.x,z:MEMORIAL.z+14,r:46,tipo:'31 de enero de 2010',
     nombre:'Memorial de Villas de Salvárcar',
     texto:'Un comando entró de madrugada a una fiesta de estudiantes y mató a quince muchachos. '+
@@ -1221,6 +1333,7 @@ const memorial=new THREE.Group();
     new THREE.MeshLambertMaterial({color:0x8d939c}));
   base.position.set(cx,0.25,cz);scene.add(base);
   edificios.push({x:cx,z:cz,hw:1.6,hd:1.6});
+  LUGARES.cruzrosa={x:cx,z:cz+9};
   sitio({x:cx,z:cz+9,r:32,tipo:'Memoria',
     nombre:'Cruz rosa',
     texto:'Las pintan de rosa para que se vean de lejos. Los asesinatos de mujeres en Juárez son '+
@@ -1633,6 +1746,7 @@ const jugador={
   vy:0, y:0, salud:100, dinero:0, auto:null, fase:0, vel:0
 };
 jugador.malla.position.set(jugador.x,0,jugador.z);
+let atropellados=0, retratados=0, notas=0, registrados=0;
 const muertos={civil:0,sicario:0,halcon:0};
 
 /* ══════════════════════════ PERSONAJES ══════════════════════════ */
@@ -1709,10 +1823,10 @@ const PERSONAJES=[
   {id:'yoli', nombre:'Yoli', papel:'Tu hermana', ropa:0x5b3d7a,
    desde:0, hasta:3, x:ejeX(3)+44, z:ejeZ(2)+54,
    lineas:[
-     ['¿De dónde sacaste ese dinero? No. No me digas.',
-      'Yo voy a acabar la enfermería aunque tú te hagas pendejo.'],
+     ['¿Otra vez saliste a las tres de la mañana? No me contestes.',
+      'Yo voy a acabar la enfermería aunque tú andes de necio con la cámara.'],
      ['Hoy hubo dos en la esquina de la escuela. Dos.',
-      'Nico. ¿En qué andas?'],
+      'Jimmy. ¿A quién le debes la exclusiva?'],
      ['Ya no salgo de noche. Ninguna sale de noche.',
       'En la escuela nos enseñaron que si oímos balazos nos tiremos al piso. Eso nos enseñan.'],
      ['Me dieron la visa. Me voy.',
@@ -1790,60 +1904,63 @@ function briefing(p,txt){
 }
 
 /* ══════════════════════════ ARMAS ══════════════════════════ */
-const ARMAS=[
-  {nombre:'PISTOLA', alcance:42, cono:0.11, blancos:1, cadencia:0.30, retro:0.10, tono:620},
-  {nombre:'ESCOPETA',alcance:18, cono:0.45, blancos:4, cadencia:0.85, retro:0.26, tono:170},
+// Dos lentes, no dos armas. Los números son los mismos que tenía el arma porque
+// el problema geométrico es idéntico: alcance y cono. Lo que cambia es qué pasa
+// cuando aprietas: en vez de quitar a alguien del mundo, lo dejas registrado.
+const CAMARAS=[
+  {nombre:'GRAN ANGULAR', alcance:26, cono:0.50, sujetos:5, cadencia:0.45, retro:0.03, tono:1500},
+  {nombre:'TELEOBJETIVO', alcance:78, cono:0.085,sujetos:1, cadencia:0.90, retro:0.02, tono:1850},
 ];
-const PAGO_SICARIO=[120,180,260,340];       // por acto
-const COSTO_CIVIL=300;
+const COSTO_ATROPELLO=900;
 let armaIdx=0, recarga=0, apuntando=0, fogonazoT=0;
 
 function enMira(w,ox,oz,ang,x,z){
-  return dist2(x,z,ox,oz)<w.alcance*w.alcance
+  const d=dist2(x,z,ox,oz);
+  if(d<36)return true;                       // a bocajarro no hay que apuntar
+  return d<w.alcance*w.alcance
       && Math.abs(angDif(ang,Math.atan2(x-ox,z-oz)))<w.cono;
 }
 function cambiarArma(){
-  armaIdx=(armaIdx+1)%ARMAS.length;
+  armaIdx=(armaIdx+1)%CAMARAS.length;
   aviso3(ARMAS[armaIdx].nombre);pip(760,0.06);
 }
+const ARMAS=CAMARAS;                        // nombre viejo, para no romper llamadas
 
-// Una sola puerta para toda muerte de peatón. El precio depende de a quién mataste:
-// un sicario paga, un halcón no, un civil te cuesta dinero y te echa a los federales encima.
-function matar(p,porArma){
+// Atropellar a alguien. Ya no hay forma de matar a nadie a propósito en este
+// juego: eres reportero, no sicario. Esto es un accidente y sale carísimo.
+function atropellar(p){
   p.caido=12;p.malla.rotation.z=Math.PI/2;p.malla.position.y=0.5;
-  muertos[p.tipo]++;
-  if(p.tipo==='sicario'){
-    jugador.dinero+=PAGO_SICARIO[acto];
-    subirPlaza();
-    aviso3('+$'+PAGO_SICARIO[acto]);
-  }else if(p.tipo==='halcon'){
-    subirPlaza();
-    aviso3('HALCÓN ABAJO');
-  }else{
-    jugador.dinero=Math.max(0,jugador.dinero-COSTO_CIVIL);
-    subirFed();subirFed();
-    cerrarNegocios(p.bi,p.bj);
-    aviso3('CIVIL · −$'+COSTO_CIVIL);
-    radio('Reportan un civil abatido por '+calleDe(p.x,p.z)+'. Los negocios de la cuadra bajaron cortina.');
-  }
-  if(porArma)subirFed();
+  atropellados++;
+  jugador.dinero=Math.max(0,jugador.dinero-COSTO_ATROPELLO);
+  subirFed();subirFed();
+  cerrarNegocios(p.bi,p.bj);
+  aviso3('ATROPELLASTE A ALGUIEN · −$'+COSTO_ATROPELLO);
+  radio('Un vehículo arrolló a una persona por '+calleDe(p.x,p.z)+'. El conductor iba de prisa.');
 }
 
-function disparar(){
+// Tomar la foto. Misma geometría de cono que tenía el disparo; lo que entra en el
+// encuadre queda registrado. Si en el encuadre está el asunto de la nota, avanza.
+function fotografiar(){
   if(jugador.auto||bloqueo>0||recarga>0)return;
-  const w=ARMAS[armaIdx];
-  recarga=w.cadencia;apuntando=0.45;fogonazoT=0.06;temblor=w.retro;
+  const w=CAMARAS[armaIdx];
+  recarga=w.cadencia;apuntando=0.45;fogonazoT=0.05;temblor=w.retro;
   jugador.ang=camAng;
   const fog=jugador.malla.userData.fogonazo;if(fog)fog.visible=true;
-  balazo(w.blancos>1?0.55:0.4, w.blancos>1?900:2200);   // la escopeta pega más grave
-  pip(w.tono,0.10,'square');
-  const blancos=peatones
-    .filter(p=>p.caido<=0&&!p.encasa&&enMira(w,jugador.x,jugador.z,camAng,p.x,p.z))
-    .sort((a,b)=>dist2(a.x,a.z,jugador.x,jugador.z)-dist2(b.x,b.z,jugador.x,jugador.z))
-    .slice(0,w.blancos);
-  blancos.forEach(p=>matar(p,true));
-  if(!blancos.length&&cercaDeAlguien(60))subirFed();          // el balazo se oye aunque falles
+  pip(w.tono,0.09,'square');pip(w.tono*0.6,0.05);            // obturador
+  let algo=false;
+  // ¿está el asunto de la nota en el encuadre?
+  if(mision.estado==='escena'&&enMira(w,jugador.x,jugador.z,camAng,mision.x,mision.z)){
+    mision.fotos++;algo=true;
+    aviso3('FOTO '+mision.fotos+' DE '+mision.pide);
+    if(mision.fotos>=mision.pide)cerrarEscena();
+  }
+  // gente en el encuadre: contexto para la nota, y a la autoridad no le gusta
+  const gente=peatones.filter(p=>p.caido<=0&&!p.encasa&&
+    enMira(w,jugador.x,jugador.z,camAng,p.x,p.z)).slice(0,w.sujetos);
+  if(gente.length){algo=true;retratados+=gente.length;}
+  if(!algo)aviso3('NADA EN EL ENCUADRE');
 }
+function disparar(){fotografiar();}          // nombre viejo, para no romper llamadas
 function cercaDeAlguien(r){
   for(const p of peatones)if(p.caido<=0&&!p.encasa&&dist2(p.x,p.z,jugador.x,jugador.z)<r*r)return true;
   return false;
@@ -1924,26 +2041,33 @@ const ACTOS=[
   {anio:'2008', titulo:'EL QUE NO DEBE NADA',
    sub:'Acto I · El que no debe nada',
    texto:'La maquila corta turnos y el 28 de marzo entran 2,500 militares a Juárez. La ciudad '+
-         'aplaude el operativo. Nico anda de halcón porque paga el doble que el turno de noche: '+
-         'reportar retenes, seguir camionetas, entregar sobres. Todavía no debe nada.',
+         'aplaude el operativo. Jimmy lleva la policiaca de El Diario: retenes, cifras y la '+
+         'primera manta colgada en el monumento a los policías caídos.',
    dato:'2008 · 1,623 homicidios en Ciudad Juárez', reales:1623,
    encargos:[
-     ['Reportar el retén','Pásate a ver dónde pusieron el retén y avisa. Nadie sale lastimado.','diablo'],
-     ['Llevar el sobre','Ni preguntes qué trae. Llévalo y regrésate.','diablo'],
-     ['Seguir la camioneta','Que no te vean. Solo queremos saber a dónde llega.','diablo'],
-     ['Recoger la cuota','Doña Chayo ya la juntó. Pásale a recogerla.','chayo'],
-   ]},
-  {anio:'2009', titulo:'LA PLAZA SE CALIENTA',
+     ['Entra el Ejército','Dos mil quinientos militares en la ciudad desde el 28 de marzo. '+
+      'Quiero el retén, la gente pasando y la cara de la gente.','diablo','calle',2],
+     ['La manta del monumento','Colgaron una manta en el Monumento al Policía Caído con dos '+
+      'listas de nombres. Fotografíala completa antes de que la bajen.','marisol','monumento',3],
+     ['Otro changarro con cuota','Ocho de cada diez negocios pagan. Doña Chayo va a hablar. '+
+      'Foto del local, no de ella.','chayo','loncheria',2],
+     ['Mataron al de policiaca','Ayer mataron a nuestro reportero de nota roja al salir de su '+
+      'casa. Hoy la redacción amanece así. Documéntalo.','marisol','diario',2],
+   ]},  {anio:'2009', titulo:'LA PLAZA SE CALIENTA',
    sub:'Acto II · La plaza se calienta',
    texto:'La Línea y Barrio Azteca contra Gente Nueva, Mexicles y Artistas Asesinos, cuadra por '+
-         'cuadra. En noviembre pasado mataron al reportero de policiaca de El Diario. Nico ya no '+
-         'solo maneja. Y el juego no lo celebra: lo anota.',
+         'cuadra. En noviembre pasado mataron al reportero de policiaca de El Diario y ahora esa '+
+         'fuente es de Jimmy. La nota se firma o no se firma, y las dos cosas cuestan.',
    dato:'2009 · 2,754 homicidios · la Corte Interamericana condena a México por Campo Algodonero', reales:2754,
    encargos:[
-     ['Cobrar el piso','Tres changarros de la cuadra. Si no pagan, tú nomás reportas.','diablo'],
-     ['Sacar el carro','Está quemado. Déjalo lejos y camínate de regreso.','diablo'],
-     ['Levantar el encargo','Está en el lote. Ni lo abras.','diablo'],
-     ['Cruzar la raya','La plaza de enfrente es de los otros. Entra, entrega y sal.','kilo'],
+     ['Cuadra por cuadra','La Línea contra Gente Nueva por el poniente. No te acerques más de '+
+      'lo que aguante el teleobjetivo.','marisol','calle',3],
+     ['Campo algodonero','La Corte Interamericana condenó a México por los feminicidios y obligó '+
+      'a nombrarlos. Ve a la cruz.','luz','cruzrosa',2],
+     ['Colgado en el puente peatonal','Ya lo acordonaron. La manta es la nota, no el cuerpo.',
+      'marisol','colgado',2],
+     ['La maquila vuelve a parar','Ochenta mil empleos menos en la industria. Ve al monumento de '+
+      'los trabajadores y tráeme el contraste.','kilo','trabajadores',2],
    ]},
   {anio:'2010', titulo:'EN ALGO ANDABAN',
    sub:'Acto III · En algo andaban',
@@ -1953,10 +2077,14 @@ const ACTOS=[
          'no mejora nada. En julio truena el primer coche bomba de la guerra.',
    dato:'2010 · 3,622 homicidios · 9.9 al día · la ciudad califica a la Federal con 2.2 de 10', reales:3622,
    encargos:[
-     ['Colgar la manta','En el puente peatonal, donde la vean los del noticiero.','diablo'],
-     ['Sacar a la reportera','Marisol ya publicó de más. Sácala del centro antes de que la vean.','marisol'],
-     ['Perder al convoy','Traes cola federal. Piérdelos y estaciónate donde te digo.','diablo'],
-     ['Llevar flores','Sin paga. Es un memorial. Deja las flores y vete.','luz'],
+     ['Villas de Salvárcar','Quince muchachos en una fiesta de estudiantes. No vas a la casa: '+
+      'vas al memorial. Y sin nombres.','luz','memorial',3],
+     ['En algo andaban','El presidente dijo eso y la ciudad salió a contestarle. Quiero a la '+
+      'gente, no al presidente.','marisol','calle',3],
+     ['El primer coche bomba del país','Diez kilos de C-4 contra federales, en 16 de Septiembre '+
+      'y Francisco Villa. Ve por el cráter.','marisol','bomba',3],
+     ['La Federal releva al Ejército','Nueve de abril. La ciudad los califica con dos punto dos '+
+      'de diez. Fotografía el operativo.','diablo','puente',2],
    ]},
   {anio:'2011', titulo:'SE ACABÓ PORQUE ALGUIEN GANÓ',
    sub:'Acto IV · Se acabó porque alguien ganó',
@@ -1964,13 +2092,17 @@ const ACTOS=[
          'jefe operativo de La Línea, le imputan más de 1,500 homicidios y lo extraditan. El '+
          'secretario de Seguridad Pública sale del sexenio con honores. Trece años después, un '+
          'jurado en Nueva York lo condena a 38 años por haber trabajado todo ese tiempo para el '+
-         'bando de enfrente.',
+         'bando de enfrente. Jimmy sigue firmando.',
    dato:'2011 · 2,086 homicidios · más de 10 mil desde 2008 · 230 mil personas se fueron', reales:2086,
    encargos:[
-     ['Vaciar la casa','Se van. Carga lo que quepa y no vuelvas.','kilo'],
-     ['Pagar la última','Última cuota. Después de esta, la lonchería cierra.','chayo'],
-     ['Llevar a Yoli','Al puente. No cruzas tú: cruza ella.','yoli'],
-     ['Dar la vuelta','Nomás maneja. Mira la ciudad que queda.','luz'],
+     ['Cayó el jefe de La Línea','Le imputan más de mil quinientos homicidios, Salvárcar y el '+
+      'coche bomba. Ve por la reacción en la calle.','kilo','calle',2],
+     ['Se van los Indios','El equipo se disuelve. Subieron en 2008 y en el Apertura 2009 no '+
+      'ganaron un partido. Foto del estadio vacío.','yoli','estadio',2],
+     ['¿Qué quieren de nosotros?','Mañana sale la plana dirigida a ellos, porque el Estado no '+
+      'contesta. Documenta la redacción cerrando la edición.','marisol','diario',3],
+     ['La ciudad que queda','Sin nota y sin paga. Nomás sube al Chamizal y fotografía la bandera.',
+      'luz','bandera',2],
    ]},
 ];
 const ENCARGOS_POR_ACTO=4;
@@ -1998,14 +2130,24 @@ function puntoCalle(){
   }
   return {x:ejeX(4), z:cenZ(2)};
 }
+// A dónde te manda cada encargo.
+function lugarDe(clave){
+  if(clave==='colgado'){
+    const c=colgados.find(c=>c.grupo.visible);
+    if(c)return {x:c.x,z:c.z+5};
+  }
+  if(clave==='puente')return {x:garitas[1].x,z:ZBORDO+18};
+  if(clave==='calle'||!LUGARES[clave])return puntoCalle();
+  return LUGARES[clave];
+}
 function nuevaOferta(){
   const e=ACTOS[acto].encargos[hechos%ACTOS[acto].encargos.length];
   const dador=quien(e[2]);
   // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
   const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-2,2), z:dador.z+rnd(2,4)} : puntoCalle();
-  mision.estado='oferta';mision.x=p.x;mision.z=p.z;mision.dador=dador;
-  mision.titulo=e[0];mision.texto=e[1];
-  mision.gratis = e[0]==='Llevar flores'||e[0]==='Dar la vuelta';
+  mision.estado='asignacion';mision.x=p.x;mision.z=p.z;mision.dador=dador;
+  mision.titulo=e[0];mision.texto=e[1];mision.lugar=e[3];mision.pide=e[4]||2;mision.fotos=0;
+  mision.gratis = e[0]==='La ciudad que queda';
   ui.mtitulo.textContent = mision.dador ? 'Te busca '+mision.dador.nombre : 'Encargo disponible';
   ui.barra.style.display='none';
   marcador.position.set(p.x,0,p.z);
@@ -2013,22 +2155,32 @@ function nuevaOferta(){
 }
 function pintarMarcador(c){matMarcador.color.setHex(c);matAro.color.setHex(c);}
 function aceptar(){
-  // el encargo de las flores tiene destino fijo: el memorial
-  const p = mision.titulo==='Llevar flores' ? {x:MEMORIAL.x,z:MEMORIAL.z+10} : puntoCalle();
-  mision.estado='entrega';mision.x=p.x;mision.z=p.z;
+  const p=lugarDe(mision.lugar);
+  mision.estado='escena';mision.x=p.x;mision.z=p.z;mision.fotos=0;
   const d=Math.sqrt(dist2(jugador.x,jugador.z,p.x,p.z));
-  mision.total=mision.tiempo=clamp(d/11+18,26,90);
-  mision.pago=mision.gratis?0:Math.round(90+d*1.1+mision.racha*40);
+  mision.total=mision.tiempo=clamp(d/9+45,60,170);
+  mision.pago=mision.gratis?0:Math.round(150+d*1.1+mision.racha*50);
   ui.mtitulo.textContent=mision.titulo;
   ui.barra.style.display='block';
   marcador.position.set(p.x,0,p.z);
+  pintarMarcador(0x38e0ff);                  // azul: escena, hay que fotografiar
   if(mision.dador)briefing(mision.dador,mision.texto);
-  aviso3(mision.gratis?'LAS FLORES A BORDO':'ENCARGO A BORDO');pip(880,0.09);
+  aviso3('A LA ESCENA · '+mision.pide+' FOTOS');pip(880,0.09);
+}
+// Ya tienes el material: ahora hay que llegar a cerrar la edición.
+function cerrarEscena(){
+  const r=LUGARES.diario;
+  mision.estado='cierre';mision.x=r.x;mision.z=r.z;
+  mision.tiempo=Math.max(mision.tiempo,50);
+  ui.mtitulo.textContent='Cerrar la nota';
+  marcador.position.set(r.x,0,r.z);
+  pintarMarcador(0x4fd18b);                  // verde: a la redacción
+  aviso3('YA TIENES LA FOTO · A LA REDACCIÓN');pip(1050,0.1);
 }
 function completar(){
-  jugador.dinero+=mision.pago;
+  jugador.dinero+=mision.pago;notas++;registrados+=mision.pide;
   if(!mision.gratis)mision.racha=Math.min(mision.racha+1,5);
-  aviso3(mision.pago?'+$'+mision.pago:'ENTREGADO');
+  aviso3(mision.pago?'PUBLICADA · +$'+mision.pago:'PUBLICADA');
   pip(1240,0.12);setTimeout(()=>pip(1560,0.14),90);
   hechos++;
   guardar();
@@ -2038,7 +2190,7 @@ function completar(){
   }else nuevaOferta();
 }
 function fallar(){
-  mision.racha=0;aviso3('ENCARGO PERDIDO');pip(180,0.25,'square');nuevaOferta();
+  mision.racha=0;aviso3('SE CERRÓ LA EDICIÓN SIN TU NOTA');pip(180,0.25,'square');nuevaOferta();
 }
 
 /* ══════════════════════════ PLACA DE ACTO ══════════════════════════ */
@@ -2067,8 +2219,8 @@ function avanzarActo(){
 function cerrar(){
   finalizado=true;jugando=false;
   plAnio.textContent='2012';plTitulo.textContent='SE ACABÓ PORQUE ALGUIEN GANÓ';
-  plTexto.textContent='Nico cruza o se queda; da lo mismo para la cuenta. Sinaloa terminó de '+
-    'ganar la plaza y por eso bajaron los muertos, no porque alguien los defendiera. El '+
+  plTexto.textContent='Jimmy se queda; los que se fueron son doscientos treinta mil. Sinaloa '+
+    'terminó de ganar la plaza y por eso bajaron los muertos, no porque alguien los defendiera. El '+
     'secretario que dirigió la guerra contra el narco cobraba del bando que la ganó: en 2024 un '+
     'jurado en Nueva York lo sentenció a 38 años. El chiste final no lo hizo este juego. Lo hizo '+
     'lo que pasó.';
@@ -2434,8 +2586,8 @@ function actAutoJugador(dt){
   for(const p of peatones){
     if(p.caido>0||p.encasa)continue;
     if(dist2(p.x,p.z,a.x,a.z)<5.2&&Math.abs(a.vel)>6){
-      matar(p,false);
-      subirFed();a.vel*=0.82;temblor=0.25;pip(140,0.16,'square');
+      atropellar(p);
+      a.vel*=0.82;temblor=0.25;pip(140,0.16,'square');
     }
   }
   for(const o of autos){
@@ -2658,18 +2810,21 @@ function actMision(dt){
   const b=posJugador();
   marcador.rotation.y+=dt*0.9;
   const d=Math.sqrt(dist2(b.x,b.z,mision.x,mision.z));
-  if(mision.estado==='oferta'){
-      ui.mtexto.textContent=(mision.dador?mision.dador.nombre+' a ':'Recoger a ')+
+  if(mision.estado==='asignacion'){
+    ui.mtexto.textContent=(mision.dador?mision.dador.nombre+' a ':'Asignación a ')+
       Math.round(d)+' m · '+calleDe(mision.x,mision.z)+'.';
     if(d<6)aceptar();
   }else{
     mision.tiempo-=dt;
     ui.mtitulo.textContent=mision.titulo;
-    ui.mtexto.textContent=mision.texto+' · '+Math.round(d)+' m'+
-      (mision.pago?' · $'+mision.pago:'')+(mision.racha?' · racha x'+(mision.racha+1):'');
+    ui.mtexto.textContent = mision.estado==='escena'
+      ? 'Escena a '+Math.round(d)+' m · '+calleDe(mision.x,mision.z)+
+        ' · fotos '+mision.fotos+'/'+mision.pide+' · E dispara la cámara'
+      : 'A la redacción, '+Math.round(d)+' m'+(mision.pago?' · $'+mision.pago:'')+
+        (mision.racha?' · racha x'+(mision.racha+1):'');
     ui.barraI.style.width=(mision.tiempo/mision.total*100)+'%';
-    ui.barraI.style.background=mision.tiempo<8?'#ff4d5e':'#ffc233';
-    if(d<6)completar();
+    ui.barraI.style.background=mision.tiempo<12?'#ff4d5e':'#ffc233';
+    if(mision.estado==='cierre'&&d<6)completar();
     else if(mision.tiempo<=0)fallar();
   }
   // los negocios cerrados vuelven a abrir con el tiempo
@@ -2971,8 +3126,8 @@ function actHUD(dt){
   for(const q of pines)pinCerca=Math.min(pinCerca,dist2(q.x,q.z,b.x,b.z));
   ui.calle.textContent=calleDe(b.x,b.z)+
     (pines.length?' · pin a '+Math.round(Math.sqrt(pinCerca))+' m':'');
-  ui.cuenta.textContent='Muertos: '+(muertos.civil+muertos.sicario+muertos.halcon)+
-    (muertos.civil?' · civiles '+muertos.civil:'');
+  ui.cuenta.textContent='Notas: '+notas+' · registrados '+registrados+
+    (atropellados?' · atropellados '+atropellados:'');
   const conQuien=!jugador.auto&&!charla&&personajeCerca();
   const quiere=!!(conQuien||jugador.auto||(!jugador.auto&&autoCercano()));
   if(quiere!==pistaOn){pistaOn=quiere;ui.pista.classList.toggle('on',quiere);}
@@ -3011,12 +3166,13 @@ function bucle(now){
 
 /* ══════════════════════════ PRUEBAS ══════════════════════════ */
 if(location.hash==='#test'){                   // abre index.html#test y mira la consola
-  const P=ARMAS[0],E=ARMAS[1];
+  const P=CAMARAS[1],E=CAMARAS[0];   // teleobjetivo y gran angular
   console.assert(enMira(P,0,0,0,0,10),'blanco al frente');
-  console.assert(!enMira(P,0,0,0,0,-10),'blanco a la espalda');
+  console.assert(!enMira(P,0,0,0,0,-30),'a la espalda no entra');
   console.assert(!enMira(P,0,0,0,0,999),'fuera de alcance');
-  console.assert(!enMira(P,0,0,0,10,10),'fuera del cono de la pistola');
-  console.assert(enMira(E,0,0,0,4,10),'dentro del cono de la escopeta');
+  console.assert(!enMira(P,0,0,0,40,40),'fuera del cono del teleobjetivo');
+  console.assert(enMira(P,0,0,0,2,2),'a bocajarro siempre entra');
+  console.assert(enMira(E,0,0,0,4,10),'dentro del cono del gran angular');
   // geografía: los ejes van en orden y Lerdo queda al poniente de Av. Juárez
   for(let i=1;i<NX;i++)console.assert(ejeX(i)>ejeX(i-1),'ejes X ordenados');
   for(let j=1;j<NZ;j++)console.assert(ejeZ(j)>ejeZ(j-1),'ejes Z ordenados');
@@ -3032,10 +3188,13 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
+    CAMARAS,fotografiar,LUGARES,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
+                 notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
+                 estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
                  colgados:colgados.filter(c=>c.grupo.visible).length,
                  bomba:restosBomba.visible,memorial:memorial.visible,
