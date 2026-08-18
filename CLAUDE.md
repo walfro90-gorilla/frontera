@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2650 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2750 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -232,6 +232,16 @@ generan al azar y una casa puede caer encima de la catedral, la lonchería, el m
 mismo problema que tenían los personajes, resuelto al revés: en vez de mover el monumento, se le
 quita de encima lo que el generador ya puso. Por eso `bloque()` guarda `malla` en el registro de
 `edificios[]`: sin esa referencia no se podría sacar de la escena.
+
+### Estadio y monumentos
+
+El graderío del estadio es **un solo `CylinderGeometry` abierto escalado a óvalo** (`scale.set(RX,1,RZ)`
+sobre radio 1), no un anillo de mallas: una llamada de dibujo para toda la tribuna. La colisión sí es
+un anillo de catorce AABB, porque `chocaEdificios` solo entiende cajas.
+
+**Las formas de los monumentos son interpretación.** Lo que se respeta es el sitio, el año y lo que
+significan; no se pretende reproducir la escultura. Si algún día se ajustan las formas, el texto del
+`sitio()` es lo que no debe cambiar sin volver a verificar la fuente.
 
 ### El Chamizal y la bandera
 

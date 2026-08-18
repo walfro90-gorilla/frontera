@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 124 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 129 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -21,10 +21,11 @@ tiempo de carga.
   Juárez, Francisco Villa, Abraham Lincoln, de las Américas, Waterfill, 16 de Septiembre, Vicente
   Guerrero, Triunfo de la República. Zona Centro con su catedral, el Chamizal junto al río,
   colonias de casas pegadas, maquilas al sur y la Sierra de Juárez al poniente con su letrero.
-- **Doce sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué importa:
-  el asta del Chamizal, su museo, el Kentucky Club, el Noa Noa, la catedral y la misión de 1659, la
-  lonchería, el bordo con su valla, los cuatro puentes y el letrero del Cerro Bola. Datos reales,
-  sin sermón y sin detener el juego.
+- **Quince sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué
+  importa: el asta del Chamizal y su museo, el Estadio Olímpico Benito Juárez, el Monumento a los
+  Trabajadores de la maquila, el Umbral del Milenio, el Kentucky Club, el Noa Noa, la catedral y la
+  misión de 1659, la lonchería, el bordo con su valla, los cuatro puentes y el letrero del Cerro
+  Bola. Datos reales, sin sermón y sin detener el juego.
 - **El Chamizal y la bandera monumental.** Las 177 hectáreas que el Bravo se llevó en 1864 y que
   México recuperó en 1967 tras cien años de reclamos, sin un tiro. En 1997 le pusieron el asta:
   100 metros, bandera de 50 × 28, a quinientos metros de la línea, para celebrarlo. Ondea de verdad

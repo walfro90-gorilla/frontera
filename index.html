@@ -862,6 +862,106 @@ function actBandera(){
           'años de reclamos y arbitrajes.'});
 })();
 
+/* ══════════════════════════ ESTADIO Y MONUMENTOS ══════════════════════════ */
+// El Estadio Olímpico Benito Juárez y los dos monumentos del sur. Las formas de
+// los monumentos son interpretación: se respeta el sitio, el año y lo que
+// significan, no la escultura exacta.
+(()=>{
+  const ex=40, ez=cenZ(5), RX=58, RZ=44;
+  liberar(ex,ez,RX+12,RZ+12);
+  // la cancha, con sus rayas
+  const c=lienzo(256,192), g=c.getContext('2d');
+  for(let i=0;i<12;i++){g.fillStyle=i%2?'#347439':'#2c6330';g.fillRect(i*256/12,0,256/12+1,192);}
+  g.strokeStyle='rgba(255,255,255,.85)';g.lineWidth=3;
+  g.strokeRect(14,12,228,168);
+  g.beginPath();g.moveTo(128,12);g.lineTo(128,180);g.stroke();
+  g.beginPath();g.arc(128,96,26,0,TAU);g.stroke();
+  g.strokeRect(14,56,32,80);g.strokeRect(210,56,32,80);
+  const cancha=new THREE.Mesh(new THREE.PlaneGeometry(RX*1.42,RZ*1.42),
+    new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(c)}));
+  cancha.rotation.x=-Math.PI/2;cancha.position.set(ex,0.1,ez);scene.add(cancha);
+  // graderío: un cilindro abierto escalado a óvalo, un solo draw call
+  const matGrada=new THREE.MeshLambertMaterial({color:0x9aa0a8,side:THREE.DoubleSide});
+  const grada=new THREE.Mesh(new THREE.CylinderGeometry(1.18,1,18,30,1,true),matGrada);
+  grada.scale.set(RX,1,RZ);grada.position.set(ex,9,ez);scene.add(grada);
+  const borde=new THREE.Mesh(new THREE.CylinderGeometry(1.22,1.18,1.4,30,1,true),
+    new THREE.MeshLambertMaterial({color:0x5c6069,side:THREE.DoubleSide}));
+  borde.scale.set(RX,1,RZ);borde.position.set(ex,18.5,ez);scene.add(borde);
+  // torres de luz, que prenden de noche como todo lo demás
+  for(let k=0;k<4;k++){
+    const t=Math.PI/4+k*Math.PI/2;
+    const px=ex+Math.cos(t)*RX*1.18, pz=ez+Math.sin(t)*RZ*1.22;
+    const po=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.9,34,6),matPoste);
+    po.position.set(px,17,pz);scene.add(po);
+    const f=new THREE.Mesh(new THREE.BoxGeometry(9,4,1.4),
+      new THREE.MeshLambertMaterial({color:0xfff4d0,emissive:0xffe9b0,emissiveIntensity:0}));
+    f.position.set(px,35,pz);f.lookAt(ex,20,ez);scene.add(f);luminarias.push(f);
+  }
+  for(let a=0;a<14;a++){                       // colisión: anillo de cajas
+    const t=a*TAU/14;
+    edificios.push({x:ex+Math.cos(t)*RX,z:ez+Math.sin(t)*RZ,hw:9,hd:9});
+  }
+  sitio({x:ex,z:ez+RZ+16,r:88,tipo:'Deportivo · desde 1981',
+    nombre:'Estadio Olímpico Benito Juárez',
+    texto:'Se estrenó el 12 de mayo de 1981 con México contra el Atlético de Madrid, que quedó en '+
+          'empate. Aquí jugaban los Indios: subieron a Primera en 2008 y en el Apertura 2009 no '+
+          'ganaron un solo partido, récord de la liga. El club se disolvió el 31 de diciembre de '+
+          '2011. Los años que el equipo estuvo arriba son exactamente los años que la ciudad '+
+          'estuvo peor.'});
+})();
+
+// Monumento a los Trabajadores, sobre Av. Tecnológico
+(()=>{
+  const mx=ejeX(5)+26, mz=ejeZ(6)-17;
+  liberar(mx,mz,18,18);
+  const matBronce=new THREE.MeshLambertMaterial({color:0x7a5f3a});
+  const matBase=new THREE.MeshLambertMaterial({color:0x8d939c});
+  const base=new THREE.Mesh(new THREE.BoxGeometry(14,1.6,14),matBase);
+  base.position.set(mx,0.8,mz);scene.add(base);
+  const est=new THREE.Mesh(new THREE.BoxGeometry(3.4,15,3.4),matBase);
+  est.position.set(mx,9,mz);scene.add(est);
+  for(let k=0;k<3;k++){                        // tres figuras al pie, de espaldas al eje
+    const t=k*TAU/3+0.4;
+    const fg=new THREE.Group();
+    const cu=new THREE.Mesh(new THREE.BoxGeometry(1.5,4.4,0.9),matBronce);cu.position.y=3.8;
+    const ca=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.9,0.9),matBronce);ca.position.y=6.5;
+    fg.add(cu,ca);
+    fg.position.set(mx+Math.cos(t)*4.6,1.6,mz+Math.sin(t)*4.6);
+    fg.rotation.y=-t;scene.add(fg);
+  }
+  const eng=new THREE.Mesh(new THREE.TorusGeometry(4.6,0.9,6,14),matBronce);
+  eng.position.set(mx,17.5,mz);eng.rotation.x=Math.PI/2.6;scene.add(eng);
+  edificios.push({x:mx,z:mz,hw:8,hd:8});
+  sitio({x:mx,z:mz+13,r:44,tipo:'Monumento · 1988',
+    nombre:'Monumento a los Trabajadores',
+    texto:'Se inauguró el 1 de enero de 1988, en Tecnológico y De las Fuentes, en honor a quienes '+
+          'hacen la maquila. Veinte años después la crisis de 2008 a 2010 se llevó unos ochenta '+
+          'mil empleos de ese sector. Un sicario de a pie acabó cobrando menos que un turno.'});
+})();
+
+// Umbral del Milenio, la entrada de la ciudad por carretera
+(()=>{
+  const ux=ejeX(4)+18, uz=ejeZ(7)-24;
+  liberar(ux,uz,26,20);
+  const matAmarillo=new THREE.MeshLambertMaterial({color:0xf2b21c});
+  for(const lado of [-1,1]){                   // dos patas inclinadas
+    const pata=new THREE.Mesh(new THREE.BoxGeometry(4,30,4),matAmarillo);
+    pata.position.set(ux+lado*11,15,uz);
+    pata.rotation.z=-lado*0.20;scene.add(pata);
+  }
+  const dintel=new THREE.Mesh(new THREE.BoxGeometry(30,4.5,4.5),matAmarillo);
+  dintel.position.set(ux,30,uz);scene.add(dintel);
+  const cuna=new THREE.Mesh(new THREE.BoxGeometry(9,9,4.2),matAmarillo);
+  cuna.position.set(ux,35,uz);cuna.rotation.z=Math.PI/4;scene.add(cuna);
+  edificios.push({x:ux-11,z:uz,hw:3,hd:3});
+  edificios.push({x:ux+11,z:uz,hw:3,hd:3});
+  sitio({x:ux,z:uz-14,r:52,tipo:'Monumento · entrada de la ciudad',
+    nombre:'Umbral del Milenio',
+    texto:'La escultura amarilla que recibe al que entra por carretera, de principios de los dos '+
+          'mil. Es lo primero que ve el que llega. Entre 2008 y 2011 doscientas treinta mil '+
+          'personas hicieron el recorrido al revés.'});
+})();
+
 /* ══════════════════════════ AVENIDA JUÁREZ ══════════════════════════ */
 // La calle de la fiesta: bares, antros, restaurantes, hoteles, casas de cambio,
 // farmacias y dentistas para el que cruzaba el puente. Con la guerra se vació.

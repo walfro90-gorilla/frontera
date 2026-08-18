@@ -98,6 +98,10 @@ años después. Más de 10 mil asesinatos en la ciudad desde 2008.
   derechos humanos solo en Juárez contra el operativo hasta septiembre de 2011.
 - **Narcomantas, encobijados, levantones.** Vocabulario cotidiano, no excepcional.
 - **Toque de queda de facto.** Nadie lo decretó; la ciudad se vaciaba sola al oscurecer.
+- **Los Indios.** El equipo subió a Primera División en 2008, en el Apertura 2009 no ganó un solo
+  partido —récord de la liga— y el club se disolvió el 31 de diciembre de 2011. Sus años en la
+  máxima categoría son exactamente los años peores de la ciudad. Sirve para la regla de tono 4:
+  Juárez en esos años también iba al estadio.
 
 ---
 
@@ -291,6 +295,8 @@ técnica, es la premisa.
 | Municipal **comprable** | $400 y se va. La federal no: no por honesta, sino porque cobra más arriba y no de ti. | ✅ Hecho |
 | **Toque de queda** de facto | De noche se meten los civiles y quedan los sicarios. Histórico, no estético. | ✅ Hecho |
 | **La lonchería de Doña Chayo** | En la esquina del arranque. Abre, aguanta la cuota, baja cortina, acaba tapiada y quemada. El luto sin una sola línea de diálogo. | ✅ Hecho |
+| **Estadio Olímpico Benito Juárez** | El óvalo con su cancha, graderío y torres de luz, y el dato de los Indios: arriba de 2008 a 2011, sin ganar un partido en todo el Apertura 2009. | ✅ Hecho |
+| **Monumento a los Trabajadores y Umbral del Milenio** | Los dos del sur, con su año y su sitio. Las formas son interpretación; el lugar, la fecha y lo que significan, no. | ✅ Hecho |
 | **El Chamizal y el asta monumental** | Parque, arboleda, el museo de 1978 y la bandera de 50 × 28 m sobre 100 m de asta, ondeando por vértices. Se mancha 0.16 → 0.43 → 0.79 → 1.00 con el acumulado de muertos. | ✅ Hecho |
 | **La Av. Juárez** como calle de fiesta que se apaga | Dieciséis negocios con neón, apagándose por acto: 16 en 2008, 5 en 2011. Los que cierran se vuelven refaccionaria, forrajería o estética. Bajo de antro por Web Audio según distancia, hora y acto. | ✅ Hecho |
 | **Final** con las cifras | Regla de tono 2 y 6: tu contador de muertos junto al de la ciudad, y la sentencia de 2024. | ✅ Hecho |

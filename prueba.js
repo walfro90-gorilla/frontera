@@ -72,7 +72,7 @@ const THREE={
   Color:class{constructor(h){this.h=h;}lerp(){return this;}setHex(h){this.h=h;return this;}},
   Vector3:V3,
   BoxGeometry:Geo,PlaneGeometry:Geo,CylinderGeometry:Geo,ConeGeometry:Geo,
-  SphereGeometry:Geo,RingGeometry:Geo,
+  SphereGeometry:Geo,RingGeometry:Geo,TorusGeometry:Geo,CircleGeometry:Geo,
   CanvasTexture:class{constructor(){this.repeat={set(){}};this.wrapS=0;this.wrapT=0;this.anisotropy=1;}
     clone(){return new THREE.CanvasTexture();}},
   MeshLambertMaterial:Mat,MeshBasicMaterial:Mat,
