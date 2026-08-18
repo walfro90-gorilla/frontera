@@ -725,8 +725,8 @@ function rotulo(txt,sub,fondo,tinta){
 }
 function matRotulo(tex,neon){
   return new THREE.MeshLambertMaterial(neon
-    ? {map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0}
-    : {map:tex});
+    ? {map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0,side:THREE.DoubleSide}
+    : {map:tex,side:THREE.DoubleSide});
 }
 
 const antros=[];
@@ -738,7 +738,7 @@ const antros=[];
   for(const lado of [-1,1]){                       // poniente y oriente de la avenida
     const cx=xc+lado*(medio+fondo/2);
     const cara=xc+lado*medio;                    // fachada, pegada a la banqueta
-    const frente=cara-lado*0.35;                 // el rótulo va HACIA la calle, no adentro
+    const frente=cara-lado*0.6;                  // el rótulo va HACIA la calle, no adentro
     for(const [z0,z1] of tramos){
       const n=4, paso=(z1-z0)/n;
       for(let a=0;a<n;a++,k++){
@@ -747,7 +747,10 @@ const antros=[];
         const texA=rotulo(d[0],d[1],d[2],d[3]);
         const rot=new THREE.Mesh(geoRot,matRotulo(texA,true));
         rot.position.set(frente,Math.min(h*0.62,6.4),cz);
-        rot.rotation.y=lado*Math.PI/2;
+        // Un PlaneGeometry mira a +Z. Girado +π/2 su normal queda en +X, o sea que
+        // el muro poniente (lado=-1) necesita +π/2 para ver hacia la calle: -lado.
+        // Con lado a secas quedan de espaldas y, siendo FrontSide, invisibles.
+        rot.rotation.y=-lado*Math.PI/2;
         scene.add(rot);
         let matB=null;
         if(d[5]){                                  // en lo que se convirtió al cerrar
@@ -756,7 +759,7 @@ const antros=[];
         const tapia=new THREE.Mesh(new THREE.BoxGeometry(0.5,3.6,paso-2.5),
           new THREE.MeshLambertMaterial({color:0x4a4238}));
         tapia.position.set(cara-lado*0.15,1.8,cz);tapia.visible=false;scene.add(tapia);
-        antros.push({rot,matNeon:rot.material,matMuerto:matB,tapia,
+        antros.push({rot,matNeon:rot.material,matMuerto:matB,tapia,lado,cx,
                      aguante:d[4],nombre:d[0],vivo:true,x:frente,z:cz});
       }
     }

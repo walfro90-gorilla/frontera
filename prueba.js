@@ -243,10 +243,18 @@ const atrapados=F.PERSONAJES.filter(p=>
   F.edificios.some(e=>Math.abs(p.x-e.x)<e.hw+1&&Math.abs(p.z-e.z)<e.hd+1));
 exige(!atrapados.length,'ningún personaje quedó dentro de un edificio ('+
   atrapados.map(p=>p.id)+')');
-// regresión: los 16 rótulos de neón quedaban enterrados dentro de su propia pared
-const enterrados=F.antros.filter(a=>
-  F.edificios.some(e=>Math.abs(a.x-e.x)<e.hw&&Math.abs(a.z-e.z)<e.hd));
-exige(!enterrados.length,'ningún rótulo quedó dentro de su edificio ('+enterrados.length+')');
+// Regresión doble de los rótulos de neón. Estuvieron invisibles dos veces seguidas:
+// primero enterrados 0.25 m dentro del muro, después bien puestos pero girados al
+// revés, o sea de espaldas a la calle y con FrontSide. Revisar posición no basta:
+// hay que comprobar que la normal del plano apunte hacia afuera del edificio.
+const rotulosMalos=F.antros.filter(a=>{
+  const normalX=Math.sin(a.rot.rotation.y);
+  const haciaCalle=a.x-a.cx;
+  const dentro=F.edificios.some(e=>Math.abs(a.x-e.x)<e.hw&&Math.abs(a.z-e.z)<e.hd);
+  return dentro || normalX*haciaCalle<=0;
+});
+exige(!rotulosMalos.length,'los rótulos salen del muro y miran a la calle ('+
+  rotulosMalos.length+' mal: '+rotulosMalos.map(a=>a.nombre)+')');
 exige(!relojMal,'el reloj cuadra con la luz del cielo ('+relojMal+')');
 exige(horasVistas.size>=18,'se recorrió un día completo ('+horasVistas.size+' horas vistas)');
 exige(mapaProbado==='abrió y pausó','el mapa grande abre, pausa, dibuja y cierra ('+mapaProbado+')');

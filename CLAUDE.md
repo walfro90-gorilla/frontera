@@ -228,9 +228,18 @@ El tramo lo construye su propia sección: el generador de manzanas salta `enTram
 (`i∈{2,3}, j∈{0,1}`) o los edificios genéricos se encimarían con las fachadas. Por eso la sección
 también rellena el interior de esas manzanas: si no, quedan huecas y se ve el desierto por atrás.
 
-**El rótulo va hacia la calle, no hacia adentro.** `cara` es la fachada y `frente = cara - lado*0.35`
-la saca hacia la banqueta. Poner `+` en vez de `−` entierra los dieciséis rótulos dentro de su
-propio muro y no se ve un solo neón, sin ningún error en consola. `prueba.js` tiene la regresión.
+**El rótulo tiene que salir del muro Y mirar a la calle.** Los neones estuvieron invisibles dos
+veces seguidas por dos causas distintas:
+
+1. *Posición.* `cara` es la fachada y `frente = cara - lado*0.6` la saca hacia la banqueta. Con `+`
+   en vez de `−`, los dieciséis quedan dentro de su propio muro.
+2. *Orientación.* Un `PlaneGeometry` mira a `+Z`; girado `+π/2` en Y su normal queda en `+X`. El
+   muro poniente (`lado=-1`) necesita `+π/2`, así que la rotación es **`-lado*Math.PI/2`**. Con
+   `lado` a secas quedan de espaldas y, siendo `FrontSide`, no se ven desde la calle.
+
+Ninguna de las dos tira un error: la calle se construye completa y simplemente no hay neón. Revisar
+posición no basta — `prueba.js` comprueba además que la normal apunte hacia afuera del edificio, y
+el material va en `DoubleSide` como seguro.
 
 **La fachada de la Juárez es familia aparte** (`F_JUAREZ`, 3 columnas × 2 filas). Las texturas de
 `'centro'` traen 5 filas de ventanas por repetición: un local de 10 m con esa textura se ve como un
