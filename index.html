@@ -3203,7 +3203,8 @@ function entrarSalir(){
 }
 
 /* ══════════════════════════ AUDIO ══════════════════════════ */
-let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,musica,musicaG,musicaF,mudo=false;
+let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,musica,musicaG,musicaF,
+    ambG,ambF,mudo=false;
 function iniciarAudio(){
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -3220,6 +3221,18 @@ function iniciarAudio(){
     musicaF=actx.createBiquadFilter();musicaF.type='lowpass';musicaF.frequency.value=220;
     musicaG=actx.createGain();musicaG.gain.value=0;
     musica.connect(musicaF);musicaF.connect(musicaG);musicaG.connect(master);musica.start();
+    // Rumor de ciudad: ruido rosado en bucle, filtrado grave. Sin esto el juego
+    // suena a vacío cuando estás parado, que es lo único que Juárez no era.
+    const largo=Math.floor(actx.sampleRate*2);
+    const amb=actx.createBuffer(1,largo,actx.sampleRate);
+    const da=amb.getChannelData(0);
+    let v=0;
+    for(let i=0;i<largo;i++){v=v*0.972+(Math.random()*2-1)*0.028;da[i]=v*3;}
+    const ambSrc=actx.createBufferSource();
+    ambSrc.buffer=amb;ambSrc.loop=true;
+    ambF=actx.createBiquadFilter();ambF.type='lowpass';ambF.frequency.value=430;
+    ambG=actx.createGain();ambG.gain.value=0;
+    ambSrc.connect(ambF);ambF.connect(ambG);ambG.connect(master);ambSrc.start();
     // un buffer de ruido con caída exponencial: sirve de balazo y de choque
     ruido=actx.createBuffer(1,Math.floor(actx.sampleRate*0.4),actx.sampleRate);
     const d=ruido.getChannelData(0);
@@ -3658,8 +3671,41 @@ function actDiaNoche(dt){
   return noche;
 }
 
+// Sonidos sueltos de fondo: un claxon lejano, un perro, una cortina que baja.
+let ambCada=rnd(4,10);
+function ambienteSuelto(dt){
+  ambCada-=dt;
+  if(ambCada>0)return;
+  ambCada=rnd(9,26)*(esNoche>0.55?1.9:1);        // de madrugada casi nada
+  if(!actx||mudo)return;
+  const r=Math.random();
+  if(r<0.38){                                    // claxon
+    pip(rnd(320,430),0.055,'square');
+    setTimeout(()=>pip(rnd(250,340),0.05,'square'),170);
+  }else if(r<0.68){                              // perro
+    pip(rnd(300,480),0.05,'sawtooth');
+    setTimeout(()=>pip(rnd(280,440),0.04,'sawtooth'),150);
+  }else if(r<0.86){                              // una cortina metálica
+    balazo(0.09,700);
+  }else{                                         // algo lejano sin nombre
+    pip(rnd(700,1100),0.028);
+  }
+}
+
 function actAudio(){
   if(!motorG)return;
+  if(ambG){
+    // Más ciudad de día; de madrugada casi se apaga, porque también así era.
+    // Y sube junto al periférico, que es donde de verdad hay tráfico.
+    const b=posJugador();
+    let cerca=0;
+    for(const p of PERIF){
+      const d=p.eje==='z'?Math.abs(b.x-p.x):Math.abs(b.z-p.z);
+      cerca=Math.max(cerca,clamp(1-d/110,0,1));
+    }
+    ambG.gain.value = mudo?0 : (0.045+cerca*0.05)*(1-esNoche*0.62);
+    ambF.frequency.value = 380+cerca*520;
+  }
   if(musicaG){
     // se oye más fuerte según te acercas a la avenida, de noche, y menos cada acto
     const b=posJugador();
@@ -3968,7 +4014,7 @@ function bucle(now){
     if(jugador.salud<=0)noqueado();
   }
   actCamara(dt);actDiaNoche(dt);actBandera();actHeli(dt);actSitios(dt);actColgados();
-  actAudio();actHUD(dt);minimapa();
+  actAudio();ambienteSuelto(dt);actHUD(dt);minimapa();
   actPerf(dt,now-ultimoPerf);ultimoPerf=now;
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}

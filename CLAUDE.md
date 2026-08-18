@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4041 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4087 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un

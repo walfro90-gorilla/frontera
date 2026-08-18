@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 191 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 196 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -186,6 +186,8 @@ sin ningún mensaje.
   de física.
 - **Disparo.** Hitscan por cono: alcance y ángulo contra la dirección de la cámara. Sin proyectiles,
   sin raycaster, sin recorrer geometría.
+- **Rumor de ciudad.** Ruido rosado en bucle filtrado grave, que sube al acercarte al periférico y
+  baja de madrugada. Encima, cada tanto, un claxon lejano, un perro o una cortina metálica.
 - **El bajo de los antros.** Un oscilador filtrado a 220 Hz con envolvente por golpe, cuyo volumen
   sale de tu distancia lateral a la Av. Juárez, de la hora y del acto. Se oye como música saliendo
   por una pared, se acerca cuando te acercas, y en 2011 casi no se oye.

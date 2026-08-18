@@ -13,7 +13,7 @@ se marca aquí y se vuelven a medir las cifras de abajo.
 | Prueba | `prueba.js` · 459 líneas · 53 aserciones · 31 s por corrida |
 | Documentación | 1,103 líneas entre `CLAUDE.md`, `HISTORIA.md` y `README.md` |
 | Mundo | 231 edificios · 102 autos · 34 peatones · 26 sitios · 6 personajes |
-| Escena | ~2,650 mallas al cargar · ~2,760 jugando · sin fugas · **FPS sin medir** |
+| Escena | 2,635 mallas · 1,068 llamadas de dibujo · 15k triángulos · **60 fps sin perder cuadro** |
 | Contenido histórico | 16 hechos jugables · 4 actos · 22 fuentes citadas |
 | Dependencias | Three.js r128 (MIT) guardada en `vendor/` · **cero llamadas a la red** |
 
@@ -43,15 +43,17 @@ solo la arquitectura.
 
 ## 🟥 Debilidades
 
-**El rendimiento está medido a medias.** La escena tiene **~2,650 mallas al cargar y ~2,760
-jugando** —tres veces más de lo que yo había estimado a ojo en la primera versión de este
-documento—, sin fugas: entre el arranque y el final de una partida solo crecen ~120, que son los
-sucesos vivos. El desglose: **12 mallas por auto × ~90 autos = 1,068**, 8 por persona × 34 = 272, y
-~440 objetos de una sola malla entre edificios y utilería.
+~~**El rendimiento nunca se ha medido.**~~ **Medido, y no era problema.** En el equipo del autor va
+a **60 fps clavados, peor cuadro 17 ms, mínimo 60**: no pierde un solo cuadro. De **2,635 mallas en
+escena solo se dibujan 1,068**, o sea que el culling se lleva el 60%. 15 mil triángulos, 804
+geometrías, 93 texturas.
 
-Lo que sigue sin saberse son **los FPS reales en GPU integrada**, porque `prueba.js` corre sin GPU.
-El medidor ya existe (`P` o `index.html#perf`) y reporta fps, ms, llamadas de dibujo, pico,
-triángulos y mínimos. Falta que alguien lo abra y anote el número aquí.
+Queda como dato, no como debilidad: **12 mallas por auto × ~90 autos** son el gasto grande, y **804
+geometrías** significa que casi ningún edificio comparte su `BoxGeometry`. Ninguna de las dos duele
+hoy. Si algún día duele, ahí están.
+
+La debilidad que **sí sigue viva** es que esto se midió en una sola máquina. En una integrada vieja
+o en un teléfono no se sabe.
 
 **Nada visual está verificado automáticamente.** La prueba corre sin GPU. Todo lo que se ve depende
 de que alguien lo mire — ya falló dos veces seguidas con los mismos neones.
@@ -109,14 +111,14 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
 | 1 | ~~Anclar Three.js en el repo~~ ✅ | Amenaza CDN | S | **Hecho.** r128 (MIT, 603 KB) en `vendor/`, verificado que trae las clases que usa el juego. El HTML ya no llama a ningún dominio externo |
-| 2 | ~~Medidor de rendimiento~~ ⚠️ | Debilidad de perf | S | **Medidor hecho** (`P` o `#perf`) y **mallas contadas: ~2,650 al cargar, ~2,760 jugando, sin fugas**. Falta lo que solo se puede hacer con GPU: **anotar los FPS reales aquí** |
+| 2 | ~~Medir rendimiento~~ ✅ | Debilidad de perf | S | **Hecho.** 60 fps clavados, peor cuadro 17 ms, mínimo 60. 1,068 llamadas de dibujo de 2,635 mallas. **No hay problema de rendimiento** |
 | 3 | **Revisión visual sistema por sistema** con capturas | Debilidad visual | M | Existe una lista de los 20 sistemas con captura y visto bueno de cada uno |
 
 ### P1 — Que el juego aguante lo que ya tiene
 
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
-| 4 | **Bajar mallas**: los autos cuestan 12 cada uno y son el 40% de la escena. Fusionar carrocería o instanciar | Perf | M | Menos de 2,000 mallas sin perder densidad, y `PRESUPUESTO_MALLAS` bajado en `prueba.js` |
+| 4 | ~~Bajar mallas~~ ⏸️ **Congelada** | Perf | M | Se midió y **va a 60 fps sin perder un cuadro**. Retomar solo si el medidor baja de 50 fps o si las mallas pasan del presupuesto. Optimizar ahora sería trabajo sin evidencia |
 | 5 | **Aserción de orden de carga** en `prueba.js` | TDZ recurrente | S | Mover una sección hacia arriba hace fallar la prueba con mensaje claro |
 | 6 | **Menú**: volumen, calidad (sombras/densidad), reiniciar partida | Accesibilidad | M | Se puede bajar el volumen y la densidad sin tocar código ni la URL |
 | 7 | **Ambiente sonoro de ciudad**: tráfico lejano, viento, perros | Audio pobre | S | El silencio deja de notarse al estar parado en la calle |

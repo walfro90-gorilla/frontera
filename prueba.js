@@ -16,6 +16,26 @@
 const fs=require('fs'), path=require('path');
 const html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
 const src=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+// Dónde empieza el script dentro del archivo, para poder traducir el número de
+// línea de un error a la línea real de index.html.
+const OFFSET=html.slice(0,html.indexOf(src)).split('\n').length-1;
+const LINEAS=src.split('\n');
+// Los errores de orden de carga (TDZ) son el bug recurrente de este proyecto y su
+// único síntoma en el navegador es pantalla negra. Aquí se dice qué sección fue.
+function seccionDe(linea){
+  for(let i=Math.min(linea,LINEAS.length)-1;i>=0;i--){
+    const m=/\/\* ═+ (.+?) ═+ \*\//.exec(LINEAS[i]);
+    if(m)return m[1].trim();
+  }
+  return '(antes de la primera sección)';
+}
+function dondeReventó(e){
+  const m=/index\.html:(\d+)/.exec(e.stack||'');
+  if(!m)return '';
+  const l=+m[1];
+  return '\n  → sección «'+seccionDe(l)+'», línea '+(l+OFFSET)+' de index.html'+
+         '\n  → si dice "before initialization", una sección usa algo que se declara más abajo';
+}
 
 const g2d=()=>new Proxy({},{ get:(t,k)=>{
   if(k==='createRadialGradient'||k==='createLinearGradient')return ()=>({addColorStop(){}});
@@ -128,7 +148,7 @@ vm.createContext(sandbox);
 try{
   vm.runInContext(src,sandbox,{filename:'index.html'});
 }catch(e){
-  console.error('FALLÓ LA INICIALIZACIÓN:',e.message,'\n',e.stack.split('\n').slice(0,4).join('\n'));
+  console.error('FALLÓ LA INICIALIZACIÓN:',e.message+dondeReventó(e));
   process.exit(1);
 }
 console.log('init ok');
