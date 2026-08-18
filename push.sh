@@ -16,6 +16,6 @@ gh repo create "$REPO" --public --source=. --push \
   --description "Sandbox 3D de mundo abierto en un archivo HTML. Ciudad procedural, tráfico, policía y ciclo día/noche."
 
 echo
-echo "Listo. Falta un paso manual, una sola vez:"
-echo "  Settings -> Pages -> Source: GitHub Actions"
-echo "El workflow ya está incluido y publicará en cada push a main."
+echo "Listo. El workflow habilita Pages solo y publica en cada push a main."
+echo "Si el deploy falla con 'Get Pages site failed', corre una vez:"
+echo "  gh api -X POST repos/USUARIO/$REPO/pages -f build_type=workflow"
