@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 92 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 104 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -21,6 +21,12 @@ tiempo de carga.
   Juárez, Francisco Villa, Abraham Lincoln, de las Américas, Waterfill, 16 de Septiembre, Vicente
   Guerrero, Triunfo de la República. Zona Centro con su catedral, el Chamizal junto al río,
   colonias de casas pegadas, maquilas al sur y la Sierra de Juárez al poniente con su letrero.
+- **La Avenida Juárez.** La calle de la fiesta, del puente Santa Fe hacia el sur: bares, antros,
+  restaurantes, hoteles, casas de cambio, farmacias de 24 horas y dentistas para el que cruzaba.
+  Dieciséis negocios con su neón, que de noche prende. Y que se va apagando: en 2008 abre completa,
+  en 2011 quedan cinco. El **Kentucky Club** aguanta los cuatro actos porque en la vida real es el
+  último de los bares legendarios de la frontera que sigue de pie. Lo que cerró no quedó tapiado:
+  se volvió refaccionaria, forrajería, pollería o estética, que es lo que de verdad pasó.
 - **La frontera.** El Bravo como el canal de concreto que es, el bordo, la valla del lado gringo y
   los cuatro puentes internacionales: Paso del Norte, Stanton–Lerdo, Córdova–Américas y Zaragoza.
   Llegas a la garita y ahí te quedas. El Paso se ve, no se pisa.
@@ -106,6 +112,9 @@ Three.js r128 desde CDN, todo lo demás es código propio.
   de física.
 - **Disparo.** Hitscan por cono: alcance y ángulo contra la dirección de la cámara. Sin proyectiles,
   sin raycaster, sin recorrer geometría.
+- **El bajo de los antros.** Un oscilador filtrado a 220 Hz con envolvente por golpe, cuyo volumen
+  sale de tu distancia lateral a la Av. Juárez, de la hora y del acto. Se oye como música saliendo
+  por una pared, se acerca cuando te acercas, y en 2011 casi no se oye.
 - **Balazos.** Un solo buffer de ruido con caída exponencial, generado al arrancar y filtrado
   distinto por arma: la escopeta pasa por un lowpass más grave que la pistola. Un buffer, dos armas.
 - **Partida guardada.** `localStorage` y `JSON.stringify`. Cinco campos, sin librería.

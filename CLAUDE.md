@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2099 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2244 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -54,7 +54,8 @@ Las secciones que dependen de otras:
 | `SUELO HORNEADO` | `ZONAS` (hornea el canvas con las zonas ya sorteadas) |
 | `EDIFICIOS Y PROPS` | `ZONAS`, `TEXTURAS` — llena `edificios[]` y `luminarias[]` |
 | `RÍO, BORDO, VALLA Y PUENTES` | `EDIFICIOS` (usa `matPoste`, `geoCaja`) y llena `vallaTramos[]` |
-| `PERSONAJES` | `PERSONAS` (usa `persona()`) y `GEOGRAFÍA` para las esquinas |
+| `AVENIDA JUÁREZ` | `EDIFICIOS` (usa `bloque()`); las manzanas que flanquea las salta el generador normal vía `enTramoJuarez(i,j)` |
+| `PERSONAJES` | `PERSONAS` (usa `persona()`) y **`edificios[]` ya lleno**, porque `despejar()` los saca de las paredes |
 | `ACTOS Y ENCARGOS` | declara `acto`, que `PERSONAS` y `PERSONAJES` usan; sus `encargos` citan ids de `PERSONAJES` por nombre, resueltos en tiempo de ejecución |
 | `POBLAR LA CIUDAD` | **todo lo anterior** — corre `PUENTES.forEach(puente)` y crea autos y peatones |
 | `PRUEBAS` / `ARRANQUE` | el final, ya con todo construido |
@@ -206,6 +207,30 @@ la plática sola si te alejas o te subes al carro.
 hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
 hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
 llamarla directo desde entradas** — todo pasa por `accionF()`.
+
+### Avenida Juárez
+
+`NEGOCIOS[]` es tabla de datos: nombre, giro, color de fondo, color de tinta, **`aguante`** (0–1) y
+**`despues`** (en qué se convirtió al cerrar, o `null`). `actoJuarez()` compara `aguante` contra
+`AGUANTE[acto]`: 16 abiertos en 2008, 5 en 2011. El que cierra y tiene `despues` cambia de rótulo
+—refaccionaria, forrajería, estética, que es lo que de verdad pasó en la zona— y el que no, se
+tapia. Agregar un negocio es agregar una fila.
+
+Los rótulos **no van en `materialesFachada`**: su emisivo lo maneja `actDiaNoche` en un bucle aparte
+sobre `antros`, porque solo debe prender el neón de los que siguen abiertos. Un negocio muerto no
+brilla aunque sea de noche.
+
+El tramo lo construye su propia sección: el generador de manzanas salta `enTramoJuarez(i,j)`
+(`i∈{2,3}, j∈{0,1}`) o los edificios genéricos se encimarían con las fachadas.
+
+### Colocación de personajes
+
+**`despejar(x,z,r)` no es opcional.** Las esquinas de `PERSONAJES` son a mano, pero las manzanas se
+generan al azar en cada partida: sin esto, dos a cuatro personajes nacen dentro de un edificio, su
+marcador de recogida cae en la pared y **el encargo se vuelve imposible de tomar** — la partida se
+atora en ese acto para siempre. Se corre al construir, con `r=8` para que quepan la persona y su
+marcador. Por eso la sección `PERSONAJES` tiene que ir después de que `edificios[]` esté lleno.
+`prueba.js` tiene la regresión.
 
 ### La lonchería
 

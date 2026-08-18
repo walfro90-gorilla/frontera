@@ -320,6 +320,13 @@ const cenX=i=>(ejeX(i)+ejeX(i+1))/2;           // centro de manzana
 const cenZ=j=>(ejeZ(j)+ejeZ(j+1))/2;
 const corto=s=>s.replace(/^(Av\.|Blvd\.|Paseo|Calle) /,'');
 
+// Av. Juárez: la calle de la fiesta. Va del puente Paso del Norte hacia el sur
+// y desde la Ley Seca fue la Las Vegas de los gringos. Las manzanas que la
+// flanquean no se construyen con el generador normal: las hace su propia sección.
+const JU=3;
+const enTramoJuarez=(i,j)=>(i===JU-1||i===JU)&&(j===0||j===1);
+const sobreLaJuarez=(x,z)=>Math.abs(x-ejeX(JU))<34 && z>ejeZ(0)-8 && z<ejeZ(2);
+
 const PUENTES=[
   {i:2,nombre:'Puente Lerdo – Stanton',   nota:'ENTRADA DESDE EL PASO'},
   {i:3,nombre:'Puente Paso del Norte',    nota:'SALIDA A EE. UU.'},
@@ -458,7 +465,8 @@ const texSuelo=(()=>{
   for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
     const x0=ejeX(i)+anchoX(i)/2, z0=ejeZ(j)+anchoZ(j)/2;
     const w=ejeX(i+1)-anchoX(i+1)/2-x0, d=ejeZ(j+1)-anchoZ(j+1)/2-z0;
-    g.fillStyle='#5c6069';g.fillRect(X(x0),Z(z0),w*kx,d*kz);        // banqueta
+    g.fillStyle=enTramoJuarez(i,j)?'#6d6357':'#5c6069';              // banqueta
+    g.fillRect(X(x0),Z(z0),w*kx,d*kz);
     const t=zona[i][j];
     g.fillStyle = t==='parque'||t==='chamizal' ? '#3f5b3c'
                 : t==='lote'    ? '#3b3e45'
@@ -568,6 +576,7 @@ for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
     continue;
   }
   if(t==='lote')continue;                                  // estacionamiento: se llena de autos
+  if(enTramoJuarez(i,j))continue;                          // la Juárez la construye su sección
 
   if(t==='centro'){                                        // torres pegadas, sin patio
     const cols=rndi(2,3), rows=2;
@@ -643,6 +652,97 @@ function actoLoncheria(){
   loncheria.rotulo.visible  = acto<3;
   loncheria.cortina.visible = acto>=2;
   loncheria.matMuro.color.setHex(acto>=3?0x4a4038 : acto>=2?0xb9a578 : 0xe0c98a);
+}
+
+/* ══════════════════════════ AVENIDA JUÁREZ ══════════════════════════ */
+// La calle de la fiesta: bares, antros, restaurantes, hoteles, casas de cambio,
+// farmacias y dentistas para el que cruzaba el puente. Con la guerra se vació.
+// Lo que cerró no quedó tapiado: se volvió refaccionaria, forrajería, pollería o
+// estética. Eso es lo que hace `despues`.
+//
+// El Kentucky Club (1920, ahí se inventó la margarita) aguanta los cuatro actos
+// porque en la vida real es el último de los bares legendarios de la frontera que
+// sigue abierto. El Noa Noa, donde empezó Juan Gabriel a media cuadra, no.
+//
+// Los negocios reales que aparecen son homenaje: el juego no les atribuye nada.
+//                nombre, giro, fondo, tinta, aguante, en qué se convirtió
+const NEGOCIOS=[
+  ['KENTUCKY CLUB',       'BAR · DESDE 1920',  '#14090a','#ff8a3d',1.00,null],
+  ['CASA DE CAMBIO',      'DÓLARES · PESOS',   '#06140c','#4fd18b',0.95,null],
+  ['FARMACIA SAN JUAN',   'ABIERTO 24 HORAS',  '#0a1410','#7fe08a',0.90,null],
+  ['DENTAL FRONTERA',     'CORONAS · PUENTES', '#081018','#7fc4ff',0.85,'REFACCIONES'],
+  ['NOA NOA',             'SALÓN DE BAILE',    '#150820','#ff4fd8',0.30,null],
+  ['CANTINA LA REINA',    'CERVEZA BIEN FRÍA', '#180d06','#ffb03a',0.45,'POLLOS ASADOS'],
+  ['CURIOS EL SARAPE',    'ARTESANÍAS',        '#141005','#ffd45c',0.60,'ESTÉTICA MARY'],
+  ['HOTEL DEL NORTE',     'HABITACIONES',      '#050f16','#5ad2e0',0.65,null],
+  ['CLUB MALIBÚ',         'VARIEDAD',          '#1a0616','#ff3d7a',0.20,'REFACCIONES EL 8'],
+  ['BAR COLORADO',        'MARGARITAS',        '#160a06','#ff9a3d',0.35,'FORRAJES'],
+  ['TAQUERÍA EL PUENTE',  'ASADA · TRIPAS',    '#150c04','#ffc233',0.55,null],
+  ['SALÓN CHIHUAHUA',     'MÚSICA VIVA',       '#0d0718','#a06cff',0.25,'TALLER MECÁNICO'],
+  ['CAMBIOS LA FRONTERA', 'COMPRA · VENTA',    '#06140c','#4fd18b',0.92,null],
+  ['RESTAURANTE EL PASEO','COMIDA CORRIDA',    '#141005','#ffcf8a',0.50,'ABARROTES'],
+  ['HOTEL PASO REAL',     'ECONÓMICO',         '#050f16','#5ad2e0',0.40,'CUARTOS · MENSUAL'],
+  ['CERVECERÍA LA 16',    'BOTANAS',           '#180d06','#ffb03a',0.15,'ESTÉTICA'],
+];
+// umbral de aguante por acto: 2008 abre todo, 2011 quedan cinco
+const AGUANTE=[0,0.25,0.55,0.80];
+
+function rotulo(txt,sub,fondo,tinta){
+  const c=lienzo(256,64),g=c.getContext('2d');
+  g.fillStyle=fondo;g.fillRect(0,0,256,64);
+  g.strokeStyle=tinta;g.lineWidth=3;g.strokeRect(5,5,246,54);
+  g.fillStyle=tinta;g.textAlign='center';
+  g.font='bold 29px "Arial Narrow", Impact, sans-serif';
+  g.fillText(txt,128,sub?31:40);
+  if(sub){g.font='12px ui-monospace, monospace';g.fillText(sub,128,50);}
+  return new THREE.CanvasTexture(c);
+}
+function matRotulo(tex,neon){
+  return new THREE.MeshLambertMaterial(neon
+    ? {map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0}
+    : {map:tex});
+}
+
+const antros=[];
+(()=>{
+  const xc=ejeX(JU), medio=anchoX(JU)/2, fondo=8;
+  const tramos=[[ejeZ(0)+9, ejeZ(1)-14],[ejeZ(1)+14, ejeZ(2)-10]];
+  const geoRot=new THREE.PlaneGeometry(10,2.6);
+  let k=0;
+  for(const lado of [-1,1]){                       // poniente y oriente de la avenida
+    const cx=xc+lado*(medio+fondo/2), frente=xc+lado*(medio+0.25);
+    for(const [z0,z1] of tramos){
+      const n=4, paso=(z1-z0)/n;
+      for(let a=0;a<n;a++,k++){
+        const d=NEGOCIOS[k%NEGOCIOS.length], cz=z0+paso*(a+0.5), h=rnd(7.5,12);
+        bloque(cx,cz,fondo,paso-1.5,h,'centro',k%6);
+        const texA=rotulo(d[0],d[1],d[2],d[3]);
+        const rot=new THREE.Mesh(geoRot,matRotulo(texA,true));
+        rot.position.set(frente,h*0.62,cz);
+        rot.rotation.y=lado*Math.PI/2;
+        scene.add(rot);
+        let matB=null;
+        if(d[5]){                                  // en lo que se convirtió al cerrar
+          matB=matRotulo(rotulo(d[5],'','#2a2c31','#9aa0a8'),false);
+        }
+        const tapia=new THREE.Mesh(new THREE.BoxGeometry(0.5,3.6,paso-2.5),
+          new THREE.MeshLambertMaterial({color:0x4a4238}));
+        tapia.position.set(frente-lado*0.3,1.8,cz);tapia.visible=false;scene.add(tapia);
+        antros.push({rot,matNeon:rot.material,matMuerto:matB,tapia,
+                     aguante:d[4],nombre:d[0],vivo:true,x:frente,z:cz});
+      }
+    }
+  }
+})();
+
+function actoJuarez(){
+  const u=AGUANTE[acto];
+  for(const a of antros){
+    a.vivo = a.aguante>=u;
+    a.rot.material = a.vivo ? a.matNeon : (a.matMuerto||a.matNeon);
+    a.rot.visible  = a.vivo || !!a.matMuerto;      // sin giro nuevo, el rótulo se cae
+    a.tapia.visible = !a.vivo && !a.matMuerto;
+  }
 }
 
 /* ══════════════════════════ RÍO, BORDO, VALLA Y PUENTES ══════════════════════════ */
@@ -979,7 +1079,27 @@ const PERSONAJES=[
       '…Ya sabía que ibas a decir que no.']]},
 ];
 
+// Las esquinas de arriba son a mano, pero las manzanas se generan al azar: sin
+// esto, dos a cuatro personajes nacen DENTRO de un edificio en cada partida, su
+// marcador de recogida cae en la pared y el encargo se vuelve imposible de tomar.
+// Se empujan al primer punto despejado hacia afuera, o sea a la banqueta.
+function despejado(x,z,r){
+  for(const e of edificios)
+    if(Math.abs(x-e.x)<e.hw+r && Math.abs(z-e.z)<e.hd+r)return false;
+  return Math.abs(x)<XMAX-10 && z<ZSUR-10 && z>ZBORDO+10;
+}
+function despejar(x,z,r){
+  if(despejado(x,z,r))return {x,z};
+  for(let paso=3;paso<=72;paso+=3)
+    for(let a=0;a<12;a++){
+      const t=a*Math.PI/6, px=x+Math.cos(t)*paso, pz=z+Math.sin(t)*paso;
+      if(despejado(px,pz,r))return {x:px,z:pz};
+    }
+  return {x,z};
+}
 PERSONAJES.forEach(p=>{
+  const q=despejar(p.x,p.z,8);                 // 8 m: cabe la persona y su marcador
+  p.x=q.x;p.z=q.z;
   p.malla=persona(false,'civil',p.ropa);
   p.malla.position.set(p.x,0,p.z);
   p.malla.visible=false;
@@ -1236,7 +1356,7 @@ function nuevaOferta(){
   const e=ACTOS[acto].encargos[hechos%ACTOS[acto].encargos.length];
   const dador=quien(e[2]);
   // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
-  const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-3,3), z:dador.z+rnd(2,5)} : puntoCalle();
+  const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-2,2), z:dador.z+rnd(2,4)} : puntoCalle();
   mision.estado='oferta';mision.x=p.x;mision.z=p.z;mision.dador=dador;
   mision.titulo=e[0];mision.texto=e[1];
   mision.gratis = e[0]==='Llevar flores'||e[0]==='Dar la vuelta';
@@ -1291,7 +1411,7 @@ function avanzarActo(){
   plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
     cerrado.reales.toLocaleString('en-US')+'.';
   placa.classList.add('on');jugando=false;
-  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();guardar();
+  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();guardar();
 }
 
 // El juego sí termina. No con un final: con las cifras y una sentencia de 2024.
@@ -1392,6 +1512,13 @@ for(let k=0;k<16;k++){
   a.ni=i;a.nj=j;const n=vecino(i,j,-1,-1);a.ti=n.i;a.tj=n.j;
 }
 for(let k=0;k<26;k++)nuevoPeaton();
+for(let k=0;k<8;k++){                       // la banda de la Juárez, para que la calle suene
+  nuevoPeaton();
+  const p=peatones[peatones.length-1];
+  p.bi=JU-1+(k%2);p.bj=(k>>1)%2;
+  const e=esquina(p.bi,p.bj,rndi(0,3));p.x=p.tx=e.x;p.z=p.tz=e.z;
+  p.faccion=plaza[p.bi][p.bj];
+}
 
 function vecino(i,j,pi,pj){
   const op=[];
@@ -1528,7 +1655,7 @@ function entrarSalir(){
 }
 
 /* ══════════════════════════ AUDIO ══════════════════════════ */
-let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,mudo=false;
+let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,musica,musicaG,musicaF,mudo=false;
 function iniciarAudio(){
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1540,6 +1667,11 @@ function iniciarAudio(){
     sirena=actx.createOscillator();sirena.type='square';sirena.frequency.value=700;
     sirenaG=actx.createGain();sirenaG.gain.value=0;
     sirena.connect(sirenaG);sirenaG.connect(master);sirena.start();
+    // el bajo de los antros de la Juárez, filtrado como si saliera por la pared
+    musica=actx.createOscillator();musica.type='triangle';musica.frequency.value=58;
+    musicaF=actx.createBiquadFilter();musicaF.type='lowpass';musicaF.frequency.value=220;
+    musicaG=actx.createGain();musicaG.gain.value=0;
+    musica.connect(musicaF);musicaF.connect(musicaG);musicaG.connect(master);musica.start();
     // un buffer de ruido con caída exponencial: sirve de balazo y de choque
     ruido=actx.createBuffer(1,Math.floor(actx.sampleRate*0.4),actx.sampleRate);
     const d=ruido.getChannelData(0);
@@ -1778,8 +1910,10 @@ function actPeatones(dt){
   // Toque de queda de facto: nadie lo decretó, la ciudad se vaciaba sola al oscurecer.
   // Los civiles se meten a su casa; los sicarios son justo los que salen.
   const queda = esNoche>0.55;
+  const fiesta = acto<=1;              // en 2008-09 la Juárez todavía tenía gente de noche
   for(const p of peatones){
-    p.encasa = queda && p.tipo!=='sicario' && p.caido<=0;
+    p.encasa = queda && p.tipo!=='sicario' && p.caido<=0
+               && !(fiesta && sobreLaJuarez(p.x,p.z));
     if(p.encasa){p.malla.visible=false;continue;}
     p.malla.visible=true;
     if(p.caido>0){
@@ -1912,6 +2046,7 @@ function actDiaNoche(dt){
   const noche=clamp(1-dia*1.5,0,1);
   for(const m of materialesFachada)m.emissiveIntensity=noche;
   matFoco.emissiveIntensity=noche*1.4;
+  for(const a of antros)if(a.vivo)a.matNeon.emissiveIntensity=noche*1.9;   // el neón de la Juárez
   matFaro.emissiveIntensity=noche*1.2;
   for(const f of luminarias)if(f.material.emissiveIntensity!==undefined)
     f.material.emissiveIntensity=noche*1.4;
@@ -1923,6 +2058,15 @@ function actDiaNoche(dt){
 
 function actAudio(){
   if(!motorG)return;
+  if(musicaG){
+    // se oye más fuerte según te acercas a la avenida, de noche, y menos cada acto
+    const b=posJugador();
+    const cerca = sobreLaJuarez(b.x,b.z) ? clamp(1-Math.abs(b.x-ejeX(JU))/34,0,1) : 0;
+    const viva  = [1,0.7,0.28,0.08][acto];
+    const golpe = Math.pow(1-((performance.now()/500)%1),3);      // dos golpes por segundo
+    musicaG.gain.value = mudo?0 : 0.085*cerca*viva*(0.3+0.7*golpe)*(0.35+0.65*esNoche);
+    musica.frequency.value = 55+golpe*16;
+  }
   const a=jugador.auto;
   motorG.gain.value=mudo?0:(a?0.10:0);
   if(a){
@@ -2073,16 +2217,17 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // Costura de pruebas: solo existe con #test. Deja pilotear el juego desde fuera
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
-    PERSONAJES,personajeCerca,accionF,reaparecer,
+    PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
+                 abiertos:antros.filter(a=>a.vivo).length,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
-actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();
+actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);

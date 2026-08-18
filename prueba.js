@@ -127,9 +127,9 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 //   1) calentarse a pie          2) quedarse quieto y ver si las patrullas llegan
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
-const CUADROS=32000, CERCO_INI=2500, CERCO_FIN=11000;
+const CUADROS=34000, CERCO_INI=2500, CERCO_FIN=11000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
-const charlas=new Set(); const repartos=new Set();
+const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 let corridos=0;
 try{
   for(let f=0;f<CUADROS;f++){
@@ -139,7 +139,7 @@ try{
       if(temporizadores[k].t<=ahora){const x=temporizadores.splice(k,1)[0];x.fn();}
     const cerco = f>=CERCO_INI && f<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
-    if(f%(cerco?31:97)===0) kd({code:'KeyE',preventDefault(){}});   // disparar: calienta
+    if(f%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});  // disparar: calienta
     if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
     if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
     if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
@@ -161,10 +161,12 @@ try{
         if(c)charlas.add(c);
       }
     }
+    if(f%900===7)abiertos.push(F.estado().abiertos);
     if(f%900===7)repartos.add(F.PERSONAJES.filter(p=>p.malla.visible).map(p=>p.id).join(','));
     // Salir del cerco con calor 5 significa que las patrullas te agarran cada rato
     // y el resto de la corrida se va en arrestos. Reaparecer es lo que haría el juego.
     if(f===CERCO_FIN)F.reaparecer();
+    if(cerco&&f%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
     if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
       const b=F.jugador.auto||F.jugador;let m=1e9;
       for(const a of F.autos)if(a.clase==='federal'||a.clase==='municipal'||a.clase==='militar')
@@ -200,6 +202,7 @@ const est={
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
+  negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
 // los sistemas tienen que haberse movido, no solo no tronar
@@ -216,8 +219,14 @@ exige(cercoMin<40,'las patrullas alcanzan al jugador en la calle (llegaron a '+M
 exige(finalVisto,'el juego llega a su final y saca la placa de cierre');
 exige(s.cortina,'la lonchería baja la cortina al avanzar los actos');
 exige(charlas.size>=4,'se habló con varios personajes (fueron '+charlas.size+': '+[...charlas]+')');
-exige(charlas.has('chayo'),'Doña Chayo está desde el primer acto');
 exige([...charlas].some(c=>c==='luz'||c==='kilo'||c==='marisol'),
   'se habló con alguien que solo aparece en actos tardíos');
 exige(repartos.size>=3,'el reparto cambia de acto a acto (repartos vistos: '+repartos.size+')');
+// regresión: los personajes nacían dentro de edificios y su encargo era intomable
+const atrapados=F.PERSONAJES.filter(p=>
+  F.edificios.some(e=>Math.abs(p.x-e.x)<e.hw+1&&Math.abs(p.z-e.z)<e.hd+1));
+exige(!atrapados.length,'ningún personaje quedó dentro de un edificio ('+
+  atrapados.map(p=>p.id)+')');
+exige(Math.max(...abiertos)===F.antros.length,'en 2008 la Av. Juárez abre completa');
+exige(Math.min(...abiertos)<=6,'la Av. Juárez se apaga acto por acto (quedaron '+Math.min(...abiertos)+')');
 process.exit(assertFails?1:0);

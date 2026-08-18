@@ -34,6 +34,10 @@ Esto es **dramatización**, no documental ni acusación.
   objetivo ni recompensa. Entran como **eco**: una vela, una cruz rosa, un periódico, un noticiero
   de fondo. El jugador nunca dispara a una víctima real dramatizada.
 - **Los civiles no son puntos.** Matar civiles cuesta dinero y calor, no paga. Ya está así en el código.
+- **Los negocios emblemáticos de la Av. Juárez son homenaje.** El Kentucky Club y el Noa Noa
+  aparecen con su nombre porque son patrimonio de la calle —el primero abrió en 1920 y ahí se
+  inventó la margarita; en el segundo empezó a cantar Juan Gabriel— y el juego **no les atribuye
+  ninguna actividad**. Los demás rótulos de la avenida son inventados en su estilo.
 
 ---
 
@@ -282,6 +286,7 @@ técnica, es la premisa.
 | Municipal **comprable** | $400 y se va. La federal no: no por honesta, sino porque cobra más arriba y no de ti. | ✅ Hecho |
 | **Toque de queda** de facto | De noche se meten los civiles y quedan los sicarios. Histórico, no estético. | ✅ Hecho |
 | **La lonchería de Doña Chayo** | En la esquina del arranque. Abre, aguanta la cuota, baja cortina, acaba tapiada y quemada. El luto sin una sola línea de diálogo. | ✅ Hecho |
+| **La Av. Juárez** como calle de fiesta que se apaga | Dieciséis negocios con neón, apagándose por acto: 16 en 2008, 5 en 2011. Los que cierran se vuelven refaccionaria, forrajería o estética. Bajo de antro por Web Audio según distancia, hora y acto. | ✅ Hecho |
 | **Final** con las cifras | Regla de tono 2 y 6: tu contador de muertos junto al de la ciudad, y la sentencia de 2024. | ✅ Hecho |
 | **Personajes con los que se hable** | Los seis, con esquina fija y líneas propias por acto. El encargo lo entrega quien lo da: su frase *es* el briefing. El Diablo se borra en el acto IV sin una línea de explicación. | ✅ Hecho |
 | **A los personajes no se les dispara** | `disparar()` solo mira `peatones[]`. Decisión editorial, no bug. | ✅ Hecho |
