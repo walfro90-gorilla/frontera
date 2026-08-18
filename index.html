@@ -131,6 +131,38 @@
   #mapaCerrar{font-family:var(--cond);font-size:15px;letter-spacing:.1em;background:var(--oro);
     color:#0b0e14;border:0;padding:6px 22px;cursor:pointer;border-radius:2px}
 
+  /* periodicazo */
+  #perio{position:fixed;inset:0;z-index:18;background:rgba(4,6,10,.94);display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:3vh 4vw}
+  #perio.on{display:flex}
+  #plana{width:min(560px,90vw);background:#e7e3d7;color:#14151a;padding:20px 22px 18px;
+    box-shadow:0 26px 70px rgba(0,0,0,.75);
+    animation:periodicazo 1.05s cubic-bezier(.16,.9,.3,1) both}
+  @keyframes periodicazo{
+    0%{transform:scale(.04) rotate(-1200deg);opacity:0}
+    62%{transform:scale(1.07) rotate(0deg);opacity:1}
+    100%{transform:scale(1) rotate(0deg);opacity:1}
+  }
+  #cabecera{display:flex;align-items:baseline;justify-content:center;gap:8px;
+    border-bottom:3px double #14151a;padding-bottom:6px}
+  #cabecera span{font-family:var(--cond);font-size:40px;letter-spacing:.04em;line-height:1}
+  #cabecera b{font-size:9px;letter-spacing:.22em;font-weight:400}
+  #perioFecha{font-size:8px;letter-spacing:.2em;text-align:center;margin-top:5px;color:#4a4a4a;
+    border-bottom:1px solid #14151a;padding-bottom:5px}
+  #perioTitular{font-family:var(--cond);font-size:clamp(26px,4.4vw,40px);line-height:1.02;
+    letter-spacing:.01em;margin:11px 0 9px;text-align:left}
+  #perioFotos{display:flex;gap:6px;flex-wrap:wrap}
+  #perioFotos canvas{width:calc(50% - 3px);height:auto;display:block;
+    filter:grayscale(1) contrast(1.25) brightness(.95);border:1px solid #14151a}
+  #perioFotos canvas:only-child{width:100%}
+  #perioCredito{font-size:8px;letter-spacing:.16em;color:#4a4a4a;margin-top:5px;text-align:right}
+  #perioBajada{font-size:11px;line-height:1.55;margin-top:9px;
+    border-top:1px solid #b9b3a3;padding-top:8px}
+  #perioCols{margin-top:9px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+  #perioCols i{display:block;height:5px;background:#c9c3b3;margin-bottom:4px;border-radius:1px}
+  #perioPie{font-size:9px;letter-spacing:.2em;color:var(--tenue);text-transform:uppercase}
+  @media (prefers-reduced-motion:reduce){#plana{animation-duration:.01s}}
+
   /* crédito de la foto */
   #firma{position:fixed;inset:0;z-index:16;background:rgba(6,8,13,.92);display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:6vw;
@@ -280,6 +312,19 @@
     <span>Clic en el mapa para poner o quitar un pin · máximo 9</span>
     <button id="mapaCerrar">CERRAR</button>
   </div>
+</div>
+
+<div id="perio">
+  <div id="plana">
+    <div id="cabecera"><span id="perioNombre">EL DIARIO</span><b>DE CIUDAD JUÁREZ</b></div>
+    <div id="perioFecha"></div>
+    <h1 id="perioTitular"></h1>
+    <div id="perioFotos"></div>
+    <div id="perioCredito"></div>
+    <p id="perioBajada"></p>
+    <div id="perioCols"></div>
+  </div>
+  <div id="perioPie">Clic o cualquier tecla para seguir</div>
 </div>
 
 <div id="firma">
@@ -1949,6 +1994,40 @@ function enMira(w,ox,oz,ang,x,z){
   return d<w.alcance*w.alcance
       && Math.abs(angDif(ang,Math.atan2(x-ox,z-oz)))<w.cono;
 }
+// La foto es una foto de verdad: se rinde la escena a un render target desde el
+// ojo de Jimmy, con el campo del lente que trae puesto y sin dibujarlo a él. Eso
+// es lo que después sale impreso en la portada.
+const RTW=336, RTH=189;
+const rtFoto=new THREE.WebGLRenderTarget(RTW,RTH);
+const bufFoto=new Uint8Array(RTW*RTH*4);
+function capturar(w){
+  try{
+    const ox=camera.position.x, oy=camera.position.y, oz=camera.position.z;
+    const oa=camera.aspect, of=camera.fov;
+    jugador.malla.visible=false;
+    camera.aspect=RTW/RTH;
+    camera.fov = w.cono<0.2 ? 20 : 68;                  // teleobjetivo contra gran angular
+    camera.updateProjectionMatrix();
+    camera.position.set(jugador.x,1.78,jugador.z);
+    camera.lookAt(jugador.x+Math.sin(camAng)*40,1.5,jugador.z+Math.cos(camAng)*40);
+    renderer.setRenderTarget(rtFoto);
+    renderer.render(scene,camera);
+    renderer.setRenderTarget(null);
+    renderer.readRenderTargetPixels(rtFoto,0,0,RTW,RTH,bufFoto);
+    camera.position.set(ox,oy,oz);camera.aspect=oa;camera.fov=of;
+    camera.updateProjectionMatrix();
+    jugador.malla.visible=true;
+    const c=lienzo(RTW,RTH), g=c.getContext('2d');
+    const img=g.createImageData(RTW,RTH);
+    for(let y=0;y<RTH;y++){                             // WebGL viene de abajo hacia arriba
+      const src=(RTH-1-y)*RTW*4, dst=y*RTW*4;
+      for(let i=0;i<RTW*4;i++)img.data[dst+i]=bufFoto[src+i];
+    }
+    g.putImageData(img,0,0);
+    return c;
+  }catch(e){jugador.malla.visible=true;return null;}
+}
+
 function cambiarArma(){
   armaIdx=(armaIdx+1)%CAMARAS.length;
   aviso3(ARMAS[armaIdx].nombre);pip(760,0.06);
@@ -1980,6 +2059,7 @@ function fotografiar(){
   // ¿está el asunto de la nota en el encuadre?
   if(mision.estado==='escena'&&enMira(w,jugador.x,jugador.z,camAng,mision.x,mision.z)){
     mision.fotos++;algo=true;
+    const toma=capturar(w);if(toma)mision.tomas.push(toma);
     aviso3('FOTO '+mision.fotos+' DE '+mision.pide);
     if(mision.fotos>=mision.pide)cerrarEscena();
   }
@@ -2112,8 +2192,9 @@ const ACTOS=[
       'gente, no al presidente.','marisol','calle',3],
      ['El primer coche bomba del país','Diez kilos de C-4 contra federales, en 16 de Septiembre '+
       'y Francisco Villa. Ve por el cráter.','marisol','bomba',3],
-     ['La Federal releva al Ejército','Nueve de abril. La ciudad los califica con dos punto dos '+
-      'de diez. Fotografía el operativo.','diablo','puente',2],
+     ['¿Qué quieren de nosotros?','Mataron a nuestro fotógrafo, de veintiuno. Mañana la plana va '+
+      'dirigida a ellos, porque el Estado no contesta. Documenta la redacción cerrando.',
+      'marisol','diario',3],
    ]},
   {anio:'2011', titulo:'SE ACABÓ PORQUE ALGUIEN GANÓ',
    sub:'Acto IV · Se acabó porque alguien ganó',
@@ -2126,14 +2207,33 @@ const ACTOS=[
    encargos:[
      ['Cayó el jefe de La Línea','Le imputan más de mil quinientos homicidios, Salvárcar y el '+
       'coche bomba. Ve por la reacción en la calle.','kilo','calle',2],
+     ['Bajan los muertos, por fin','Primera vez en cuatro años que la cifra cae. Nadie festeja. '+
+      'Quiero calle, no boletín.','marisol','calle',2],
      ['Se van los Indios','El equipo se disuelve. Subieron en 2008 y en el Apertura 2009 no '+
       'ganaron un partido. Foto del estadio vacío.','yoli','estadio',2],
-     ['¿Qué quieren de nosotros?','Mañana sale la plana dirigida a ellos, porque el Estado no '+
-      'contesta. Documenta la redacción cerrando la edición.','marisol','diario',3],
      ['La ciudad que queda','Sin nota y sin paga. Nomás sube al Chamizal y fotografía la bandera.',
       'luz','bandera',2],
    ]},
 ];
+// El periódico sale al día siguiente de lo que pasó.
+const FECHAS={
+  'Entra el Ejército':'SÁBADO 29 DE MARZO DE 2008',
+  'La manta del monumento':'ENERO DE 2008',
+  'Otro changarro con cuota':'2008',
+  'Mataron al de policiaca':'VIERNES 14 DE NOVIEMBRE DE 2008',
+  'Cuadra por cuadra':'2009',
+  'Campo algodonero':'MARTES 17 DE NOVIEMBRE DE 2009',
+  'Colgado en el puente peatonal':'2009',
+  'La maquila vuelve a parar':'2009',
+  'Villas de Salvárcar':'LUNES 1 DE FEBRERO DE 2010',
+  'En algo andaban':'VIERNES 12 DE FEBRERO DE 2010',
+  'El primer coche bomba del país':'VIERNES 16 DE JULIO DE 2010',
+  '¿Qué quieren de nosotros?':'SEPTIEMBRE DE 2010',
+  'Cayó el jefe de La Línea':'SÁBADO 30 DE JULIO DE 2011',
+  'Bajan los muertos, por fin':'2011',
+  'Se van los Indios':'DICIEMBRE DE 2011',
+  'La ciudad que queda':'2011',
+};
 const ENCARGOS_POR_ACTO=4;
 let hechos=0;
 
@@ -2175,7 +2275,8 @@ function nuevaOferta(){
   // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
   const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-2,2), z:dador.z+rnd(2,4)} : puntoCalle();
   mision.estado='asignacion';mision.x=p.x;mision.z=p.z;mision.dador=dador;
-  mision.titulo=e[0];mision.texto=e[1];mision.lugar=e[3];mision.pide=e[4]||2;mision.fotos=0;
+  mision.titulo=e[0];mision.texto=e[1];mision.lugar=e[3];mision.pide=e[4]||2;
+  mision.fotos=0;mision.tomas=[];
   mision.gratis = e[0]==='La ciudad que queda';
   ui.mtitulo.textContent = mision.dador ? 'Te busca '+mision.dador.nombre : 'Encargo disponible';
   ui.barra.style.display='none';
@@ -2185,7 +2286,7 @@ function nuevaOferta(){
 function pintarMarcador(c){matMarcador.color.setHex(c);matAro.color.setHex(c);}
 function aceptar(){
   const p=lugarDe(mision.lugar);
-  mision.estado='escena';mision.x=p.x;mision.z=p.z;mision.fotos=0;
+  mision.estado='escena';mision.x=p.x;mision.z=p.z;mision.fotos=0;mision.tomas=[];
   const d=Math.sqrt(dist2(jugador.x,jugador.z,p.x,p.z));
   mision.total=mision.tiempo=clamp(d/9+45,60,170);
   mision.pago=mision.gratis?0:Math.round(150+d*1.1+mision.racha*50);
@@ -2222,10 +2323,44 @@ function pedirFirma(){
     '+$'+Math.round(mision.pago*0.7)+' · nadie sabe quién fue · pierdes la racha';
   firmaPanel.classList.add('on');
 }
+const perio=document.getElementById('perio');
+let perioAbierto=false, perioT=0;
+function periodicazo(firmada){
+  perioAbierto=true;perioT=0.9;jugando=false;   // no se cierra mientras gira
+  document.getElementById('perioFecha').textContent=
+    (FECHAS[mision.titulo]||ACTOS[acto].anio)+' · CIUDAD JUÁREZ, CHIH. · $5.00';
+  document.getElementById('perioTitular').textContent=mision.titulo.toUpperCase();
+  document.getElementById('perioBajada').textContent=mision.texto;
+  document.getElementById('perioCredito').textContent=
+    firmada?'FOTOS: JAIME NIEVES':'FOTOS: EL DIARIO';
+  const cont=document.getElementById('perioFotos');
+  cont.innerHTML='';
+  for(const c of mision.tomas)cont.appendChild(c);
+  const cols=document.getElementById('perioCols');
+  cols.innerHTML='';
+  for(let k=0;k<3;k++){
+    let h='';for(let i=0;i<7;i++)h+='<i style="width:'+(62+Math.random()*38).toFixed(0)+'%"></i>';
+    const d=document.createElement('div');d.innerHTML=h;cols.appendChild(d);
+  }
+  perio.classList.add('on');
+  pip(300,0.12);setTimeout(()=>pip(220,0.1),110);      // el golpe del papel
+}
+function cerrarPeriodico(){
+  if(!perioAbierto||perioT>0)return;              // deja terminar el giro
+  perioAbierto=false;perio.classList.remove('on');
+  jugando=true;ultimo=performance.now();
+  hechos++;
+  guardar();
+  if(hechos>=ENCARGOS_POR_ACTO){
+    if(acto<ACTOS.length-1){hechos=0;avanzarActo();}
+    else cerrar();
+  }else nuevaOferta();
+}
+perio.addEventListener('pointerdown',cerrarPeriodico);
+
 function resolverFirma(firmada,silencio){
   if(!esperandoFirma&&!silencio)return;
   esperandoFirma=false;firmaPanel.classList.remove('on');
-  jugando=true;ultimo=performance.now();
   const pago = mision.gratis?0 : Math.round(mision.pago*(firmada?1.6:0.7));
   jugador.dinero+=pago;notas++;registrados+=mision.pide;
   if(!mision.gratis){
@@ -2237,13 +2372,7 @@ function resolverFirma(firmada,silencio){
     }else{anonimas++;mision.racha=0;}
   }
   if(!silencio)aviso3(firmada?'FIRMADA · +$'+pago:'SIN FIRMA · +$'+pago);
-  pip(1240,0.12);setTimeout(()=>pip(1560,0.14),90);
-  hechos++;
-  guardar();
-  if(hechos>=ENCARGOS_POR_ACTO){
-    if(acto<ACTOS.length-1){hechos=0;avanzarActo();}
-    else cerrar();
-  }else nuevaOferta();
+  periodicazo(firmada);
 }
 document.getElementById('opFirmar').addEventListener('pointerdown',()=>resolverFirma(true));
 document.getElementById('opAnon').addEventListener('pointerdown',()=>resolverFirma(false));
@@ -2425,6 +2554,7 @@ const inp={x:0,z:0,girar:0,correr:false,freno:false};
 let camAng=0,camAlt=0.35,camDist=11,arrastre=false,lx=0,ly=0,jugando=false;
 
 addEventListener('keydown',e=>{
+  if(perioAbierto){cerrarPeriodico();return;}
   if(esperandoFirma){
     if(e.code==='Digit1'||e.code==='Numpad1')resolverFirma(true);
     if(e.code==='Digit2'||e.code==='Numpad2')resolverFirma(false);
@@ -3213,6 +3343,7 @@ function bucle(now){
   requestAnimationFrame(bucle);
   let dt=(now-ultimo)/1000;ultimo=now;
   dt=Math.min(dt,0.05);
+  if(perioT>0)perioT-=dt;
   if(!jugando){actBandera();renderer.render(scene,camera);return;}
   leerTeclas();
   if(bloqueo>0){bloqueo-=dt;}
@@ -3253,13 +3384,14 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
-    CAMARAS,fotografiar,LUGARES,resolverFirma,
+    CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
                  notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
-                 firmadas,anonimas,esperandoFirma,
+                 firmadas,anonimas,esperandoFirma,periodico:perioAbierto,perioT,
+                 tomas:mision.tomas?mision.tomas.length:0,
                  estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
                  colgados:colgados.filter(c=>c.grupo.visible).length,

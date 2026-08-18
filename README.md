@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 158 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 165 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -40,6 +40,10 @@ tiempo de carga.
   La Línea, la plana de «¿Qué quieren de nosotros?».
 - **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
   la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
+- **Periodicazo.** Al cerrar la edición sale la portada girando, como en las películas: cabecera,
+  la fecha real del día siguiente al hecho, el titular, **las fotos que tú tomaste** y el crédito
+  según lo que hayas decidido. Las fotos no son de adorno: se capturan de verdad desde el ojo de
+  Jimmy, con el campo del lente que traía puesto, y salen impresas en blanco y negro.
 - **El crédito de la foto lo decides tú.** En el cierre eliges entre `FOTO: JAIME NIEVES` y
   `FOTO: EL DIARIO`. Firmar paga 1.6× y construye tu racha, pero **la facción que sale en tus fotos
   aprende tu nombre** y a partir de 2010 te busca. No firmar paga 0.7×, no te delata y te tumba la

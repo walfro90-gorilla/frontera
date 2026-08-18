@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3288 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3420 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,21 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+**Las fotos son fotos de verdad.** `capturar(lente)` rinde la escena a un `WebGLRenderTarget` de
+336×189 desde la posición de Jimmy mirando a `camAng`, con `camera.fov` en 20 para el teleobjetivo o
+68 para el gran angular, y con `jugador.malla` oculto para que no salga su propia espalda. Después
+`readRenderTargetPixels` y un blit a un `<canvas>` **invirtiendo la Y**, porque WebGL entrega las
+filas de abajo hacia arriba. Los lienzos se guardan en `mision.tomas` y son los que se insertan en
+la portada; el blanco y negro lo pone un `filter` de CSS, no el render.
+
+Va envuelto en `try/catch` que repone `jugador.malla.visible`: si el contexto se pierde a media
+captura, lo peor que puede pasar es quedarse sin foto, no invisible.
+
+**El periodicazo tiene cerrojo.** `perioT` bloquea el cierre durante 0.9 s. Sin eso, como la portada
+se cierra con cualquier tecla y el jugador normalmente trae `W` presionada, **la animación se
+saltaba sola y nadie la veía nunca**. El cerrojo se descuenta en `bucle()` antes del `return` de
+pausa, porque durante la portada el juego está pausado.
 
 **El crédito de la foto es la decisión central del juego.** `completar()` ya no paga: llama a
 `pedirFirma()`, que pausa y muestra `#firma`. `resolverFirma(firmada)` aplica todo — pago ×1.6 o

@@ -20,6 +20,7 @@ const src=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const g2d=()=>new Proxy({},{ get:(t,k)=>{
   if(k==='createRadialGradient'||k==='createLinearGradient')return ()=>({addColorStop(){}});
   if(k==='measureText')return ()=>({width:10});
+  if(k==='createImageData')return (w,h)=>({data:new Uint8ClampedArray(w*h*4)});
   if(typeof k==='string'&&!(k in t))return ()=>{};
   return t[k];
 }, set:()=>true });
@@ -60,7 +61,10 @@ const Mat=class{constructor(o){Object.assign(this,o||{});
 
 let assertFails=0;
 const THREE={
-  WebGLRenderer:class{constructor(){this.outputEncoding=0;}setPixelRatio(){}setSize(){}render(){}},
+  WebGLRenderer:class{constructor(){this.outputEncoding=0;}
+    setPixelRatio(){}setSize(){}render(){}setRenderTarget(){}
+    readRenderTargetPixels(rt,x,y,w,h,buf){for(let i=0;i<buf.length;i++)buf[i]=(i*7)%256;}},
+  WebGLRenderTarget:class{constructor(w,h){this.width=w;this.height=h;}},
   PerspectiveCamera:class extends Obj{constructor(){super();this.aspect=1;}},
   Scene:class extends Obj{},
   Group:class extends Obj{},
@@ -88,6 +92,7 @@ const el=id=>{
     classList:{add:c=>cls.add(c),remove:c=>cls.delete(c),
       toggle:(c,v)=>{v?cls.add(c):cls.delete(c);}},
     addEventListener(ev,fn){handlers[id+':'+ev]=fn;},
+    appendChild(){},
     querySelector:s=>el(id+' '+s),
     getBoundingClientRect:()=>({left:0,top:0,width:100,height:100}),
     setPointerCapture(){},width:176,height:176,getContext:()=>g2d()};
@@ -111,6 +116,7 @@ const sandbox={
     assert:(c,m)=>{if(!c){assertFails++;console.error('ASSERT FALLÓ:',m);}},
     error:(...a)=>console.error(...a)},
   Math,JSON,Map,Set,Array,Object,String,Number,Date,Proxy,isNaN,parseInt,parseFloat,
+  Uint8Array,Uint8ClampedArray,Float64Array,
 };
 sandbox.globalThis=sandbox;sandbox.window=sandbox;
 
@@ -157,7 +163,7 @@ const sitiosVistos=new Set();
 const colgadosPorActo=new Set();
 let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
-let decisiones=0, firmoAlgo=false, anonimoAlgo=false;
+let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
 let corridos=0;
@@ -165,6 +171,11 @@ try{
   for(let f=0;f<CUADROS;f++){
     corridos=f+1;
     t+=16.7;ahora=t;
+    // revisar la portada ANTES de tocar teclas: cualquier tecla la cierra
+    {const p=F.estado().periodico;
+     if(p&&!perioAntes)periodicazos++;            // contar portadas, no cuadros
+     perioAntes=p;
+     if(p)F.cerrarPeriodico();}
     for(let k=temporizadores.length-1;k>=0;k--)
       if(temporizadores[k].t<=ahora){const x=temporizadores.splice(k,1)[0];x.fn();}
     // recorrido de sitios: pararse frente a cada uno y ver si el panel lo anuncia
@@ -271,7 +282,7 @@ const est={
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
   notas:s.notas, registrados:s.registrados, atropellados:s.atropellados,
-  firmadas:s.firmadas, sinFirma:s.anonimas,
+  firmadas:s.firmadas, sinFirma:s.anonimas, periodicazos:periodicazos,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
@@ -293,6 +304,8 @@ exige(s.notas>=12,'se publicaron notas en los cuatro actos ('+s.notas+')');
 exige(firmoAlgo&&anonimoAlgo,'el crédito de la foto se decide en las dos direcciones');
 exige(s.firmadas>0&&s.anonimas>0,'se contaron firmadas ('+s.firmadas+') y sin firma ('+s.anonimas+')');
 exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
+exige(periodicazos>=12,'sale la portada en cada cierre ('+periodicazos+')');
+exige(!s.periodico,'el juego no se queda con el periódico en pantalla');
 exige(s.registrados>0,'se registraron muertos en las notas ('+s.registrados+')');
 exige(typeof F.CAMARAS[0].sujetos==='number'&&!('blancos' in F.CAMARAS[0]),
   'los lentes son lentes, no armas');
