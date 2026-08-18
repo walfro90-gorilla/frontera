@@ -130,6 +130,7 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 const CUADROS=34000, CERCO_INI=2500, CERCO_FIN=11000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
+let mapaProbado='no se probó';
 let corridos=0;
 try{
   for(let f=0;f<CUADROS;f++){
@@ -166,6 +167,11 @@ try{
     // Salir del cerco con calor 5 significa que las patrullas te agarran cada rato
     // y el resto de la corrida se va en arrestos. Reaparecer es lo que haría el juego.
     if(f===CERCO_FIN)F.reaparecer();
+    // mapa grande: abrir con pines puestos, dibujar y cerrar
+    if(f===1200)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
+    if(f===1260){F.abrirMapa();mapaProbado=F.estado().mapa&&!F.estado().jugando?'abrió y pausó':'NO pausó';}
+    if(f===1320){F.cerrarMapa();
+      if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';}
     if(cerco&&f%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
     if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
       const b=F.jugador.auto||F.jugador;let m=1e9;
@@ -203,6 +209,7 @@ const est={
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
+  mapa:mapaProbado, pines:F.pines.length,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
 // los sistemas tienen que haberse movido, no solo no tronar
@@ -227,6 +234,8 @@ const atrapados=F.PERSONAJES.filter(p=>
   F.edificios.some(e=>Math.abs(p.x-e.x)<e.hw+1&&Math.abs(p.z-e.z)<e.hd+1));
 exige(!atrapados.length,'ningún personaje quedó dentro de un edificio ('+
   atrapados.map(p=>p.id)+')');
+exige(mapaProbado==='abrió y pausó','el mapa grande abre, pausa, dibuja y cierra ('+mapaProbado+')');
+exige(F.pines.length===3,'los pines sobreviven la partida');
 exige(Math.max(...abiertos)===F.antros.length,'en 2008 la Av. Juárez abre completa');
 exige(Math.min(...abiertos)<=6,'la Av. Juárez se apaga acto por acto (quedaron '+Math.min(...abiertos)+')');
 process.exit(assertFails?1:0);

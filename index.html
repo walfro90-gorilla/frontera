@@ -51,7 +51,9 @@
 
   /* minimapa */
   #tr{position:absolute;top:14px;right:14px;padding:8px}
-  #mm{display:block;width:176px;height:176px;border-radius:2px;background:#070a0f}
+  #mm{display:block;width:176px;height:176px;border-radius:50%;background:#070a0f;
+    pointer-events:auto;cursor:pointer}
+  #mm:hover{filter:brightness(1.15)}
   #reloj{display:flex;justify-content:space-between;align-items:baseline;margin-top:7px;
     font-size:11px;letter-spacing:.1em;color:var(--tenue);gap:8px}
   #reloj b{color:var(--neon);font-weight:400;flex:none}
@@ -107,6 +109,17 @@
   #aviso.on{opacity:1}
   #aviso h2{font-family:var(--cond);font-size:76px;letter-spacing:.06em;font-weight:700}
   #aviso p{font-size:12px;letter-spacing:.2em;color:var(--tenue);text-transform:uppercase}
+
+  /* mapa grande */
+  #mapa{position:fixed;inset:0;z-index:15;background:rgba(6,8,13,.9);display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:3vh}
+  #mapa.on{display:flex}
+  #mgr{width:min(88vh,88vw);height:min(88vh,88vw);background:#070a10;
+    border:1px solid var(--linea);border-radius:2px;cursor:crosshair;touch-action:none}
+  #mapaPie{display:flex;align-items:center;gap:18px;font-size:10px;letter-spacing:.12em;
+    color:var(--tenue);text-transform:uppercase}
+  #mapaCerrar{font-family:var(--cond);font-size:15px;letter-spacing:.1em;background:var(--oro);
+    color:#0b0e14;border:0;padding:6px 22px;cursor:pointer;border-radius:2px}
 
   /* placa de acto */
   #placa{position:fixed;inset:0;z-index:14;background:#06080d;display:none;
@@ -227,6 +240,14 @@
   <button class="tbtn" id="bC">FUEGO</button>
 </div>
 
+<div id="mapa">
+  <canvas id="mgr" width="920" height="920"></canvas>
+  <div id="mapaPie">
+    <span>Clic en el mapa para poner o quitar un pin · máximo 9</span>
+    <button id="mapaCerrar">CERRAR</button>
+  </div>
+</div>
+
 <div id="placa">
   <div class="anio" id="plAnio">2008</div>
   <h3 id="plTitulo">EL QUE NO DEBE NADA</h3>
@@ -280,6 +301,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const angDif=(a,b)=>{let d=b-a;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return d;};
 const angLerp=(a,b,t)=>a+angDif(a,b)*t;
 const dist2=(ax,az,bx,bz)=>{const dx=ax-bx,dz=az-bz;return dx*dx+dz*dz;};
+const TAU=Math.PI*2;
 
 /* ══════════════════════════ GEOGRAFÍA ══════════════════════════
    Recreación comprimida de Ciudad Juárez, no un levantamiento topográfico.
@@ -1558,6 +1580,8 @@ const inp={x:0,z:0,girar:0,correr:false,freno:false};
 let camAng=0,camAlt=0.35,camDist=11,arrastre=false,lx=0,ly=0,jugando=false;
 
 addEventListener('keydown',e=>{
+  if(e.code==='Escape'&&mapaAbierto){cerrarMapa();return;}
+  if(e.code==='KeyT'&&(jugando||mapaAbierto)){mapaAbierto?cerrarMapa():abrirMapa();return;}
   if(!jugando)return;
   teclas[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyF'].indexOf(e.code)>=0)e.preventDefault();
@@ -1712,7 +1736,7 @@ const ui={
   cuenta:document.getElementById('cuenta'),
   dialogo:document.getElementById('dialogo'),diQuien:document.getElementById('diQuien'),
   diPapel:document.getElementById('diPapel'),diTexto:document.getElementById('diTexto'),
-  diMas:document.getElementById('diMas')
+  diMas:document.getElementById('diMas'),mapa:document.getElementById('mapa')
 };
 ui.arma.addEventListener('pointerdown',cambiarArma);
 ui.dinero.addEventListener('pointerdown',mordida);
@@ -2076,62 +2100,173 @@ function actAudio(){
   }
 }
 
-/* ══════════════════════════ MINIMAPA ══════════════════════════ */
-const mm=document.getElementById('mm'),mg=mm.getContext('2d');
-function minimapa(){
-  const S=mm.width, esc=S/300;
-  const b=posJugador();
-  const ang=jugador.auto?jugador.auto.ang:jugador.ang;
-  const X=x=>S/2+(x-b.x)*esc, Z=z=>S/2+(z-b.z)*esc;
-  mg.fillStyle='#0a0d13';mg.fillRect(0,0,S,S);
+/* ══════════════════════════ MAPAS ══════════════════════════ */
+// Un solo dibujante para los dos mapas. El minimapa es circular y gira con el
+// jugador —él siempre apunta arriba y el norte se mueve por el aro, como la
+// brújula de GTA—; el mapa grande es cuadrado, fijo al norte y con nombres.
+const mm=document.getElementById('mm'), mg=mm.getContext('2d');
+const mgr=document.getElementById('mgr'), gg=mgr.getContext('2d');
+const pines=[];
+let mapaAbierto=false;
+
+// encuadre del mapa grande: toda la ciudad más el otro lado del río
+const GX0=XMIN-70, GX1=XMAX+70, GZ0=ZPASO-40, GZ1=ZSUR+60;
+
+function flecha(g,x,y,rot,r,color){
+  g.save();g.translate(x,y);g.rotate(rot);
+  g.fillStyle=color;g.beginPath();
+  g.moveTo(0,-r);g.lineTo(r*0.72,r*0.86);g.lineTo(0,r*0.42);g.lineTo(-r*0.72,r*0.86);
+  g.closePath();g.fill();g.restore();
+}
+function marcaPin(g,x,y,r,n){
+  g.fillStyle='#ff4d5e';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
+  g.strokeStyle='rgba(255,77,94,.45)';g.lineWidth=1.5;
+  g.beginPath();g.arc(x,y,r*2.1,0,TAU);g.stroke();
+  if(n){g.fillStyle='#0b0e14';g.font='bold '+Math.round(r*1.4)+'px sans-serif';
+        g.textAlign='center';g.textBaseline='middle';g.fillText(n,x,y+0.5);}
+}
+
+// cx,cz: qué punto del mundo va al centro · esc: píxeles por metro · giro: radianes
+function dibujarMundo(g,S,cx,cz,esc,giro,grande){
+  const R=(S/2)/esc*1.5+60;                       // radio de mundo a considerar
+  const lejos=(x,z)=>Math.abs(x-cx)>R||Math.abs(z-cz)>R;
+  g.save();
+  g.translate(S/2,S/2);
+  if(giro)g.rotate(giro);
+  const X=x=>(x-cx)*esc, Z=z=>(z-cz)*esc;
+  const L=R*esc*2;
   // control de plaza
+  g.globalAlpha=0.30;
   for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
     const x0=ejeX(i),z0=ejeZ(j),w=ejeX(i+1)-x0,d=ejeZ(j+1)-z0;
-    if(Math.abs(x0+w/2-b.x)>190||Math.abs(z0+d/2-b.z)>190)continue;
-    mg.globalAlpha=0.30;mg.fillStyle=COLOR_PLAZA[plaza[i][j]];
-    mg.fillRect(X(x0),Z(z0),w*esc,d*esc);mg.globalAlpha=1;
+    if(lejos(x0+w/2,z0+d/2))continue;
+    g.fillStyle=COLOR_PLAZA[plaza[i][j]];
+    g.fillRect(X(x0),Z(z0),w*esc,d*esc);
   }
-  mg.fillStyle='#2a2f38';
-  for(let i=0;i<NX;i++)mg.fillRect(X(ejeX(i)-anchoX(i)/2),0,anchoX(i)*esc,S);
-  for(let j=0;j<NZ;j++)mg.fillRect(0,Z(ejeZ(j)-anchoZ(j)/2),S,anchoZ(j)*esc);
+  g.globalAlpha=1;
+  // calzadas
+  g.fillStyle='#2a2f38';
+  for(let i=0;i<NX;i++)g.fillRect(X(ejeX(i)-anchoX(i)/2),-L,anchoX(i)*esc,L*2);
+  for(let j=0;j<NZ;j++)g.fillRect(-L,Z(ejeZ(j)-anchoZ(j)/2),L*2,anchoZ(j)*esc);
   // el río y la valla: la raya que no se cruza
-  mg.fillStyle='#22404a';mg.fillRect(0,Z(ZRIO-ANCHO_RIO/2),S,ANCHO_RIO*esc);
-  mg.strokeStyle='#c4553f';mg.lineWidth=1.5;
-  mg.beginPath();mg.moveTo(0,Z(ZVALLA));mg.lineTo(S,Z(ZVALLA));mg.stroke();
-  mg.fillStyle='#171b22';
+  g.fillStyle='#22404a';g.fillRect(-L,Z(ZRIO-ANCHO_RIO/2),L*2,ANCHO_RIO*esc);
+  g.strokeStyle='#c4553f';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(-L,Z(ZVALLA));g.lineTo(L,Z(ZVALLA));g.stroke();
+  // edificios
+  g.fillStyle='#171b22';
   for(const e of edificios){
-    if(Math.abs(e.x-b.x)>170||Math.abs(e.z-b.z)>170)continue;
-    mg.fillRect(X(e.x-e.hw),Z(e.z-e.hd),e.hw*2*esc,e.hd*2*esc);
+    if(lejos(e.x,e.z))continue;
+    g.fillRect(X(e.x-e.hw),Z(e.z-e.hd),e.hw*2*esc,e.hd*2*esc);
   }
-  for(const a of autos){
-    if(a===jugador.auto)continue;
-    if(Math.abs(a.x-b.x)>160||Math.abs(a.z-b.z)>160)continue;
-    mg.fillStyle = a.clase==='federal'?'#38e0ff' : a.clase==='militar'?'#7f9a5c'
-                 : a.clase==='municipal'?'#5c7fd0' : a.clase==='sicario'?'#ff4d5e'
-                 : a.clase==='trafico'?'#8a97a8':'#4d5563';
-    mg.fillRect(X(a.x)-2,Z(a.z)-2,4,4);
+  // negocios abiertos de la Juárez: la calle se ve prendida y se va apagando
+  for(const a of antros){
+    if(!a.vivo||lejos(a.x,a.z))continue;
+    g.fillStyle='#ffb03a';g.fillRect(X(a.x)-1.5,Z(a.z)-1.5,3,3);
   }
-  // personajes
-  for(const p of PERSONAJES){
-    if(!p.malla.visible)continue;
-    if(Math.abs(p.x-b.x)>170||Math.abs(p.z-b.z)>170)continue;
-    mg.fillStyle='#e8eef6';mg.beginPath();mg.arc(X(p.x),Z(p.z),2.6,0,6.283);mg.fill();
+  if(!grande)for(const a of autos){
+    if(a===jugador.auto||lejos(a.x,a.z))continue;
+    g.fillStyle = a.clase==='federal'?'#38e0ff' : a.clase==='militar'?'#7f9a5c'
+                : a.clase==='municipal'?'#5c7fd0' : a.clase==='sicario'?'#ff4d5e'
+                : a.clase==='trafico'?'#8a97a8':'#4d5563';
+    g.fillRect(X(a.x)-2,Z(a.z)-2,4,4);
   }
   // puentes
-  mg.fillStyle='#d8c37a';
-  for(const p of PUENTES)mg.fillRect(X(ejeX(p.i))-2,Z(ZBORDO)-3,4,6);
-  // encargo, fijado al borde si está lejos
-  let mx=X(mision.x),mz=Z(mision.z);
-  const m=10;mx=clamp(mx,m,S-m);mz=clamp(mz,m,S-m);
-  mg.fillStyle='#ffc233';mg.beginPath();mg.arc(mx,mz,4.5,0,6.283);mg.fill();
-  mg.strokeStyle='rgba(255,194,51,.35)';mg.lineWidth=1;
-  mg.beginPath();mg.arc(mx,mz,8,0,6.283);mg.stroke();
-  // jugador
-  mg.save();mg.translate(S/2,S/2);mg.rotate(Math.PI-ang);
-  mg.fillStyle='#fff';mg.beginPath();mg.moveTo(0,-7);mg.lineTo(5,6);mg.lineTo(0,3);mg.lineTo(-5,6);
-  mg.closePath();mg.fill();mg.restore();
-  mg.strokeStyle='rgba(255,255,255,.10)';mg.lineWidth=1;mg.strokeRect(.5,.5,S-1,S-1);
+  g.fillStyle='#d8c37a';
+  for(const p of PUENTES)g.fillRect(X(ejeX(p.i))-2.5,Z(ZBORDO)-3,5,7);
+  // personajes
+  for(const p of PERSONAJES){
+    if(!p.malla.visible||lejos(p.x,p.z))continue;
+    g.fillStyle='#e8eef6';g.beginPath();g.arc(X(p.x),Z(p.z),grande?4:2.8,0,TAU);g.fill();
+  }
+  // pines de seguimiento
+  pines.forEach((q,k)=>{
+    if(lejos(q.x,q.z))return;
+    marcaPin(g,X(q.x),Z(q.z),grande?6:3.4,grande?String(k+1):'');
+  });
+  g.restore();
 }
+
+function minimapa(){
+  const S=mm.width, esc=S/300, r=S/2-2;
+  const b=posJugador();
+  const ang=jugador.auto?jugador.auto.ang:jugador.ang;
+  mg.clearRect(0,0,S,S);
+  mg.save();
+  mg.beginPath();mg.arc(S/2,S/2,r,0,TAU);mg.clip();
+  mg.fillStyle='#0a0d13';mg.fillRect(0,0,S,S);
+  dibujarMundo(mg,S,b.x,b.z,esc,ang-Math.PI,false);
+  // encargo, pegado al borde del círculo si queda lejos
+  let dx=(mision.x-b.x)*esc, dz=(mision.z-b.z)*esc;
+  const c=Math.cos(ang-Math.PI), sn=Math.sin(ang-Math.PI);
+  let rx=dx*c-dz*sn, rz=dx*sn+dz*c;
+  const m=Math.hypot(rx,rz), tope=r-11;
+  if(m>tope){rx=rx/m*tope;rz=rz/m*tope;}
+  mg.fillStyle='#ffc233';mg.beginPath();mg.arc(S/2+rx,S/2+rz,4.5,0,TAU);mg.fill();
+  mg.strokeStyle='rgba(255,194,51,.35)';mg.lineWidth=1;
+  mg.beginPath();mg.arc(S/2+rx,S/2+rz,8,0,TAU);mg.stroke();
+  mg.restore();
+  // aro y norte: el norte se pasea por el borde, el jugador no se mueve
+  mg.strokeStyle='rgba(255,255,255,.22)';mg.lineWidth=2;
+  mg.beginPath();mg.arc(S/2,S/2,r,0,TAU);mg.stroke();
+  const nx=S/2-Math.sin(ang)*(r-10), ny=S/2+Math.cos(ang)*(r-10);
+  mg.fillStyle='#ff4d5e';mg.beginPath();mg.arc(nx,ny,5,0,TAU);mg.fill();
+  mg.fillStyle='#0b0e14';mg.font='bold 8px sans-serif';
+  mg.textAlign='center';mg.textBaseline='middle';mg.fillText('N',nx,ny+0.5);
+  flecha(mg,S/2,S/2,0,7,'#fff');                  // siempre apuntando arriba
+}
+
+function mapaGrande(){
+  const S=mgr.width;
+  const esc=Math.min(S/(GX1-GX0), S/(GZ1-GZ0));
+  const cx=(GX0+GX1)/2, cz=(GZ0+GZ1)/2;
+  gg.fillStyle='#070a10';gg.fillRect(0,0,S,S);
+  dibujarMundo(gg,S,cx,cz,esc,0,true);
+  const X=x=>S/2+(x-cx)*esc, Z=z=>S/2+(z-cz)*esc;
+  // nombres de avenida en los bordes
+  gg.fillStyle='rgba(200,214,232,.55)';gg.font='9px ui-monospace, monospace';
+  gg.textBaseline='middle';
+  for(let i=0;i<NX;i++){
+    gg.save();gg.translate(X(ejeX(i)),14);gg.rotate(-Math.PI/2);
+    gg.textAlign='left';gg.fillText(corto(EJESX[i][1]),0,0);gg.restore();
+  }
+  gg.textAlign='left';
+  for(let j=0;j<NZ;j++)gg.fillText(corto(EJESZ[j][1]),6,Z(ejeZ(j)));
+  // El Paso, que se ve y no se pisa
+  gg.fillStyle='rgba(120,140,165,.5)';gg.font='11px ui-monospace, monospace';
+  gg.textAlign='center';gg.fillText('EL PASO, TEXAS · NO CRUZAS',S/2,Z(ZPASO)+6);
+  // encargo
+  gg.fillStyle='#ffc233';gg.beginPath();gg.arc(X(mision.x),Z(mision.z),6,0,TAU);gg.fill();
+  // jugador
+  const b=posJugador(), ang=jugador.auto?jugador.auto.ang:jugador.ang;
+  flecha(gg,X(b.x),Z(b.z),Math.PI-ang,9,'#fff');
+}
+
+function abrirMapa(){
+  if(mapaAbierto)return;
+  mapaAbierto=true;jugando=false;
+  ui.mapa.classList.add('on');mapaGrande();
+}
+function cerrarMapa(){
+  if(!mapaAbierto)return;
+  mapaAbierto=false;ui.mapa.classList.remove('on');
+  jugando=true;ultimo=performance.now();
+}
+// clic en el mapa grande: pon o quita un pin
+function pinEn(ev){
+  const S=mgr.width, rect=mgr.getBoundingClientRect();
+  const esc=Math.min(S/(GX1-GX0), S/(GZ1-GZ0));
+  const cx=(GX0+GX1)/2, cz=(GZ0+GZ1)/2;
+  const px=(ev.clientX-rect.left)*(S/rect.width), pz=(ev.clientY-rect.top)*(S/rect.height);
+  const x=cx+(px-S/2)/esc, z=cz+(pz-S/2)/esc;
+  for(let i=0;i<pines.length;i++)
+    if(dist2(pines[i].x,pines[i].z,x,z)<(18/esc)*(18/esc)){pines.splice(i,1);mapaGrande();pip(380,0.07);return;}
+  if(pines.length<9)pines.push({x,z});
+  mapaGrande();pip(880,0.07);
+}
+mm.addEventListener('pointerdown',e=>{e.stopPropagation();abrirMapa();});
+mgr.addEventListener('pointerdown',pinEn);
+document.getElementById('mapaCerrar').addEventListener('pointerdown',cerrarMapa);
+ui.mapa.addEventListener('pointerdown',e=>{if(e.target===ui.mapa)cerrarMapa();});
 
 /* ══════════════════════════ HUD POR CUADRO ══════════════════════════ */
 let pistaOn=false, avisoGarita=0;
@@ -2149,7 +2284,10 @@ function actHUD(dt){
   ui.vida.style.width=clamp(jugador.salud,0,100)+'%';
   ui.vida.style.background=jugador.salud<30?'#ff4d5e':'#38e0ff';
   const b=posJugador();
-  ui.calle.textContent=calleDe(b.x,b.z);
+  let pinCerca=1e9;
+  for(const q of pines)pinCerca=Math.min(pinCerca,dist2(q.x,q.z,b.x,b.z));
+  ui.calle.textContent=calleDe(b.x,b.z)+
+    (pines.length?' · pin a '+Math.round(Math.sqrt(pinCerca))+' m':'');
   ui.cuenta.textContent='Muertos: '+(muertos.civil+muertos.sicario+muertos.halcon)+
     (muertos.civil?' · civiles '+muertos.civil:'');
   const conQuien=!jugador.auto&&!charla&&personajeCerca();
@@ -2217,10 +2355,10 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // Costura de pruebas: solo existe con #test. Deja pilotear el juego desde fuera
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
-    PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,
+    PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
-                 abiertos:antros.filter(a=>a.vivo).length,
+                 abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 

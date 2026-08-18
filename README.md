@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 104 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 109 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -56,7 +56,11 @@ tiempo de carga.
 - **Ciclo día/noche de cuatro minutos.** Al anochecer se encienden solas las ventanas, las farolas,
   los faros de los autos y el rótulo de la lonchería.
 - **Levantón y Cruz Roja.** Perder cuesta dinero, nunca la partida.
-- **Tiene final.** Al cerrar el acto IV salen las cifras reales, tu propio contador de muertos al
+- **Mapa brújula.** El minimapa es redondo y gira contigo: tú siempre apuntas arriba y el norte se
+  pasea por el aro, como en GTA. Clic (o `T`) lo abre a pantalla completa, fijo al norte, con los
+  nombres de las avenidas, y ahí pones hasta nueve **pines de seguimiento**. El HUD te dice a
+  cuántos metros está el más cercano. La Av. Juárez se ve prendida en el mapa y se va apagando.
+- **Tiene final. Al cerrar el acto IV salen las cifras reales, tu propio contador de muertos al
   lado del de la ciudad, y la sentencia de 2024. La partida se guarda sola; `#nuevo` en la URL la
   borra.
 
@@ -71,6 +75,8 @@ tiempo de carga.
 | `E` | Disparar (solo a pie) |
 | `Q` | Cambiar de arma |
 | `G` | Dar mordida a la municipal ($400) |
+| `T` o clic al minimapa | Abrir el mapa grande |
+| `Esc` | Cerrar el mapa |
 | Arrastrar mouse | Girar cámara |
 | Rueda | Acercar o alejar |
 | `R` | Enderezar auto |

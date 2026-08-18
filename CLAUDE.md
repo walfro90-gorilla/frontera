@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2244 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2382 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -231,6 +231,29 @@ marcador de recogida cae en la pared y **el encargo se vuelve imposible de tomar
 atora en ese acto para siempre. Se corre al construir, con `r=8` para que quepan la persona y su
 marcador. Por eso la sección `PERSONAJES` tiene que ir después de que `edificios[]` esté lleno.
 `prueba.js` tiene la regresión.
+
+### Mapas
+
+Un solo dibujante, `dibujarMundo(g,S,cx,cz,esc,giro,grande)`, sirve a los dos mapas: recibe qué
+punto del mundo va al centro, la escala en píxeles por metro y el giro. Los dos lo llaman con
+parámetros distintos y nada se duplica.
+
+**El minimapa es brújula, no plano.** Va recortado a un círculo, el mundo gira `ang - π` y el
+jugador se dibuja fijo apuntando arriba. La marca de norte se calcula aparte en
+`(-sin ang, cos ang)` desde el centro: si vas al sur, la N queda abajo. El marcador del encargo se
+pega al borde del círculo cuando queda fuera, no al borde de un cuadrado.
+
+**El mapa grande** (`#mapa`, `mapaGrande()`) es cuadrado, fijo al norte, cubre `GX0..GX1 × GZ0..GZ1`
+—toda la ciudad más El Paso— y rotula las avenidas en los bordes. Se abre con clic al minimapa o
+`T`, **pausa el juego** (`jugando=false`) y se cierra con `Esc`, el botón, o clic fuera del lienzo.
+
+`pines[]` son los pines de seguimiento, máximo nueve. `pinEn()` convierte el clic a coordenadas de
+mundo y alterna: si caes cerca de uno existente lo quita, si no lo pone. Se dibujan en los dos mapas
+y el HUD muestra la distancia al más cercano junto al nombre de la calle. **No se guardan** en la
+partida: son de la sesión.
+
+`Escape` y `T` se atienden **antes** del `if(!jugando)return` del manejador de teclado, porque con
+el mapa abierto el juego está pausado y si no, no habría cómo cerrarlo.
 
 ### La lonchería
 
