@@ -133,27 +133,33 @@ El Paso. No pelean. Solo pierden. Mecánicamente: son la economía y la moral de
 | **El Virrey** | Vicente Carrillo Fuentes "El Viceroy" | Jefe ausente del Cártel de Juárez. Un heredero defendiendo una casa que ya se está cayendo. |
 | **El Diablo** | El jefe operativo de La Línea, ~1,500 homicidios, coche bomba, sentenciado a 10 cadenas perpetuas | **El único jefe con cara.** Carismático, cercano, te da chamba, te invita carne asada, y te manda a cosas que no vas a poder desver. Es el villano del jugador porque es el único que lo trata bien. |
 
+El Diablo es el único de esta lista que existe como personaje jugable: tiene esquina, líneas y
+desaparece en el acto IV. Los demás son voz de radio y contexto, a propósito.
+
 ### Ficticios (compuestos, sin referente único)
+
+Marcados con **·en el juego·** los que ya tienen esquina fija, líneas por acto y dan encargos.
 
 - **Nicolás "Nico" Terrazas**, 24 — protagonista. Operador de línea en una maquila de arneses hasta
   el paro de 2009. Sabe manejar y sabe callarse. Empieza de **halcón** porque paga el doble que el
   turno de noche.
-- **Yolanda "Yoli" Terrazas**, 19 — hermana. Estudia enfermería. Es el reloj moral: cada acto está
+- **Yolanda "Yoli" Terrazas**, 19 — **·en el juego·** hermana. Estudia enfermería. Es el reloj moral: cada acto está
   un poco más cerca de la puerta que Nico abrió.
-- **Doña Chayo** — dueña de la lonchería *La Frontera*, en la esquina donde arranca el juego. Paga
+- **Doña Chayo** — **·en el juego·** dueña de la lonchería *La Frontera*, en la esquina donde arranca el juego. Paga
   cuota desde el acto I. En el acto III la lonchería es un tapial quemado. Es el tutorial y es el
   luto.
-- **Marisol Vega** — reportera de policiaca de *El Fronterizo* (diario ficticio). Da misiones de
+- **Marisol Vega** — **·en el juego·** reportera de policiaca de *El Fronterizo* (diario ficticio). Da misiones de
   información en vez de sangre. Su arco termina en una plana que le pregunta a los cárteles qué
   quieren de ellos, porque el Estado no contesta.
 - **Comandante Sepúlveda** — municipal en nómina de La Línea. No es un policía corrupto: es un
-  sicario con placa y aguinaldo. Encarna de qué está hecha La Línea.
+  sicario con placa y aguinaldo. Encarna de qué está hecha La Línea. *Todavía no tiene cara: por
+  ahora lo dice la mecánica de la mordida, que solo funciona con municipales.*
 - **Agente Bermúdez** — federal. Limpio para los estándares de la ciudad, y aun así trabaja para una
   cadena de mando que cobra de Sinaloa. Su tragedia es que hace bien un trabajo que sirve para lo
-  contrario de lo que cree.
-- **El Kilo** — jefe de plaza de Gente Nueva. Sinaloense, veinticinco años, camioneta nueva. Te
+  contrario de lo que cree. *Todavía no tiene cara: por ahora lo dice que la federal no se arregle.*
+- **El Kilo** — **·en el juego·** jefe de plaza de Gente Nueva. Sinaloense, veinticinco años, camioneta nueva. Te
   ofrece pasarte de bando cada vez que La Línea te falla.
-- **Luz** — madre buscadora. No da misiones de combate: da mapas. Sabe dónde están los tiraderos
+- **Luz** — **·en el juego·** madre buscadora. No da misiones de combate: da mapas. Sabe dónde están los tiraderos
   porque los ha caminado. Su hija no aparece en todo el juego y no debe aparecer.
 
 ---
@@ -164,11 +170,13 @@ El Paso. No pelean. Solo pierden. Mecánicamente: son la economía y la moral de
 Halcón en moto. Reportar retenes, seguir camionetas, entregar sobres. Nada es violento todavía.
 El operativo entra a la ciudad y la ciudad lo aplaude. La cuota llega a la lonchería de Doña Chayo.
 *Mecánica nueva del acto:* rutas de vigilancia y evasión. Sin arma.
+⚠️ **Lo del arma no se cumple:** hoy el jugador trae pistola desde el primer minuto. Pendiente.
 
 **Acto II — 2009. "La plaza se calienta".**
 Nico maneja. La Línea contra Gente Nueva, cuadra por cuadra. Aparece el arma. Primera baja, y el
 juego no la celebra: la registra. Marisol empieza a hacer preguntas. Matan a un reportero.
 *Mecánica nueva:* control de territorio por manzana; la cuota se convierte en ruta de cobro.
+✅ El control de plaza está. ⬜ La ruta de cobro sigue siendo un encargo normal con otro texto.
 
 **Acto III — 2010. "En algo andaban".**
 El año de 3,622. Una fiesta de estudiantes en el sur de la ciudad — **fuera de pantalla, en la
@@ -177,6 +185,8 @@ en algo andaban, y la madre de dos de ellos le contesta en cadena nacional. La P
 releva al Ejército y no mejora nada. Estalla el coche bomba en el centro.
 *Mecánica nueva:* dos cuerpos policiacos con reglas distintas; el calor federal ya no se enfría
 solo, se compra.
+✅ Ambas. La Federal releva al Ejército en el acto III y la mordida solo funciona con municipales.
+⬜ El coche bomba sigue siendo solo una línea de radio.
 
 **Acto IV — 2011–2012. "Se acabó porque alguien ganó".**
 La violencia baja. No porque el Estado ganara, sino porque un cártel terminó de ganar. Cae El
@@ -184,6 +194,8 @@ Diablo. El Súperpoli sale del gobierno con honores y un vuelo a Miami. Nico dec
 puente o se queda.
 *Cierre:* placa de texto con las cifras reales y la sentencia de 2024. El chiste final no lo hace
 el juego: lo hizo la historia.
+✅ Está, con el contador propio de muertos al lado del de la ciudad. ⬜ Lo de cruzar o quedarse
+todavía no es una decisión del jugador: el encargo *Llevar a Yoli* la cruza a ella y ya.
 
 ---
 

@@ -54,7 +54,8 @@ Las secciones que dependen de otras:
 | `SUELO HORNEADO` | `ZONAS` (hornea el canvas con las zonas ya sorteadas) |
 | `EDIFICIOS Y PROPS` | `ZONAS`, `TEXTURAS` — llena `edificios[]` y `luminarias[]` |
 | `RÍO, BORDO, VALLA Y PUENTES` | `EDIFICIOS` (usa `matPoste`, `geoCaja`) y llena `vallaTramos[]` |
-| `ACTOS Y ENCARGOS` | declara `acto`, que `PERSONAS` usa al poblar |
+| `PERSONAJES` | `PERSONAS` (usa `persona()`) y `GEOGRAFÍA` para las esquinas |
+| `ACTOS Y ENCARGOS` | declara `acto`, que `PERSONAS` y `PERSONAJES` usan; sus `encargos` citan ids de `PERSONAJES` por nombre, resueltos en tiempo de ejecución |
 | `POBLAR LA CIUDAD` | **todo lo anterior** — corre `PUENTES.forEach(puente)` y crea autos y peatones |
 | `PRUEBAS` / `ARRANQUE` | el final, ya con todo construido |
 

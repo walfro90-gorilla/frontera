@@ -1,9 +1,13 @@
 // Prueba de humo del juego.  Uso:  node prueba.js   (DEBUG=1 para traza)
 //
 // Stubea THREE y el DOM lo justo para correr el script de index.html en Node y
-// jugarlo solo: arranca, camina, dispara, se sube a carros y recorre los cuatro
-// actos. Verifica que no truene ningún cuadro y que los sistemas de verdad se
-// muevan (encargos, actos, calor, persecución, arresto).
+// jugarlo solo, en tres fases:
+//   1) calentarse a pie
+//   2) quedarse quieto y medir si las patrullas de verdad llegan
+//   3) recorrer los cuatro actos hasta el final, hablando con quien dé el encargo
+// Verifica que no truene ningún cuadro y que los sistemas se muevan de verdad:
+// encargos, actos, calor, persecución, arresto, diálogo, reparto por acto,
+// la lonchería degradándose y la placa de cierre.
 //
 // No reemplaza abrir el juego: no hay GPU aquí, así que nada de esto prueba que
 // se vea bien. Prueba que la simulación no se rompa.
