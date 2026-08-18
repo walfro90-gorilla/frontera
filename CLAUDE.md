@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2750 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2966 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -211,6 +211,25 @@ la plática sola si te alejas o te subes al carro.
 hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
 hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
 llamarla directo desde entradas** — todo pasa por `accionF()`.
+
+### Colgados y sucesos
+
+Los colgados van **como paisaje, nunca como mecánica**: `disparar()` no los toca, no dan dinero y no
+existe forma de colgar a nadie. Al acercarte, `actColgados()` cierra los negocios de esa manzana y
+lo reporta la radio — cuesta, no paga. Si algún día alguien los conecta a una recompensa, está
+rompiendo la regla de tono 1 y el §10 de `HISTORIA.md`.
+
+`restosBomba` y `memorial` son grupos que `actoSucesos()` prende en el acto III y nunca apaga. El
+estallido suena en el manejador de *SEGUIR* de la placa, no en `avanzarActo()`, para que se oiga
+cuando el jugador ya tiene el control y no detrás de una pantalla negra.
+
+El encargo **Llevar flores** tiene destino fijo: `aceptar()` lo manda al memorial en vez de a un
+`puntoCalle()` cualquiera.
+
+**`crearColgados()` se llama desde ARRANQUE, no en su sección.** Usa `persona()`, que necesita
+`PIEL` y `ROPA`, declaradas más abajo en `PERSONAS`: construirlos donde están definidos revienta por
+TDZ. Es el mismo tropiezo que documenta la tabla de orden de carga, y `node prueba.js` lo cazó al
+primer intento.
 
 ### Sitios
 

@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 129 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 140 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -21,11 +21,18 @@ tiempo de carga.
   Juárez, Francisco Villa, Abraham Lincoln, de las Américas, Waterfill, 16 de Septiembre, Vicente
   Guerrero, Triunfo de la República. Zona Centro con su catedral, el Chamizal junto al río,
   colonias de casas pegadas, maquilas al sur y la Sierra de Juárez al poniente con su letrero.
-- **Quince sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué
+- **Colgados.** De los puentes peatonales aparecen ejecutados con su manta, como aparecían: uno en
+  2008, cuatro en 2010, dos en 2011. Al topártelos la cuadra baja cortinas y la radio lo reporta.
+  No dan dinero, no dan puntos y **no se pueden colgar**: son paisaje, y lo que habla es la manta.
+- **El coche bomba y Salvárcar.** Al entrar a 2010 truena algo en el centro y la radio lo cuenta;
+  después puedes ir a ver lo que quedó en 16 de Septiembre y Francisco Villa. Y en el sureste
+  aparece un memorial de quince cruces **sin un solo nombre**. Ninguno de los dos se juega.
+- **Diecinueve sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué
   importa: el asta del Chamizal y su museo, el Estadio Olímpico Benito Juárez, el Monumento a los
   Trabajadores de la maquila, el Umbral del Milenio, el Kentucky Club, el Noa Noa, la catedral y la
   misión de 1659, la lonchería, el bordo con su valla, los cuatro puentes y el letrero del Cerro
-  Bola. Datos reales, sin sermón y sin detener el juego.
+  Bola, el puente peatonal de la Sanders, el coche bomba, el memorial y la cruz rosa. Datos
+  reales, sin sermón y sin detener el juego.
 - **El Chamizal y la bandera monumental.** Las 177 hectáreas que el Bravo se llevó en 1864 y que
   México recuperó en 1967 tras cien años de reclamos, sin un tiro. En 1997 le pusieron el asta:
   100 metros, bandera de 50 × 28, a quinientos metros de la línea, para celebrarlo. Ondea de verdad

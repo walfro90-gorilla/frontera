@@ -295,6 +295,9 @@ técnica, es la premisa.
 | Municipal **comprable** | $400 y se va. La federal no: no por honesta, sino porque cobra más arriba y no de ti. | ✅ Hecho |
 | **Toque de queda** de facto | De noche se meten los civiles y quedan los sicarios. Histórico, no estético. | ✅ Hecho |
 | **La lonchería de Doña Chayo** | En la esquina del arranque. Abre, aguanta la cuota, baja cortina, acaba tapiada y quemada. El luto sin una sola línea de diálogo. | ✅ Hecho |
+| **Colgados en los puentes peatonales** | Uno en 2008, cuatro en 2010, dos en 2011, cada uno con su manta. Sin gore, sin premio y sin poder colgar a nadie. Al toparlos cierra la cuadra. | ✅ Hecho |
+| **El coche bomba del 15 de julio de 2010** | Truena al entrar al acto III, se oye y se siente; los restos quedan en 16 de Septiembre y Francisco Villa con su placa. | ✅ Hecho |
+| **Villas de Salvárcar** | Fuera de pantalla, en la radio. Memorial de quince cruces sin nombres, y el encargo *Llevar flores* lleva ahí. | ✅ Hecho |
 | **Estadio Olímpico Benito Juárez** | El óvalo con su cancha, graderío y torres de luz, y el dato de los Indios: arriba de 2008 a 2011, sin ganar un partido en todo el Apertura 2009. | ✅ Hecho |
 | **Monumento a los Trabajadores y Umbral del Milenio** | Los dos del sur, con su año y su sitio. Las formas son interpretación; el lugar, la fecha y lo que significan, no. | ✅ Hecho |
 | **El Chamizal y el asta monumental** | Parque, arboleda, el museo de 1978 y la bandera de 50 × 28 m sobre 100 m de asta, ondeando por vértices. Se mancha 0.16 → 0.43 → 0.79 → 1.00 con el acumulado de muertos. | ✅ Hecho |
@@ -325,6 +328,11 @@ técnica, es la premisa.
 ## 10. Qué queda explícitamente fuera
 
 - Recrear Villas de Salvárcar como nivel jugable, o cualquier masacre real con sus víctimas.
+  *Sí está el memorial:* quince cruces sin nombre y una placa con lo que pasó y con lo que le
+  contestó Luz María Dávila al presidente. La masacre ocurre fuera de pantalla, en la radio. La
+  diferencia entre memorial y nivel es toda la diferencia.
+- Colgar a alguien, o cobrar por encontrar un colgado. Los colgados existen porque existieron, son
+  paisaje y cuestan: bajan la cortina de la cuadra.
 - Feminicidios como contenido, misión, coleccionable o fondo decorativo. La cruz rosa se ve, no se
   juega.
 - Nombres legales de personas vivas o de víctimas reales.

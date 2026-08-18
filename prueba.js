@@ -147,6 +147,8 @@ const CUADROS=34000, CERCO_INI=1400, CERCO_FIN=9500;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 const sitiosVistos=new Set();
+const colgadosPorActo=new Set();
+let bombaVista=false, memorialVisto=false;
 const SIT_INI=400, SIT_PASO=44;
 let mapaProbado='no se probó';
 const manchas=[];
@@ -214,6 +216,11 @@ try{
       seguir();placaVista++;
     }
     actosVistos.add(F.estado().acto);
+    {const e=F.estado();
+     colgadosPorActo.add(e.acto+':'+e.colgados);
+     if(e.bomba)bombaVista=true;
+     if(e.memorial)memorialVisto=true;
+     if(e.acto<2&&(e.bomba||e.memorial))bombaVista='ANTES DE TIEMPO';}
     {const m=F.estado().mancha;if(!manchas.length||manchas[manchas.length-1]!==m)manchas.push(m);}
     // el reloj mentía seis horas: marcaba las nueve de la mañana con el cielo negro
     {const hh=parseInt(el('hora').textContent,10), n=F.estado().noche;
@@ -249,6 +256,7 @@ const est={
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
   sitios:sitiosVistos.size+' de '+F.SITIOS.length,
+  colgados:[...colgadosPorActo].sort().join(' '), bomba:bombaVista, memorial:memorialVisto,
   horasVistas:horasVistas.size,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
@@ -290,6 +298,10 @@ const zs=F.geoBandera.attributes.position;
 let onda=0;
 for(let i=0;i<zs.count;i++)onda=Math.max(onda,Math.abs(zs.getZ(i)));
 exige(onda>0.5,'la bandera del Chamizal ondea (amplitud '+onda.toFixed(2)+' m)');
+exige(bombaVista===true,'los restos del coche bomba salen en el acto III y no antes');
+exige(memorialVisto,'el memorial de Salvárcar aparece en el acto III');
+exige([...colgadosPorActo].some(v=>v.startsWith('2:4')),
+  'en 2010 hay más colgados que en ningún otro acto ('+[...colgadosPorActo].sort().join(' ')+')');
 // todos los sitios deben tener dato y poder anunciarse: uno mudo o metido en un
 // edificio no se descubre nunca y el dato se pierde
 const sitiosSinDato=F.SITIOS.filter(s=>!s.nombre||!s.texto||!s.tipo||s.texto.length<40);

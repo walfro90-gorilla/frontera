@@ -862,6 +862,116 @@ function actBandera(){
           'años de reclamos y arbitrajes.'});
 })();
 
+/* ══════════════════════════ PUENTES PEATONALES Y COLGADOS ══════════════════════════ */
+// Los puentes peatonales de las avenidas anchas, y lo que aparecía colgado de
+// ellos. Entre 2008 y 2012 los grupos dejaban ejecutados a la vista con una manta:
+// el mensaje era para los rivales, para la autoridad y para el que pasaba.
+//
+// Va como paisaje, nunca como mecánica: el jugador no puede colgar a nadie, no
+// gana nada por encontrarlos y la cámara no se les acerca. Son figuras planas a
+// contraluz y lo que habla es la manta. Regla de tono 1 de HISTORIA.md.
+const colgados=[];
+const MANTAS=[
+  ['ESTO LES VA A PASAR','A TODO EL QUE ANDE CON EL POCHA','ATTE. LA LÍNEA'],
+  ['SIGAN MANDANDO GENTE','AQUÍ LOS SEGUIMOS ESPERANDO','ATTE. LA LÍNEA'],
+  ['PARA QUE APRENDAN','A RESPETAR LA PLAZA','ATTE. GENTE NUEVA'],
+  ['NI EL EJÉRCITO','NI LA FEDERAL NOS SACAN','ATTE. LA LÍNEA'],
+  ['EL QUE AVISA','NO ES TRAIDOR','ATTE. GENTE NUEVA'],
+  ['AQUÍ ESTAMOS','Y AQUÍ SEGUIMOS','ATTE. LA LÍNEA'],
+];
+function texManta(l){
+  const c=lienzo(256,160), g=c.getContext('2d');
+  g.fillStyle='#e8e4d8';g.fillRect(0,0,256,160);
+  for(let i=0;i<220;i++){                       // tela sucia
+    g.fillStyle='rgba(90,80,60,'+(Math.random()*0.10).toFixed(2)+')';
+    g.fillRect(Math.random()*256,Math.random()*160,3,3);
+  }
+  g.fillStyle='#15161a';g.textAlign='center';
+  g.font='bold 25px "Arial Narrow", Impact, sans-serif';
+  g.fillText(l[0],128,52);g.fillText(l[1],128,84);
+  g.font='bold 17px "Arial Narrow", Impact, sans-serif';
+  g.fillText(l[2],128,124);
+  return new THREE.CanvasTexture(c);
+}
+
+// deck a lo largo de Z si cruza una avenida horizontal; si no, a lo largo de X
+function puentePeatonal(x,z,cruzaEjeZ,nombre){
+  const L=46, matEstr=new THREE.MeshLambertMaterial({color:0x8d939c});
+  const g=new THREE.Group();
+  const losa=new THREE.Mesh(cruzaEjeZ?new THREE.BoxGeometry(3.4,0.6,L)
+                                     :new THREE.BoxGeometry(L,0.6,3.4),matEstr);
+  losa.position.y=7;g.add(losa);
+  for(const s of [-1,1]){                       // barandal
+    const b=new THREE.Mesh(cruzaEjeZ?new THREE.BoxGeometry(0.25,1.5,L)
+                                    :new THREE.BoxGeometry(L,1.5,0.25),matEstr);
+    b.position.set(cruzaEjeZ?s*1.7:0,8,cruzaEjeZ?0:s*1.7);g.add(b);
+  }
+  for(const s of [-1,1]){                       // torres de escalera
+    const t=new THREE.Mesh(new THREE.BoxGeometry(4,7.4,4),matEstr);
+    t.position.set(cruzaEjeZ?0:s*L/2,3.7,cruzaEjeZ?s*L/2:0);g.add(t);
+  }
+  g.position.set(x,0,z);scene.add(g);
+  edificios.push({x:cruzaEjeZ?x:x-L/2,z:cruzaEjeZ?z-L/2:z,hw:2.4,hd:2.4});
+  edificios.push({x:cruzaEjeZ?x:x+L/2,z:cruzaEjeZ?z+L/2:z,hw:2.4,hd:2.4});
+  return {x,z,cruzaEjeZ,nombre,grupo:g};
+}
+
+const PEATONALES=[
+  puentePeatonal(ejeX(3)+34, ejeZ(6),  true,  'Puente peatonal de la Sanders'),
+  puentePeatonal(ejeX(6),    ejeZ(5),  true,  null),
+  puentePeatonal(ejeX(5),    ejeZ(1),  true,  null),
+  puentePeatonal(ejeX(7),    cenZ(3),  false, null),
+  puentePeatonal(ejeX(1),    ejeZ(2),  true,  null),
+];
+sitio({x:PEATONALES[0].x+16,z:PEATONALES[0].z,r:40,tipo:'Cruce · Av. Sanders',
+  nombre:'Puente peatonal de la Sanders',
+  texto:'Por aquí pasa el tren que parte la ciudad en dos, y por eso el crucero se hace nudo. El '+
+        'distribuidor vial que hoy se llama puente de la Sanders no existe todavía: lo empezaron '+
+        'en noviembre de 2012, con Ferromex y la SCT. En estos años lo único que cruza por arriba '+
+        'es este puente peatonal.'});
+
+// Cuerpos colgados: un grupo por puente, apagados y encendidos por acto.
+// Se construyen en el ARRANQUE, no aquí: `persona()` necesita PIEL y ROPA, que se
+// declaran en la sección PERSONAS, más abajo. Llamarlo aquí revienta por TDZ.
+function crearColgados(){
+  const matSoga=new THREE.MeshLambertMaterial({color:0x8a7f66});
+  PEATONALES.forEach((p,k)=>{
+    const g=new THREE.Group();
+    const soga=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,2.6,5),matSoga);
+    soga.position.y=5.4;g.add(soga);
+    const cuerpo=persona(false,'civil',0x2a2b30);
+    cuerpo.position.y=1.9;
+    cuerpo.rotation.x=0.08;                     // colgando, no de pie
+    g.add(cuerpo);
+    const manta=new THREE.Mesh(new THREE.PlaneGeometry(9,5.6),
+      new THREE.MeshLambertMaterial({map:texManta(MANTAS[k%MANTAS.length]),
+        side:THREE.DoubleSide}));
+    manta.position.set(p.cruzaEjeZ?0.1:0, 4.4, p.cruzaEjeZ?0:0.1);
+    manta.rotation.y=p.cruzaEjeZ?Math.PI/2:0;
+    g.add(manta);
+    g.position.set(p.x+(p.cruzaEjeZ?1.9:0), 0, p.z+(p.cruzaEjeZ?0:1.9));
+    g.visible=false;scene.add(g);
+    colgados.push({grupo:g,x:g.position.x,z:g.position.z,avisado:false});
+  });
+}
+// Cuántos hay a la vez. 2010 es el año de las 3,622: la ciudad los veía seguido.
+function actoColgados(){
+  const n=[1,2,4,2][acto];
+  colgados.forEach((c,k)=>{c.grupo.visible = k<n; if(k>=n)c.avisado=false;});
+}
+// Al toparte con uno: la cuadra baja cortinas y la radio lo reporta. No hay premio.
+function actColgados(){
+  const b=posJugador();
+  for(const c of colgados){
+    if(!c.grupo.visible||c.avisado)continue;
+    if(dist2(c.x,c.z,b.x,b.z)>3600)continue;    // 60 m
+    c.avisado=true;
+    cerrarNegocios(manzanaI(c.x),manzanaJ(c.z));
+    radio('Reportan un cuerpo colgado de un puente peatonal por '+calleDe(c.x,c.z)+
+          '. Ya acordonaron.');
+  }
+}
+
 /* ══════════════════════════ ESTADIO Y MONUMENTOS ══════════════════════════ */
 // El Estadio Olímpico Benito Juárez y los dos monumentos del sur. Las formas de
 // los monumentos son interpretación: se respeta el sitio, el año y lo que
@@ -961,6 +1071,104 @@ function actBandera(){
           'mil. Es lo primero que ve el que llega. Entre 2008 y 2011 doscientas treinta mil '+
           'personas hicieron el recorrido al revés.'});
 })();
+
+/* ══════════════════════════ SUCESOS DE 2010 ══════════════════════════ */
+// Los dos hechos que parten el acto III. Ninguno se juega: uno se oye a lo lejos
+// y se visita después; el otro pasa fuera de pantalla, en la radio, y lo único
+// que el jugador ve es lo que quedó. Reglas de tono 1 y 3, y §10 de HISTORIA.md.
+
+// 15 de julio de 2010: el primer coche bomba de esta guerra en México, en
+// 16 de Septiembre y Francisco Villa, contra federales.
+const BOMBA={x:ejeX(4)+9,z:ejeZ(1)+9};
+const restosBomba=new THREE.Group();
+(()=>{
+  liberar(BOMBA.x,BOMBA.z,16,16);
+  const matQuemado=new THREE.MeshLambertMaterial({color:0x24262a});
+  const chasis=new THREE.Mesh(new THREE.BoxGeometry(2.1,0.9,4.4),matQuemado);
+  chasis.position.set(BOMBA.x,0.6,BOMBA.z);chasis.rotation.z=0.12;restosBomba.add(chasis);
+  const techo=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.7,2),matQuemado);
+  techo.position.set(BOMBA.x-0.2,1.4,BOMBA.z-0.4);techo.rotation.z=0.3;restosBomba.add(techo);
+  const crater=new THREE.Mesh(new THREE.CircleGeometry(7,18),
+    new THREE.MeshLambertMaterial({color:0x141519}));
+  crater.rotation.x=-Math.PI/2;crater.position.set(BOMBA.x,0.09,BOMBA.z);restosBomba.add(crater);
+  for(let k=0;k<10;k++){                        // cinta de acordonamiento
+    const t=k*TAU/10, r=13;
+    const p=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,1.2,5),
+      new THREE.MeshLambertMaterial({color:0xd8c37a}));
+    p.position.set(BOMBA.x+Math.cos(t)*r,0.6,BOMBA.z+Math.sin(t)*r);restosBomba.add(p);
+  }
+  restosBomba.visible=false;scene.add(restosBomba);
+  edificios.push({x:BOMBA.x,z:BOMBA.z,hw:3,hd:3});
+  sitio({x:BOMBA.x,z:BOMBA.z+16,r:40,tipo:'15 de julio de 2010',
+    nombre:'Aquí estalló el coche bomba',
+    texto:'Diez kilos de C-4 detonados con un teléfono celular contra agentes federales, en '+
+          'represalia por la captura de un operador. Fue el primer coche bomba de esta guerra en '+
+          'todo el país. Lo ordenó el jefe operativo de La Línea, al que agarrarían un año '+
+          'después con más de mil quinientos homicidios encima.'});
+})();
+
+// 31 de enero de 2010, Villas de Salvárcar. Pasa fuera de pantalla. Lo único que
+// existe aquí es lo que quedó después, y sin un solo nombre.
+const MEMORIAL={x:cenX(7),z:cenZ(6)};
+const memorial=new THREE.Group();
+(()=>{
+  liberar(MEMORIAL.x,MEMORIAL.z,22,18);
+  const matCruz=new THREE.MeshLambertMaterial({color:0xe8e4d8});
+  const matVela=new THREE.MeshLambertMaterial({color:0xfff0c0,emissive:0xffd98a,
+    emissiveIntensity:0});
+  for(let k=0;k<15;k++){                        // quince cruces, sin nombres
+    const x=MEMORIAL.x-13+(k%5)*6.5, z=MEMORIAL.z-6+Math.floor(k/5)*6;
+    const v=new THREE.Mesh(new THREE.BoxGeometry(0.28,2.4,0.28),matCruz);
+    v.position.set(x,1.2,z);memorial.add(v);
+    const h=new THREE.Mesh(new THREE.BoxGeometry(1.3,0.28,0.28),matCruz);
+    h.position.set(x,1.85,z);memorial.add(h);
+    const vela=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.5,0.3),matVela);
+    vela.position.set(x+0.5,0.25,z+0.6);memorial.add(vela);
+    luminarias.push(vela);
+  }
+  memorial.visible=false;scene.add(memorial);
+  sitio({x:MEMORIAL.x,z:MEMORIAL.z+14,r:46,tipo:'31 de enero de 2010',
+    nombre:'Memorial de Villas de Salvárcar',
+    texto:'Un comando entró de madrugada a una fiesta de estudiantes y mató a quince muchachos. '+
+          'El presidente dijo que en algo andaban. Luz María Dávila, que enterró a dos hijos, se '+
+          'le paró enfrente en cadena nacional: «discúlpese, les dijo pandilleros; uno estudiaba '+
+          'la prepa y el otro la UACH». Aquí no van sus nombres: los nombres son de sus familias, '+
+          'no de este juego.'});
+})();
+
+// La cruz rosa. Está en la ciudad desde antes de esta guerra y sigue después.
+(()=>{
+  const cx=ejeX(7)-24, cz=ejeZ(1)+20;
+  liberar(cx,cz,10,10);
+  const matRosa=new THREE.MeshLambertMaterial({color:0xd94f8a});
+  const v=new THREE.Mesh(new THREE.BoxGeometry(0.9,7.5,0.9),matRosa);
+  v.position.set(cx,3.75,cz);scene.add(v);
+  const h=new THREE.Mesh(new THREE.BoxGeometry(4.2,0.9,0.9),matRosa);
+  h.position.set(cx,5.4,cz);scene.add(h);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(3,0.5,3),
+    new THREE.MeshLambertMaterial({color:0x8d939c}));
+  base.position.set(cx,0.25,cz);scene.add(base);
+  edificios.push({x:cx,z:cz,hw:1.6,hd:1.6});
+  sitio({x:cx,z:cz+9,r:32,tipo:'Memoria',
+    nombre:'Cruz rosa',
+    texto:'Las pintan de rosa para que se vean de lejos. Los asesinatos de mujeres en Juárez son '+
+          'anteriores a esta guerra: desde 1993 y sin resolverse. En noviembre de 2009 la Corte '+
+          'Interamericana condenó a México por el caso del campo algodonero y obligó a nombrarlo '+
+          'feminicidio. Esto no se juega. Solo está.'});
+})();
+
+function actoSucesos(){
+  restosBomba.visible = acto>=2;
+  memorial.visible    = acto>=2;
+}
+function estallido(){
+  temblor=1.1;
+  balazo(0.85,150);pip(52,0.3,'sawtooth');
+  setTimeout(()=>{balazo(0.4,110);},140);
+  aviso3('ALGO TRONÓ EN EL CENTRO');
+  radio('Estalló un coche bomba en 16 de Septiembre y Francisco Villa. Es el primero de esta '+
+        'guerra en el país.');
+}
 
 /* ══════════════════════════ AVENIDA JUÁREZ ══════════════════════════ */
 // La calle de la fiesta: bares, antros, restaurantes, hoteles, casas de cambio,
@@ -1728,7 +1936,9 @@ function nuevaOferta(){
 }
 function pintarMarcador(c){matMarcador.color.setHex(c);matAro.color.setHex(c);}
 function aceptar(){
-  const p=puntoCalle();mision.estado='entrega';mision.x=p.x;mision.z=p.z;
+  // el encargo de las flores tiene destino fijo: el memorial
+  const p = mision.titulo==='Llevar flores' ? {x:MEMORIAL.x,z:MEMORIAL.z+10} : puntoCalle();
+  mision.estado='entrega';mision.x=p.x;mision.z=p.z;
   const d=Math.sqrt(dist2(jugador.x,jugador.z,p.x,p.z));
   mision.total=mision.tiempo=clamp(d/11+18,26,90);
   mision.pago=mision.gratis?0:Math.round(90+d*1.1+mision.racha*40);
@@ -1772,7 +1982,8 @@ function avanzarActo(){
   plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
     cerrado.reales.toLocaleString('en-US')+'.';
   placa.classList.add('on');jugando=false;
-  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();guardar();
+  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
+  actoColgados();actoSucesos();guardar();
 }
 
 // El juego sí termina. No con un final: con las cifras y una sentencia de 2024.
@@ -1797,7 +2008,8 @@ plSeguir.addEventListener('click',()=>{
   if(finalizado){if(location.reload)location.reload();return;}
   placa.classList.remove('on');jugando=true;ultimo=performance.now();
   ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
-  nuevaOferta();radio(pick(RADIO[acto]));
+  nuevaOferta();
+  if(acto===2)estallido(); else radio(pick(RADIO[acto]));
 });
 const CLAVE='frontera.v1';
 function guardar(){
@@ -2693,7 +2905,8 @@ function bucle(now){
     actTrafico(dt);actPeatones(dt);actPersecucion(dt);actPersonajes(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
-  actCamara(dt);actDiaNoche(dt);actBandera();actSitios(dt);actAudio();actHUD(dt);minimapa();
+  actCamara(dt);actDiaNoche(dt);actBandera();actSitios(dt);actColgados();
+  actAudio();actHUD(dt);minimapa();
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}
   renderer.render(scene,camera);
@@ -2722,11 +2935,13 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
-    bandera,geoBandera,SANGRE,SITIOS,
+    bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
+                 colgados:colgados.filter(c=>c.grupo.visible).length,
+                 bomba:restosBomba.visible,memorial:memorial.visible,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 
@@ -2734,6 +2949,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
 actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
+crearColgados();actoColgados();actoSucesos();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);
