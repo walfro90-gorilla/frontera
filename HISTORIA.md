@@ -153,8 +153,8 @@ desaparece en el acto IV. Los demás son voz de radio y contexto, a propósito.
 
 Marcados con **·en el juego·** los que ya tienen esquina fija, líneas por acto y dan encargos.
 
-- **Jaime "Jimmy News" Nieves**, 27 — **·el jugador·** fotorreportero de policiaca de *El Diario de
-  Juárez*. «Jimmy News» es su apodo de redacción, como al de verdad le decían «El Choco». Su trabajo
+- **Jimmy "El Diamond" Aguilar**, 27 — **·el jugador·** fotorreportero de policiaca de *El Diario de
+  Juárez*. «El Diamond» es su apodo de redacción, como al de verdad le decían «El Choco». Su trabajo
   es llegar antes de que levanten el cordón, traer la foto y cerrar la nota. No porta arma, y el
   juego no le da ninguna.
 

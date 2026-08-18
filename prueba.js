@@ -27,7 +27,7 @@ const g2d=()=>new Proxy({},{ get:(t,k)=>{
 
 const mkCanvas=()=>({width:0,height:0,getContext:()=>g2d(),
   addEventListener(){},querySelector:()=>({style:{}}),getBoundingClientRect:()=>({left:0,top:0,width:100,height:100}),
-  style:{},classList:{add(){},remove(){},toggle(){}}});
+  appendChild(){},style:{},classList:{add(){},remove(){},toggle(){}}});
 
 const V3=class{constructor(x,y,z){this.x=x||0;this.y=y||0;this.z=z||0;}
   set(x,y,z){this.x=x;this.y=y;this.z=z;return this;}};
@@ -164,6 +164,7 @@ const colgadosPorActo=new Set();
 let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
+let lineaProbada='no se probó', elegido=null;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
 let corridos=0;
@@ -225,6 +226,14 @@ try{
     if(f===CERCO_FIN)F.reaparecer();
     // mapa grande: abrir con pines puestos, dibujar y cerrar
     if(f===MAPA_ABRE-30)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
+    // línea de tiempo: abrir, comprobar que pausa, elegir un hecho y cerrar
+    if(f===MAPA_ABRE-24){
+      F.abrirLinea();
+      lineaProbada = F.estado().linea&&!F.estado().jugando ? 'abrió y pausó' : 'NO pausó';
+      const otro=(F.estado().encargoIdx+1)%4;
+      F.elegir(otro);F.cerrarLinea();
+      elegido = F.estado().encargoIdx===otro ? 'eligió el '+otro : 'NO cambió de hecho';
+    }
     if(f===MAPA_ABRE){F.abrirMapa();mapaProbado=F.estado().mapa&&!F.estado().jugando?'abrió y pausó':'NO pausó';}
     if(f===MAPA_CIERRA){F.cerrarMapa();
       if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';}
@@ -285,7 +294,8 @@ const est={
   firmadas:s.firmadas, sinFirma:s.anonimas, periodicazos:periodicazos,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
-  mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
+  mapa:mapaProbado, linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
+  pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
   sitios:sitiosVistos.size+' de '+F.SITIOS.length,
   colgados:[...colgadosPorActo].sort().join(' '), bomba:bombaVista, memorial:memorialVisto,
@@ -305,6 +315,9 @@ exige(firmoAlgo&&anonimoAlgo,'el crédito de la foto se decide en las dos direcc
 exige(s.firmadas>0&&s.anonimas>0,'se contaron firmadas ('+s.firmadas+') y sin firma ('+s.anonimas+')');
 exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
 exige(periodicazos>=12,'sale la portada en cada cierre ('+periodicazos+')');
+exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
+exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
+exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');
 exige(!s.periodico,'el juego no se queda con el periódico en pantalla');
 exige(s.registrados>0,'se registraron muertos en las notas ('+s.registrados+')');
 exige(typeof F.CAMARAS[0].sujetos==='number'&&!('blancos' in F.CAMARAS[0]),

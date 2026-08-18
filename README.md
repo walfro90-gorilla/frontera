@@ -1,13 +1,13 @@
 # FRONTERA
 
 Sandbox 3D de mundo abierto en un solo archivo HTML. **Ciudad Juárez, 2008–2012**: la guerra
-del narco dramatizada como juego. Eres **Jaime «Jimmy News» Nieves**, fotorreportero de policiaca
+del narco dramatizada como juego. Eres **Jimmy «El Diamond» Aguilar**, fotorreportero de policiaca
 de El Diario de Juárez. No traes pistola: traes dos lentes y una hora de cierre. Avenidas reales, el Río Bravo, la valla y los cuatro puentes
 internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin dependencias
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 165 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 170 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -40,11 +40,15 @@ tiempo de carga.
   La Línea, la plana de «¿Qué quieren de nosotros?».
 - **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
   la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
+- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los dieciséis
+  hechos, en cuatro columnas por año. Los del año en curso se pueden elegir para ir a cubrirlos; los
+  de años que ya pasaron quedan como registro —una foto de 2008 no se toma en 2011— y los que
+  todavía no ocurren se ven en gris y sin fecha. Cada tarjeta dice si la publicaste y si la firmaste.
 - **Periodicazo.** Al cerrar la edición sale la portada girando, como en las películas: cabecera,
   la fecha real del día siguiente al hecho, el titular, **las fotos que tú tomaste** y el crédito
   según lo que hayas decidido. Las fotos no son de adorno: se capturan de verdad desde el ojo de
   Jimmy, con el campo del lente que traía puesto, y salen impresas en blanco y negro.
-- **El crédito de la foto lo decides tú.** En el cierre eliges entre `FOTO: JAIME NIEVES` y
+- **El crédito de la foto lo decides tú.** En el cierre eliges entre `FOTO: JIMMY AGUILAR` y
   `FOTO: EL DIARIO`. Firmar paga 1.6× y construye tu racha, pero **la facción que sale en tus fotos
   aprende tu nombre** y a partir de 2010 te busca. No firmar paga 0.7×, no te delata y te tumba la
   racha. Es la decisión que de verdad tomaban las redacciones. El final te dice cuántas firmaste.
@@ -113,6 +117,7 @@ tiempo de carga.
 | `E` | Disparar la cámara (solo a pie) |
 | `Q` | Cambiar de lente |
 | `1` / `2` | Firmar la foto o publicarla sin crédito |
+| `L` o clic al año | Línea de tiempo |
 | `G` | Dar mordida a la municipal ($400) |
 | `T` o clic al minimapa | Abrir el mapa grande |
 | `Esc` | Cerrar el mapa |

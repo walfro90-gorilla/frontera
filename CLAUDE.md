@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3420 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3526 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,17 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### Línea de tiempo
+
+`publicadas` es el registro real de progreso: `'acto:indice' -> firmada`. `encargoIdx` dice cuál se
+está cubriendo, y `nuevaOferta()` lo respeta salvo que ya esté publicado, en cuyo caso cae al
+`primerPendiente()`. `hechos` sigue existiendo como contador para el avance de acto, pero **la
+verdad de qué se cubrió está en `publicadas`**, que es lo que se guarda y lo que pinta la línea.
+
+`pintarLinea()` reconstruye el panel al abrir; solo los hechos **del año en curso y sin publicar**
+son clicables, porque una foto de 2008 no se toma en 2011. Los de años futuros van en gris y sin
+fecha: la cronología se descubre al avanzar.
 
 **Las fotos son fotos de verdad.** `capturar(lente)` rinde la escena a un `WebGLRenderTarget` de
 336×189 desde la posición de Jimmy mirando a `camAng`, con `camera.fov` en 20 para el teleobjetivo o

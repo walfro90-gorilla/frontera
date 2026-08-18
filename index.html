@@ -131,6 +131,36 @@
   #mapaCerrar{font-family:var(--cond);font-size:15px;letter-spacing:.1em;background:var(--oro);
     color:#0b0e14;border:0;padding:6px 22px;cursor:pointer;border-radius:2px}
 
+  /* línea de tiempo */
+  #linea{position:fixed;inset:0;z-index:17;background:rgba(6,8,13,.95);display:none;
+    flex-direction:column;gap:14px;padding:3vh 3vw}
+  #linea.on{display:flex}
+  #lineaCab{display:flex;justify-content:space-between;align-items:center;
+    font-size:11px;letter-spacing:.2em;color:var(--tenue);text-transform:uppercase}
+  #lineaCerrar{font-family:var(--cond);font-size:14px;letter-spacing:.1em;background:var(--oro);
+    color:#0b0e14;border:0;padding:5px 18px;cursor:pointer;border-radius:2px}
+  #lineaRiel{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;overflow:auto;
+    border-top:1px solid var(--linea);padding-top:14px}
+  .anioCol{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .anioCol h4{font-family:var(--cond);font-size:30px;letter-spacing:.06em;color:#2b3442;
+    line-height:1;border-bottom:2px solid #1c2430;padding-bottom:6px}
+  .anioCol.aqui h4{color:var(--oro);border-color:var(--oro)}
+  .anioCol.futuro{opacity:.35}
+  .hecho{background:rgba(232,238,246,.04);border:1px solid var(--linea);border-left:3px solid #2b3442;
+    padding:9px 11px;border-radius:2px;text-align:left;color:var(--texto);cursor:default}
+  .hecho .f{font-size:8px;letter-spacing:.14em;color:var(--tenue);text-transform:uppercase}
+  .hecho .t{font-family:var(--cond);font-size:17px;letter-spacing:.02em;margin-top:3px;line-height:1.1}
+  .hecho .e{font-size:9px;letter-spacing:.1em;margin-top:5px;text-transform:uppercase}
+  .hecho.libre{cursor:pointer;border-left-color:var(--oro)}
+  .hecho.libre:hover{background:rgba(255,194,51,.12)}
+  .hecho.hecha{border-left-color:var(--verde)}
+  .hecho.hecha .e{color:var(--verde)}
+  .hecho.activa{border-left-color:var(--neon);background:rgba(56,224,255,.10)}
+  .hecho.activa .e{color:var(--neon)}
+  #lineaPie{font-size:9px;letter-spacing:.16em;color:var(--tenue);text-transform:uppercase}
+  #tc{pointer-events:auto;cursor:pointer}
+  @media (max-width:760px){#lineaRiel{grid-template-columns:1fr}}
+
   /* periodicazo */
   #perio{position:fixed;inset:0;z-index:18;background:rgba(4,6,10,.94);display:none;
     flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:3vh 4vw}
@@ -314,6 +344,16 @@
   </div>
 </div>
 
+<div id="linea">
+  <div id="lineaCab">
+    <span>Línea de tiempo · Ciudad Juárez</span>
+    <button id="lineaCerrar">CERRAR</button>
+  </div>
+  <div id="lineaRiel"></div>
+  <div id="lineaPie">Clic en un hecho para cubrirlo · los de años que ya pasaron no se pueden
+    volver a fotografiar</div>
+</div>
+
 <div id="perio">
   <div id="plana">
     <div id="cabecera"><span id="perioNombre">EL DIARIO</span><b>DE CIUDAD JUÁREZ</b></div>
@@ -332,7 +372,7 @@
   <h3 id="firmaNota"></h3>
   <p>El crédito de la foto lo decides tú. Una vez que sale, sale.</p>
   <div class="ops">
-    <button id="opFirmar"><b>1</b><span>FOTO: JAIME NIEVES</span><i id="opFirmarD"></i></button>
+    <button id="opFirmar"><b>1</b><span>FOTO: JIMMY AGUILAR</span><i id="opFirmarD"></i></button>
     <button id="opAnon"><b>2</b><span>FOTO: EL DIARIO</span><i id="opAnonD"></i></button>
   </div>
 </div>
@@ -352,7 +392,7 @@
     <h1>FRONTERA</h1>
   </div>
   <p class="desc">La ciudad más letal del mundo, a trescientos metros de la más segura de Estados
-    Unidos. Eres Jaime <b>«Jimmy News»</b> Nieves, fotorreportero de policiaca de El Diario de
+    Unidos. Eres Jimmy <b>«El Diamond»</b> Aguilar, fotorreportero de policiaca de El Diario de
     Juárez. Tu trabajo es llegar antes de que levanten el cordón, traer la foto y cerrar la nota.
     No traes pistola: traes dos lentes y una fecha de cierre. Cada encargo es algo que de verdad
     pasó en esta ciudad entre 2008 y 2012.</p>
@@ -2236,6 +2276,14 @@ const FECHAS={
 };
 const ENCARGOS_POR_ACTO=4;
 let hechos=0;
+// Qué hechos ya se cubrieron, para la línea de tiempo y para poder elegir.
+const publicadas={};                         // 'acto:indice' -> true si se firmó
+let encargoIdx=0;
+function primerPendiente(){
+  const n=ACTOS[acto].encargos.length;
+  for(let i=0;i<n;i++)if(!(acto+':'+i in publicadas))return i;
+  return 0;
+}
 
 const marcador=new THREE.Group();
 const matMarcador=new THREE.MeshBasicMaterial({color:0xffc233,transparent:true,opacity:0.28,
@@ -2270,7 +2318,8 @@ function lugarDe(clave){
   return LUGARES[clave];
 }
 function nuevaOferta(){
-  const e=ACTOS[acto].encargos[hechos%ACTOS[acto].encargos.length];
+  if(acto+':'+encargoIdx in publicadas)encargoIdx=primerPendiente();
+  const e=ACTOS[acto].encargos[encargoIdx];
   const dador=quien(e[2]);
   // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
   const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-2,2), z:dador.z+rnd(2,4)} : puntoCalle();
@@ -2323,6 +2372,55 @@ function pedirFirma(){
     '+$'+Math.round(mision.pago*0.7)+' · nadie sabe quién fue · pierdes la racha';
   firmaPanel.classList.add('on');
 }
+// ── LÍNEA DE TIEMPO ────────────────────────────────────────────────────────
+// Los dieciséis hechos por año. Los del año en curso se pueden elegir; los de
+// años que ya pasaron quedan como registro, porque una foto de 2008 no se toma
+// en 2011; los de años que no llegan todavía se ven en gris y sin fecha.
+const lineaPanel=document.getElementById('linea');
+let lineaAbierta=false;
+function pintarLinea(){
+  const riel=document.getElementById('lineaRiel');
+  riel.innerHTML='';
+  ACTOS.forEach((A,a)=>{
+    const col=document.createElement('div');
+    col.className='anioCol'+(a===acto?' aqui':'')+(a>acto?' futuro':'');
+    const h=document.createElement('h4');h.textContent=A.anio;col.appendChild(h);
+    A.encargos.forEach((e,i)=>{
+      const clave=a+':'+i, hecha=clave in publicadas;
+      const activa=(a===acto&&i===encargoIdx&&!hecha);
+      const libre=(a===acto&&!hecha&&!activa);
+      const d=document.createElement('div');
+      d.className='hecho'+(hecha?' hecha':'')+(activa?' activa':'')+(libre?' libre':'');
+      const fecha=a<=acto?(FECHAS[e[0]]||A.anio):'—';
+      const estado = hecha ? (publicadas[clave]?'PUBLICADA · FIRMADA':'PUBLICADA · SIN FIRMA')
+                   : activa ? 'CUBRIENDO AHORA'
+                   : a===acto ? 'PENDIENTE · CLIC PARA CUBRIR'
+                   : a<acto ? 'SE QUEDÓ SIN CUBRIR' : 'TODAVÍA NO PASA';
+      d.innerHTML='<div class="f">'+fecha+'</div><div class="t">'+e[0]+
+                  '</div><div class="e">'+estado+'</div>';
+      if(libre)d.addEventListener('pointerdown',()=>{
+        encargoIdx=i;cerrarLinea();nuevaOferta();
+        aviso3('A CUBRIR: '+e[0]);
+      });
+      col.appendChild(d);
+    });
+    riel.appendChild(col);
+  });
+}
+function abrirLinea(){
+  if(lineaAbierta)return;
+  lineaAbierta=true;jugando=false;
+  pintarLinea();lineaPanel.classList.add('on');
+}
+function cerrarLinea(){
+  if(!lineaAbierta)return;
+  lineaAbierta=false;lineaPanel.classList.remove('on');
+  jugando=true;ultimo=performance.now();
+}
+document.getElementById('lineaCerrar').addEventListener('pointerdown',cerrarLinea);
+lineaPanel.addEventListener('pointerdown',e=>{if(e.target===lineaPanel)cerrarLinea();});
+document.getElementById('tc').addEventListener('pointerdown',abrirLinea);
+
 const perio=document.getElementById('perio');
 let perioAbierto=false, perioT=0;
 function periodicazo(firmada){
@@ -2332,7 +2430,7 @@ function periodicazo(firmada){
   document.getElementById('perioTitular').textContent=mision.titulo.toUpperCase();
   document.getElementById('perioBajada').textContent=mision.texto;
   document.getElementById('perioCredito').textContent=
-    firmada?'FOTOS: JAIME NIEVES':'FOTOS: EL DIARIO';
+    firmada?'FOTOS: JIMMY AGUILAR':'FOTOS: EL DIARIO';
   const cont=document.getElementById('perioFotos');
   cont.innerHTML='';
   for(const c of mision.tomas)cont.appendChild(c);
@@ -2371,6 +2469,7 @@ function resolverFirma(firmada,silencio){
         radio('Andan preguntando en la colonia por el que firma las fotos de El Diario.');}
     }else{anonimas++;mision.racha=0;}
   }
+  publicadas[acto+':'+encargoIdx]=!!firmada;
   if(!silencio)aviso3(firmada?'FIRMADA · +$'+pago:'SIN FIRMA · +$'+pago);
   periodicazo(firmada);
 }
@@ -2433,7 +2532,8 @@ const CLAVE='frontera.v1';
 function guardar(){
   if(location.hash)return;                       // #test y #nuevo no ensucian la partida
   try{localStorage.setItem(CLAVE,JSON.stringify(
-    {acto,hechos,dinero:jugador.dinero,muertos,racha:mision.racha}));}catch(e){}
+    {acto,hechos,dinero:jugador.dinero,muertos,racha:mision.racha,publicadas,notas,
+     registrados,firmadas,anonimas}));}catch(e){}
 }
 function cargar(){
   if(location.hash==='#test')return;             // la prueba siempre arranca limpia
@@ -2444,6 +2544,8 @@ function cargar(){
     acto=clamp(g.acto|0,0,ACTOS.length-1);hechos=clamp(g.hechos|0,0,ENCARGOS_POR_ACTO-1);
     jugador.dinero=Math.max(0,g.dinero|0);mision.racha=clamp(g.racha|0,0,5);
     if(g.muertos)Object.assign(muertos,g.muertos);
+    if(g.publicadas)Object.assign(publicadas,g.publicadas);
+    notas=g.notas|0;registrados=g.registrados|0;firmadas=g.firmadas|0;anonimas=g.anonimas|0;
   }catch(e){}
 }
 
@@ -2555,6 +2657,8 @@ let camAng=0,camAlt=0.35,camDist=11,arrastre=false,lx=0,ly=0,jugando=false;
 
 addEventListener('keydown',e=>{
   if(perioAbierto){cerrarPeriodico();return;}
+  if(e.code==='KeyL'&&(jugando||lineaAbierta)){lineaAbierta?cerrarLinea():abrirLinea();return;}
+  if(e.code==='Escape'&&lineaAbierta){cerrarLinea();return;}
   if(esperandoFirma){
     if(e.code==='Digit1'||e.code==='Numpad1')resolverFirma(true);
     if(e.code==='Digit2'||e.code==='Numpad2')resolverFirma(false);
@@ -3385,12 +3489,14 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,
+    publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
                  notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
                  firmadas,anonimas,esperandoFirma,periodico:perioAbierto,perioT,
+                 linea:lineaAbierta,encargoIdx,cubiertos:Object.keys(publicadas).length,
                  tomas:mision.tomas?mision.tomas.length:0,
                  estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
