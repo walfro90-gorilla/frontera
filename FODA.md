@@ -68,7 +68,8 @@ deadlock y deriva de fases.
 no de alguien jugando.
 
 **Sin menú, sin control de volumen, sin dificultad.** Accesibilidad limitada a
-`prefers-reduced-motion`.
+`prefers-reduced-motion`. Con el rumor de ciudad recién agregado es la debilidad viva más molesta:
+hay ambiente, motor, sirena, antro y obturador, y ninguna forma de bajarles salvo `M`, que apaga todo.
 
 ## 🟦 Oportunidades
 
@@ -119,9 +120,9 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
 | 4 | ~~Bajar mallas~~ ⏸️ **Congelada** | Perf | M | Se midió y **va a 60 fps sin perder un cuadro**. Retomar solo si el medidor baja de 50 fps o si las mallas pasan del presupuesto. Optimizar ahora sería trabajo sin evidencia |
-| 5 | **Aserción de orden de carga** en `prueba.js` | TDZ recurrente | S | Mover una sección hacia arriba hace fallar la prueba con mensaje claro |
+| 5 | ~~Diagnóstico de orden de carga~~ ✅ | TDZ recurrente | S | **Hecho.** Un fallo de arranque ahora dice sección, línea real de `index.html` y causa probable. Verificado rompiéndolo a propósito |
 | 6 | **Menú**: volumen, calidad (sombras/densidad), reiniciar partida | Accesibilidad | M | Se puede bajar el volumen y la densidad sin tocar código ni la URL |
-| 7 | **Ambiente sonoro de ciudad**: tráfico lejano, viento, perros | Audio pobre | S | El silencio deja de notarse al estar parado en la calle |
+| 7 | ~~Ambiente sonoro de ciudad~~ ✅ | Audio pobre | S | **Hecho.** Rumor de fondo que sube junto al periférico y baja de madrugada, más claxon, perro y cortina metálica cada tanto |
 
 ### P2 — Que el juego sea bueno, no solo correcto
 

@@ -155,14 +155,29 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
 
+### Diagnóstico de orden de carga
+
+Los errores de TDZ son el bug recurrente del proyecto —dos hasta ahora— y en el navegador su único
+síntoma es **pantalla negra sin mensaje**. `prueba.js` los traduce: al fallar el arranque imprime la
+**sección** donde reventó, la **línea real de `index.html`** y la causa probable. Verificado
+rompiendo el orden a propósito:
+
+```
+FALLÓ LA INICIALIZACIÓN: Cannot access 'PIEL' before initialization
+  → sección «ESCENA», línea 588 de index.html
+  → si dice "before initialization", una sección usa algo que se declara más abajo
+```
+
 ### Rendimiento
 
 **El medidor se prende con `P` o abriendo `index.html#perf`**: fps, ms, peor cuadro, llamadas de
 dibujo con su pico, triángulos, geometrías, texturas y conteos de entidades. Lee `renderer.info`,
 que se reinicia en cada render, por eso `actPerf()` va al final del bucle.
 
-Medido: **~2,650 mallas al cargar y ~2,760 jugando**. Los autos son el gasto grande, **12 mallas
-cada uno**, y hay ~90; las personas 8 cada una. **`prueba.js` defiende el presupuesto**
+Medido en máquina real: **60 fps clavados, peor cuadro 17 ms**, con **1,068 llamadas de dibujo de
+2,635 mallas** — el culling se lleva el 60%. Los autos son el gasto grande, **12 mallas cada uno**,
+y hay ~90; las personas 8 cada una. **No hay problema de rendimiento hoy**, así que no se optimiza
+sin volver a medir. **`prueba.js` defiende el presupuesto**
 (`PRESUPUESTO_MALLAS`) y además detecta fugas comparando contra el conteo del arranque. Si agregas
 algo que meta cientos de mallas, la prueba falla y te lo dice; si el aumento es a propósito, mide
 FPS **antes** de subir el tope.
