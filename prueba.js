@@ -155,7 +155,7 @@ const CUADROS=44000;
 // crecer la lista la fase de sitios se metió encima de la del mapa, que pausa el
 // juego: los sitios no se anunciaban y parecía bug del juego.
 const SIT_FIN0=SIT_INI+SIT_PASO*sandbox.window.__frontera.SITIOS.length;
-const MAPA_ABRE=SIT_FIN0+40, MAPA_CIERRA=SIT_FIN0+110;
+const MAPA_ABRE=SIT_FIN0+40;
 const MOTO_A=SIT_FIN0+130, MOTO_B=SIT_FIN0+215;
 const CERCO_INI=SIT_FIN0+300, CERCO_FIN=CERCO_INI+8000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
@@ -165,16 +165,26 @@ const colgadosPorActo=new Set();
 let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
+let noticieros=0, teleAntes=false, standsVistos=0;
 let lineaProbada='no se probó', elegido=null;
 let motoQuieta=null, motoRapida=null, motoMontada=false;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
-let corridos=0;
+// Las fases van con un reloj de cuadros CORRIENDO, no de cuadros totales: el
+// periodicazo y el noticiero pausan cerca de mil seiscientos cuadros en una
+// partida, y con reloj total las fases se montaban encima de esas pausas.
+let corridos=0, g=0;
 try{
   for(let f=0;f<CUADROS;f++){
     corridos=f+1;
+    {const e=F.estado();
+     if(e.jugando&&!e.periodico&&!e.noticiero&&!e.linea&&!e.mapa&&!e.esperandoFirma)g++;}
     t+=16.7;ahora=t;
     // revisar la portada ANTES de tocar teclas: cualquier tecla la cierra
+    {const t=F.estado().noticiero;
+     if(t&&!teleAntes)noticieros++;
+     teleAntes=t;
+     if(t)F.cerrarNoticiero();}
     {const p=F.estado().periodico;
      if(p&&!perioAntes)periodicazos++;            // contar portadas, no cuadros
      perioAntes=p;
@@ -183,26 +193,26 @@ try{
       if(temporizadores[k].t<=ahora){const x=temporizadores.splice(k,1)[0];x.fn();}
     // recorrido de sitios: pararse frente a cada uno y ver si el panel lo anuncia
     const SIT_FIN=SIT_INI+SIT_PASO*F.SITIOS.length;
-    const enSitios = f>=SIT_INI && f<SIT_FIN;
+    const enSitios = g>=SIT_INI && g<SIT_FIN;
     if(enSitios){
-      const k=Math.floor((f-SIT_INI)/SIT_PASO), fase=(f-SIT_INI)%SIT_PASO, s0=F.SITIOS[k];
+      const k=Math.floor((g-SIT_INI)/SIT_PASO), fase=(g-SIT_INI)%SIT_PASO, s0=F.SITIOS[k];
       if(fase===0){ if(F.jugador.auto)F.accionF(); F.jugador.x=s0.x; F.jugador.z=s0.z+2; }
       if(fase===SIT_PASO-3 && el('sitio').__cls.has('on') &&
          el('sitioNombre').textContent===s0.nombre) sitiosVistos.add(s0.nombre);
     }
     // Ventana limpia para la moto: el piloto fotografía cada cuadro durante las
     // escenas, así que satura la cadencia del lente y encima se bajaría del vehículo.
-    const faseMoto = f>=MOTO_A-70 && f<=MOTO_B+2;
-    const cerco = f>=CERCO_INI && f<CERCO_FIN;
+    const faseMoto = g>=MOTO_A-70 && g<=MOTO_B+2;
+    const cerco = g>=CERCO_INI && g<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
-    if(!faseMoto&&f%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});
-    if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
-    if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
-    if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
+    if(!faseMoto&&g%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});
+    if(g%307===0) kd({code:'KeyQ',preventDefault(){}});
+    if(!cerco&&g%601===0) kd({code:'KeyF',preventDefault(){}});
+    if(g%40===0){ px+=140;pm({clientX:px,clientY:0}); }
     // El bucle ahora es asignación → escena → redacción, y en la escena hay que
     // disparar la cámara. Se empuja más seguido y se fotografía sin descanso:
     // la propia cadencia del lente limita cuántas entran.
-    if(!cerco&&!enSitios&&!faseMoto&&f%200===0){
+    if(!cerco&&!enSitios&&!faseMoto&&g%200===0){
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
     }
@@ -210,13 +220,20 @@ try{
       if(F.jugador.auto)F.accionF();                      // no se fotografía manejando
       F.fotografiar();
     }
-    if(f===CERCO_INI){                                     // pararlo sobre una calle real
+    // el stand-up: pararse junto a Beto, no moverse y aguantar la toma
+    if(!cerco&&!enSitios&&F.estado().estadoMision==='grabar'){
+      if(F.jugador.auto)F.accionF();
+      ku({code:'KeyW'});                                  // quieto o se corta
+      F.jugador.x=F.chalan.x+1.6;F.jugador.z=F.chalan.z+1.6;
+      F.grabar();
+    }
+    if(g===CERCO_INI){                                     // pararlo sobre una calle real
       if(F.jugador.auto)kd({code:'KeyF',preventDefault(){}});   // bajarse
       F.jugador.x=-20;F.jugador.z=-70;                     // Francisco Villa y A. González
     }
     // El marcador de recogida ES el personaje que da el encargo, así que basta con
     // apretar F ahí mismo. Nada de teletransportes extra: eso trababa la partida.
-    if(!cerco&&!enSitios&&f%400===3){
+    if(!cerco&&!enSitios&&g%200===3){   // justo tras cada empujón al marcador
       if(F.jugador.auto)F.accionF();                   // bajarse para poder hablar
       for(let k=0;k<5;k++){
         F.accionF();
@@ -224,16 +241,16 @@ try{
         if(c)charlas.add(c);
       }
     }
-    if(f%900===7)abiertos.push(F.estado().abiertos);
-    if(f%900===7)repartos.add(F.PERSONAJES.filter(p=>p.malla.visible).map(p=>p.id).join(','));
+    if(g%900===7)abiertos.push(F.estado().abiertos);
+    if(g%900===7)repartos.add(F.PERSONAJES.filter(p=>p.malla.visible).map(p=>p.id).join(','));
     // Salir del cerco con calor 5 significa que las patrullas te agarran cada rato
     // y el resto de la corrida se va en arrestos. Reaparecer es lo que haría el juego.
-    if(f===CERCO_FIN)F.reaparecer();
+    if(g===CERCO_FIN)F.reaparecer();
     // mapa grande: abrir con pines puestos, dibujar y cerrar
-    if(f===MAPA_ABRE-30)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
+    if(g===MAPA_ABRE-30)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
     // La moto. Las dos tomas van separadas en el tiempo porque si no, la segunda
     // cae dentro de la cadencia del lente y nunca llega al chequeo de velocidad.
-    if(f===MOTO_A){
+    if(g===MOTO_A){
       if(F.jugador.auto)F.accionF();
       F.jugador.x=F.MOTO.x;F.jugador.z=F.MOTO.z+1.5;
       F.accionF();                                   // subirse
@@ -242,31 +259,37 @@ try{
       F.fotografiar();
       motoQuieta=el('toast').textContent||'(sin aviso)';
     }
-    if(f===MOTO_B){
+    if(g===MOTO_B){
       F.MOTO.vel=22;el('toast').textContent='';
       F.fotografiar();
       motoRapida=el('toast').textContent||'(sin aviso)';
       F.MOTO.vel=0;if(F.jugador.auto)F.accionF();    // bajarse
     }
     // línea de tiempo: abrir, comprobar que pausa, elegir un hecho y cerrar
-    if(f===MAPA_ABRE-24){
+    if(g===MAPA_ABRE-24){
       F.abrirLinea();
       lineaProbada = F.estado().linea&&!F.estado().jugando ? 'abrió y pausó' : 'NO pausó';
       const otro=(F.estado().encargoIdx+1)%4;
       F.elegir(otro);F.cerrarLinea();
       elegido = F.estado().encargoIdx===otro ? 'eligió el '+otro : 'NO cambió de hecho';
     }
-    if(f===MAPA_ABRE){F.abrirMapa();mapaProbado=F.estado().mapa&&!F.estado().jugando?'abrió y pausó':'NO pausó';}
-    if(f===MAPA_CIERRA){F.cerrarMapa();
-      if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';}
-    if(cerco&&f%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
-    if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
+    // Abrir y cerrar en el MISMO cuadro: el mapa pausa, y como el reloj de fases
+    // solo avanza con el juego corriendo, repartirlo en dos cuadros se traba solo.
+    if(g===MAPA_ABRE){
+      F.abrirMapa();
+      mapaProbado = F.estado().mapa&&!F.estado().jugando ? 'abrió y pausó' : 'NO pausó';
+      F.cerrarMapa();
+      if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';
+    }
+    if(cerco&&g%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
+    if(cerco&&g%60===0){                                   // medir qué tan cerca llegan
       const b=F.jugador.auto||F.jugador;let m=1e9;
       for(const a of F.autos)if(a.clase==='federal'||a.clase==='municipal'||a.clase==='militar')
         m=Math.min(m,Math.hypot(a.x-b.x,a.z-b.z));
       cercoMin=Math.min(cercoMin,m);
     }
     sandbox.__raf(t);
+    if(F.estado().stand)standsVistos++;      // la toma del stand-up ya existe
     if(F.estado().esperandoFirma){                       // decidir el crédito de la foto
       const firma=(decisiones%2===0);
       F.resolverFirma(firma);
@@ -317,6 +340,7 @@ const est={
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
+  noticieros, standsGrabados:standsVistos>0,
   moto:(motoMontada?'se monta':'NO se monta')+' · parado: "'+motoQuieta+'" · rápido: "'+motoRapida+'"',
   pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
@@ -338,6 +362,9 @@ exige(firmoAlgo&&anonimoAlgo,'el crédito de la foto se decide en las dos direcc
 exige(s.firmadas>0&&s.anonimas>0,'se contaron firmadas ('+s.firmadas+') y sin firma ('+s.anonimas+')');
 exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
 exige(periodicazos>=12,'sale la portada en cada cierre ('+periodicazos+')');
+exige(noticieros>=12,'sale el noticiero después de la portada ('+noticieros+')');
+exige(standsVistos>0,'se graba el stand-up con el chalán antes de cerrar');
+exige(!s.noticiero,'el juego no se queda con la tele en pantalla');
 exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
 exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');

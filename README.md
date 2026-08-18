@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 174 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 183 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -49,7 +49,14 @@ tiempo de carga.
   hechos, en cuatro columnas por año. Los del año en curso se pueden elegir para ir a cubrirlos; los
   de años que ya pasaron quedan como registro —una foto de 2008 no se toma en 2011— y los que
   todavía no ocurren se ven en gris y sin fecha. Cada tarjeta dice si la publicaste y si la firmaste.
-- **Periodicazo.** Al cerrar la edición sale la portada girando, como en las películas: cabecera,
+- **Beto, el chalán.** El camarógrafo no se despega: camina detrás de ti y se sube a la cápsula
+  cuando vas en moto. Es quien graba, así que la toma del noticiero sale desde donde está él parado.
+- **El stand-up.** Con las fotos hechas queda grabar la pieza a cámara: ponte frente a Beto y pulsa
+  `R`. Dos segundos y medio sin moverte, en el lugar donde acaba de pasar. Si te mueves o te alejas,
+  se corta la toma.
+- **Periodicazo y noticiero.** Al cerrar sale la portada girando y, en cuanto la pasas, **el
+  noticiero de las nueve en una tele de tubo**: la toma del stand-up en pantalla, cintillo rojo con
+  el titular, mosca de la estación, «EN VIVO» parpadeando y el ticker corriendo abajo. Al cerrar la edición sale la portada girando, como en las películas: cabecera,
   la fecha real del día siguiente al hecho, el titular, **las fotos que tú tomaste** y el crédito
   según lo que hayas decidido. Las fotos no son de adorno: se capturan de verdad desde el ojo de
   Jimmy, con el campo del lente que traía puesto, y salen impresas en blanco y negro.
@@ -123,6 +130,7 @@ tiempo de carga.
 | `Q` | Cambiar de lente |
 | `1` / `2` | Firmar la foto o publicarla sin crédito |
 | `L` o clic al año | Línea de tiempo |
+| `R` | Grabar el stand-up (o enderezar el vehículo) |
 | `G` | Dar mordida a la municipal ($400) |
 | `T` o clic al minimapa | Abrir el mapa grande |
 | `Esc` | Cerrar el mapa |

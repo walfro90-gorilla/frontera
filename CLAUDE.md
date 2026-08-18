@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3605 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3785 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,25 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### El chalán y el stand-up
+
+`chalan` es Beto, el camarógrafo. `actChalan()` lo lleva detrás del jugador y **lo sienta en la
+cápsula cuando `jugador.auto===MOTO`** — de ahí que la moto tenga sidecar. Se teletransporta si
+queda a más de 60 m, porque perder al camarógrafo bloquearía la misión.
+
+El bucle tiene cuatro tramos: `asignacion` → `escena` → **`grabar`** → `cierre`. En `grabar` hay que
+estar a pie, cerca de Beto y quieto 2.6 s; moverse, alejarse o subirse a un vehículo corta la toma.
+Al terminar, `capturarDesde()` toma la imagen **desde la posición de Beto mirando a Jimmy** — esa es
+la toma que sale en el noticiero, y por eso `capturar()` se generalizó a `capturarDesde(fov, desde,
+hacia, ocultar)`: la foto fija oculta al jugador, el stand-up no.
+
+### Del papel a la tele
+
+`periodicazo()` guarda `ultimaFirmada` y `cerrarPeriodico()` **encadena a `noticiero()`** en vez de
+continuar la partida; quien continúa es `cerrarNoticiero()`. Los dos paneles tienen su cerrojo
+(`perioT`, `teleT`) por la misma razón: con una tecla de movimiento presionada la animación se
+saltaba sola.
 
 ### La moto de Jimmy
 
