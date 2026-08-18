@@ -34,7 +34,9 @@ const V3=class{constructor(x,y,z){this.x=x||0;this.y=y||0;this.z=z||0;}
 const Obj=class{constructor(){this.position=new V3();this.rotation=new V3();
   this.scale=new V3(1,1,1);this.children=[];this.userData={};this.visible=true;}
   add(...o){this.children.push(...o);return this;}
-  remove(){return this;}
+  // remove() de verdad: era un no-op y la escena contaba todo lo que alguna vez
+  // existió, así que ni el presupuesto de dibujo ni las fugas se podían medir.
+  remove(...o){for(const x of o){const i=this.children.indexOf(x);if(i>=0)this.children.splice(i,1);}return this;}
   lookAt(){}
   updateProjectionMatrix(){}};
 // PlaneGeometry de verdad necesita atributos: la bandera del Chamizal reescribe
@@ -61,7 +63,8 @@ const Mat=class{constructor(o){Object.assign(this,o||{});
 
 let assertFails=0;
 const THREE={
-  WebGLRenderer:class{constructor(){this.outputEncoding=0;}
+  WebGLRenderer:class{constructor(){this.outputEncoding=0;
+      this.info={render:{calls:0,triangles:0},memory:{geometries:0,textures:0}};}
     setPixelRatio(){}setSize(){}render(){}setRenderTarget(){}
     readRenderTargetPixels(rt,x,y,w,h,buf){for(let i=0;i<buf.length;i++)buf[i]=(i*7)%256;}},
   WebGLRenderTarget:class{constructor(w,h){this.width=w;this.height=h;}},
@@ -143,6 +146,13 @@ pd({clientX:0,clientY:0});                        // dejar el arrastre activo pa
 
 const F=sandbox.window.__frontera;
 if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
+const MALLAS_AL_CARGAR=F.mallasEnEscena();
+
+// Presupuesto de dibujo. La prueba no tiene GPU y no puede medir FPS, pero sí
+// puede contar las mallas de la escena, que es la cota superior de llamadas de
+// dibujo antes del culling. Si una función nueva mete cientos de mallas, esto
+// falla y avisa, en vez de que el juego se ponga lento en silencio.
+const PRESUPUESTO_MALLAS=3200;   // medido: 2,617 al cargar, ~2,800 jugando
 
 // Piloto en tres fases. El cerco va ANTES de la carrera por los actos porque el
 // juego ahora sí termina: después del final queda congelado y no se puede medir nada.
@@ -348,6 +358,7 @@ const est={
   calle:el('calle').textContent, encargo:el('mtitulo').textContent,
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
+  mallas:MALLAS_AL_CARGAR+' al cargar → '+F.mallasEnEscena()+' jugando (tope '+PRESUPUESTO_MALLAS+')',
   notas:s.notas, registrados:s.registrados, atropellados:s.atropellados,
   firmadas:s.firmadas, sinFirma:s.anonimas, periodicazos:periodicazos,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
@@ -383,6 +394,13 @@ exige(maxSucesos>=2,'la ciudad produce varios hechos a la vez ('+maxSucesos+')')
 exige(tiposVistos.size>=3,'salen los tres tipos de hecho ('+[...tiposVistos]+')');
 exige(banquetas>0,'un hecho de la calle se puede fotografiar como nota ('+banquetas+')');
 exige(heliSubio,'el helicóptero sobrevuela la ciudad');
+{const m=F.mallasEnEscena();
+ exige(m<=PRESUPUESTO_MALLAS,'la escena cabe en el presupuesto de dibujo ('+m+' mallas, tope '+
+   PRESUPUESTO_MALLAS+'). Si subió a propósito, mide FPS antes de subir el tope');
+ // Detector de fugas: lo que se crea durante la partida tiene que morir. Solo
+ // deberían sobrar los sucesos vivos y las patrullas del momento.
+ exige(m-MALLAS_AL_CARGAR<600,'no se acumulan mallas durante la partida (+'+
+   (m-MALLAS_AL_CARGAR)+' desde el arranque)');}
 exige(!s.noticiero,'el juego no se queda con la tele en pantalla');
 exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');

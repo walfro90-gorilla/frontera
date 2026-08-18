@@ -13,6 +13,7 @@ se marca aquí y se vuelven a medir las cifras de abajo.
 | Prueba | `prueba.js` · 459 líneas · 53 aserciones · 31 s por corrida |
 | Documentación | 1,103 líneas entre `CLAUDE.md`, `HISTORIA.md` y `README.md` |
 | Mundo | 231 edificios · 102 autos · 34 peatones · 26 sitios · 6 personajes |
+| Escena | ~2,650 mallas al cargar · ~2,760 jugando · sin fugas · **FPS sin medir** |
 | Contenido histórico | 16 hechos jugables · 4 actos · 22 fuentes citadas |
 | Dependencias | Three.js r128 (MIT) guardada en `vendor/` · **cero llamadas a la red** |
 
@@ -42,9 +43,15 @@ solo la arquitectura.
 
 ## 🟥 Debilidades
 
-**El rendimiento nunca se ha medido.** Entre edificios, autos, helicóptero, sucesos y rótulos, el
-orden de magnitud son 600–900 llamadas de dibujo. En GPU integrada eso pueden ser 25 fps y no se
-sabe. Es el hueco más grande.
+**El rendimiento está medido a medias.** La escena tiene **~2,650 mallas al cargar y ~2,760
+jugando** —tres veces más de lo que yo había estimado a ojo en la primera versión de este
+documento—, sin fugas: entre el arranque y el final de una partida solo crecen ~120, que son los
+sucesos vivos. El desglose: **12 mallas por auto × ~90 autos = 1,068**, 8 por persona × 34 = 272, y
+~440 objetos de una sola malla entre edificios y utilería.
+
+Lo que sigue sin saberse son **los FPS reales en GPU integrada**, porque `prueba.js` corre sin GPU.
+El medidor ya existe (`P` o `index.html#perf`) y reporta fps, ms, llamadas de dibujo, pico,
+triángulos y mínimos. Falta que alguien lo abra y anote el número aquí.
 
 **Nada visual está verificado automáticamente.** La prueba corre sin GPU. Todo lo que se ve depende
 de que alguien lo mire — ya falló dos veces seguidas con los mismos neones.
@@ -102,14 +109,14 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
 | 1 | ~~Anclar Three.js en el repo~~ ✅ | Amenaza CDN | S | **Hecho.** r128 (MIT, 603 KB) en `vendor/`, verificado que trae las clases que usa el juego. El HTML ya no llama a ningún dominio externo |
-| 2 | **Medir rendimiento**: contador de FPS y de llamadas de dibujo bajo `#perf` | Debilidad de perf | S | Hay cifras de FPS en GPU integrada, escritas en este documento |
+| 2 | ~~Medidor de rendimiento~~ ⚠️ | Debilidad de perf | S | **Medidor hecho** (`P` o `#perf`) y **mallas contadas: ~2,650 al cargar, ~2,760 jugando, sin fugas**. Falta lo que solo se puede hacer con GPU: **anotar los FPS reales aquí** |
 | 3 | **Revisión visual sistema por sistema** con capturas | Debilidad visual | M | Existe una lista de los 20 sistemas con captura y visto bueno de cada uno |
 
 ### P1 — Que el juego aguante lo que ya tiene
 
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
-| 4 | **Presupuesto de dibujo**: fusionar geometría estática de colonias y maquilas | Perf | M | Menos de 400 llamadas de dibujo en la vista más cargada, sin perder densidad |
+| 4 | **Bajar mallas**: los autos cuestan 12 cada uno y son el 40% de la escena. Fusionar carrocería o instanciar | Perf | M | Menos de 2,000 mallas sin perder densidad, y `PRESUPUESTO_MALLAS` bajado en `prueba.js` |
 | 5 | **Aserción de orden de carga** en `prueba.js` | TDZ recurrente | S | Mover una sección hacia arriba hace fallar la prueba con mensaje claro |
 | 6 | **Menú**: volumen, calidad (sombras/densidad), reiniciar partida | Accesibilidad | M | Se puede bajar el volumen y la densidad sin tocar código ni la URL |
 | 7 | **Ambiente sonoro de ciudad**: tráfico lejano, viento, perros | Audio pobre | S | El silencio deja de notarse al estar parado en la calle |
@@ -148,6 +155,11 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 
 ## Cifras para volver a medir
 
-Cuando se retome este documento, actualizar: líneas de `index.html`, llamadas de dibujo, FPS en GPU
-integrada, número de aserciones, hechos jugables y fuentes citadas. Si las llamadas de dibujo
-subieron y los FPS no se midieron, la tarea 2 volvió a quedar pendiente.
+Cuando se retome este documento, actualizar: líneas de `index.html`, mallas en escena, FPS en GPU
+integrada, número de aserciones, hechos jugables y fuentes citadas. Si las mallas subieron y los FPS
+no se midieron, la tarea 2 volvió a quedar pendiente.
+
+`prueba.js` ya defiende dos de esas cifras solo: falla si la escena pasa de **3,200 mallas** o si
+durante una partida se acumulan más de **600** respecto al arranque. Ese segundo umbral es el
+detector de fugas, y sirvió: al ponerlo salió que cada balacera creaba noventa mallas de un solo uso
+para los fogonazos, que ahora se reciclan.

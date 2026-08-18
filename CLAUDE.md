@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3981 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4041 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
@@ -154,6 +154,20 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### Rendimiento
+
+**El medidor se prende con `P` o abriendo `index.html#perf`**: fps, ms, peor cuadro, llamadas de
+dibujo con su pico, triángulos, geometrías, texturas y conteos de entidades. Lee `renderer.info`,
+que se reinicia en cada render, por eso `actPerf()` va al final del bucle.
+
+Medido: **~2,650 mallas al cargar y ~2,760 jugando**. Los autos son el gasto grande, **12 mallas
+cada uno**, y hay ~90; las personas 8 cada una. **`prueba.js` defiende el presupuesto**
+(`PRESUPUESTO_MALLAS`) y además detecta fugas comparando contra el conteo del arranque. Si agregas
+algo que meta cientos de mallas, la prueba falla y te lo dice; si el aumento es a propósito, mide
+FPS **antes** de subir el tope.
+
+Lo que la prueba no puede saber son los FPS: corre sin GPU. Eso solo se mide abriendo el juego.
 
 ### La ciudad en guerra
 

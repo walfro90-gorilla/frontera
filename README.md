@@ -138,6 +138,7 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
 | `Q` | Cambiar de lente |
 | `1` / `2` | Firmar la foto o publicarla sin crédito |
 | `L` o clic al año | Línea de tiempo |
+| `P` | Medidor de FPS y llamadas de dibujo |
 | `R` | Grabar el stand-up (o enderezar el vehículo) |
 | `G` | Dar mordida a la municipal ($400) |
 | `T` o clic al minimapa | Abrir el mapa grande |
