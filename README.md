@@ -201,6 +201,10 @@ Three.js r128 desde CDN, todo lo demás es código propio.
 - [ ] Radio con locutor y música generada por Web Audio
 - [ ] El coche bomba del acto III como evento del mundo
 
+## Estado del proyecto
+
+Diagnóstico y plan de acción priorizado en **[FODA.md](FODA.md)**.
+
 ## Licencia
 
 MIT. Mundo, mecánicas, arte y código son originales; no contiene propiedad intelectual de
