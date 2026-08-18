@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (1903 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2099 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -176,6 +176,35 @@ los que salgan. `actPersecucion()` maneja ambos con el mismo motor.
 `mordida()` (tecla `G`, o tocar el dinero en el HUD) baja un nivel de calor federal por $400, pero
 **solo contra una patrulla `'municipal'`**. Federal y militar rechazan. No es balance: es que La
 Línea está hecha de policías municipales y la federal cobra más arriba y no de ti.
+
+### Personajes
+
+`PERSONAJES[]` es tabla de datos: `id`, nombre, papel, color de ropa, esquina fija, `desde`/`hasta`
+(actos en los que existe) y `lineas[acto]` — un arreglo de frases por acto, vacío si en ese acto no
+sale. Agregar gente es agregar una fila. `actoPersonajes()` prende y apaga las mallas por acto; la
+llaman `avanzarActo()` y ARRANQUE.
+
+**A los personajes no se les puede disparar.** `disparar()` y el atropello solo miran `peatones[]`,
+y ellos viven en `PERSONAJES[]`. No es un descuido: es la decisión de no dejar que el jugador mate a
+la señora de la lonchería ni a la madre que busca a su hija. Si algún día se comparten arrays,
+hay que reponer la exclusión a mano.
+
+**El encargo lo da alguien.** El tercer campo de cada fila de `encargos` es el `id` de quien lo
+entrega, y `nuevaOferta()` pone el marcador de recogida junto a esa persona en vez de en una calle
+al azar. Al aceptar, `briefing()` muestra el texto del encargo como diálogo suyo. La entrega sí es
+en un `puntoCalle()` cualquiera. **Todo `id` que aparezca en `encargos` tiene que estar en escena en
+ese acto** (`desde`/`hasta`) o el marcador cae en una calle al azar y se pierde el hilo.
+
+### Diálogo
+
+Una línea a la vez, sin árbol: `charla` guarda con quién hablas y `charlaI` en qué línea vas.
+`charlaI>=1e8` marca un briefing, que se cierra con la siguiente pulsación. `actPersonajes()` corta
+la plática sola si te alejas o te subes al carro.
+
+**`accionF()` es la única tecla de acción** y decide por contexto: si hay plática, avanza; si no y
+hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
+hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
+llamarla directo desde entradas** — todo pasa por `accionF()`.
 
 ### La lonchería
 

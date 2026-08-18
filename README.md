@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 82 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 92 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -37,6 +37,12 @@ tiempo de carga.
   baja las cortinas de la cuadra: ahí ya no hay encargos por un rato.
 - **Toque de queda de facto.** Nadie lo decretó: al oscurecer los civiles se meten a su casa y los
   únicos que quedan en la calle son los sicarios. Así era.
+- **Seis personajes con esquina fija.** Doña Chayo en su lonchería, El Diablo de La Línea, Marisol
+  la reportera, El Kilo de Gente Nueva, Luz que busca a su hija, y Yoli tu hermana. Se les habla con
+  `F`, dicen cosas distintas en cada acto, y **no se les puede disparar**: eso no es un descuido.
+- **Los encargos los da alguien.** El marcador de recogida es la persona que te contrata, así que
+  aprendes dónde para cada quien. El Diablo desaparece en el acto IV; en julio de 2011 lo agarraron,
+  y el juego no te lo explica.
 - **La lonchería de Doña Chayo.** En la esquina donde arrancas. Abre en 2008, aguanta la cuota, baja
   la cortina y acaba tapiada y quemada. Nadie te lo dice; lo ves al pasar.
 - **Mordida.** La municipal se arregla con $400 porque La Línea está hecha de policías. La federal
@@ -55,7 +61,7 @@ tiempo de carga.
 | `W A S D` | Caminar / conducir |
 | `Shift` | Correr |
 | `Espacio` | Saltar / freno de mano |
-| `F` | Subir o bajar del auto |
+| `F` | Hablar, o subir y bajar del auto (según lo que tengas enfrente) |
 | `E` | Disparar (solo a pie) |
 | `Q` | Cambiar de arma |
 | `G` | Dar mordida a la municipal ($400) |
@@ -108,7 +114,8 @@ Three.js r128 desde CDN, todo lo demás es código propio.
 
 ## Por hacer
 
-- [ ] Personajes con los que se hable: Doña Chayo, Marisol, El Diablo, Luz
+- [ ] Que los encargos cambien según de qué facción cobres
+- [ ] Que Luz te vaya dando el mapa de los tiraderos
 - [ ] Motos y variación de manejo por clase de vehículo
 - [ ] Tiendas donde gastar el dinero
 - [ ] Radio con locutor y música generada por Web Audio

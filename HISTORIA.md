@@ -271,7 +271,8 @@ técnica, es la premisa.
 | **Toque de queda** de facto | De noche se meten los civiles y quedan los sicarios. Histórico, no estético. | ✅ Hecho |
 | **La lonchería de Doña Chayo** | En la esquina del arranque. Abre, aguanta la cuota, baja cortina, acaba tapiada y quemada. El luto sin una sola línea de diálogo. | ✅ Hecho |
 | **Final** con las cifras | Regla de tono 2 y 6: tu contador de muertos junto al de la ciudad, y la sentencia de 2024. | ✅ Hecho |
-| Personajes con los que se hable | Doña Chayo, Marisol, El Diablo, Luz. | ⬜ Falta |
+| **Personajes con los que se hable** | Los seis, con esquina fija y líneas propias por acto. El encargo lo entrega quien lo da: su frase *es* el briefing. El Diablo se borra en el acto IV sin una línea de explicación. | ✅ Hecho |
+| **A los personajes no se les dispara** | `disparar()` solo mira `peatones[]`. Decisión editorial, no bug. | ✅ Hecho |
 | El **coche bomba** de julio de 2010 como evento del mundo | Regla: fuera de pantalla, en la radio. | ⬜ Falta |
 
 ---

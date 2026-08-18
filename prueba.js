@@ -123,8 +123,9 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 //   1) calentarse a pie          2) quedarse quieto y ver si las patrullas llegan
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
-const CUADROS=30000, CERCO_INI=2500, CERCO_FIN=11000;
+const CUADROS=32000, CERCO_INI=2500, CERCO_FIN=11000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
+const charlas=new Set(); const repartos=new Set();
 let corridos=0;
 try{
   for(let f=0;f<CUADROS;f++){
@@ -146,6 +147,20 @@ try{
       if(F.jugador.auto)kd({code:'KeyF',preventDefault(){}});   // bajarse
       F.jugador.x=-20;F.jugador.z=-70;                     // Francisco Villa y A. González
     }
+    // El marcador de recogida ES el personaje que da el encargo, así que basta con
+    // apretar F ahí mismo. Nada de teletransportes extra: eso trababa la partida.
+    if(!cerco&&f%400===3){
+      if(F.jugador.auto)F.accionF();                   // bajarse para poder hablar
+      for(let k=0;k<5;k++){
+        F.accionF();
+        const c=F.estado().charla;
+        if(c)charlas.add(c);
+      }
+    }
+    if(f%900===7)repartos.add(F.PERSONAJES.filter(p=>p.malla.visible).map(p=>p.id).join(','));
+    // Salir del cerco con calor 5 significa que las patrullas te agarran cada rato
+    // y el resto de la corrida se va en arrestos. Reaparecer es lo que haría el juego.
+    if(f===CERCO_FIN)F.reaparecer();
     if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
       const b=F.jugador.auto||F.jugador;let m=1e9;
       for(const a of F.autos)if(a.clase==='federal'||a.clase==='municipal'||a.clase==='militar')
@@ -180,6 +195,7 @@ const est={
   calle:el('calle').textContent, encargo:el('mtitulo').textContent,
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
+  hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
 // los sistemas tienen que haberse movido, no solo no tronar
@@ -195,4 +211,9 @@ exige(F.peatones.length>0,'quedan peatones en el mundo');
 exige(cercoMin<40,'las patrullas alcanzan al jugador en la calle (llegaron a '+Math.round(cercoMin)+' m)');
 exige(finalVisto,'el juego llega a su final y saca la placa de cierre');
 exige(s.cortina,'la lonchería baja la cortina al avanzar los actos');
+exige(charlas.size>=4,'se habló con varios personajes (fueron '+charlas.size+': '+[...charlas]+')');
+exige(charlas.has('chayo'),'Doña Chayo está desde el primer acto');
+exige([...charlas].some(c=>c==='luz'||c==='kilo'||c==='marisol'),
+  'se habló con alguien que solo aparece en actos tardíos');
+exige(repartos.size>=3,'el reparto cambia de acto a acto (repartos vistos: '+repartos.size+')');
 process.exit(assertFails?1:0);

@@ -80,6 +80,20 @@
   #radio.on{opacity:1}
   #radio::before{content:"◉ ";color:var(--rojo)}
 
+  /* diálogo */
+  #dialogo{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);
+    padding:12px 18px 10px;width:min(560px,86vw);opacity:0;transition:opacity .2s;
+    pointer-events:none}
+  #dialogo.on{opacity:1}
+  #diQuien{font-family:var(--cond);font-size:21px;letter-spacing:.04em;color:var(--oro);
+    line-height:1}
+  #diPapel{font-size:9px;letter-spacing:.2em;color:var(--tenue);text-transform:uppercase;
+    margin-top:3px}
+  #diTexto{font-size:13px;line-height:1.6;color:var(--texto);margin-top:9px}
+  #diMas{margin-top:8px;font-size:9px;letter-spacing:.18em;color:var(--tenue);text-align:right}
+  #diMas b{font-family:var(--cond);font-size:12px;background:var(--oro);color:#0b0e14;
+    padding:0 6px;border-radius:2px;font-weight:400}
+
   /* pista central */
   #pista{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);padding:7px 14px;
     font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity .18s}
@@ -195,6 +209,12 @@
   </div>
 
   <div id="radio" class="panel"></div>
+  <div id="dialogo" class="panel">
+    <div id="diQuien"></div>
+    <div id="diPapel"></div>
+    <p id="diTexto"></p>
+    <div id="diMas"><b>F</b> SEGUIR</div>
+  </div>
   <div id="pista" class="panel"><kbd>F</kbd><span id="pistaTxt">Subir al auto</span></div>
   <div id="toast"></div>
   <div id="aviso"><h2 id="avisoT">NOQUEADO</h2><p id="avisoS">Reapareciendo…</p></div>
@@ -805,10 +825,11 @@ const esPatrulla=c=>c==='municipal'||c==='federal'||c==='militar';
 /* ══════════════════════════ PERSONAS ══════════════════════════ */
 const PIEL=[0xd8a877,0xa9754c,0x7a5236,0xefc39a];
 const ROPA=[0x2f4f7a,0x7a2f3d,0x2f7a53,0x3d3d4a,0xa3702f,0x5b3d7a,0xd4d6da];
-function persona(esJugador,tipo){
+function persona(esJugador,tipo,ropa){
   const g=new THREE.Group();
   const piel=new THREE.MeshLambertMaterial({color:pick(PIEL)});
-  const col = esJugador?0x1d2a3a : tipo==='sicario'?0x1a1d24 : tipo==='halcon'?0x6b2f2f : pick(ROPA);
+  const col = ropa!==undefined ? ropa
+            : esJugador?0x1d2a3a : tipo==='sicario'?0x1a1d24 : tipo==='halcon'?0x6b2f2f : pick(ROPA);
   const cam=new THREE.MeshLambertMaterial({color:col});
   const pan=new THREE.MeshLambertMaterial({color:esJugador?0x2f4b7d:pick(ROPA)});
   const torso=new THREE.Mesh(new THREE.BoxGeometry(0.78,0.86,0.42),cam);torso.position.y=1.32;g.add(torso);
@@ -872,6 +893,140 @@ const jugador={
 };
 jugador.malla.position.set(jugador.x,0,jugador.z);
 const muertos={civil:0,sicario:0,halcon:0};
+
+/* ══════════════════════════ PERSONAJES ══════════════════════════ */
+// Gente fija, con nombre y esquina. Los encargos ya no salen de un marcador
+// anónimo: los da alguien. `desde`/`hasta` son actos: El Diablo desaparece en el
+// IV porque en julio de 2011 lo agarraron, y no hace falta decirlo.
+//
+// A los personajes NO se les puede disparar. No es un descuido: `disparar()` solo
+// mira `peatones[]`. Un juego sobre estos años no le deja al jugador matar a la
+// señora de la lonchería ni a la madre que busca a su hija.
+const PERSONAJES=[
+  {id:'chayo', nombre:'Doña Chayo', papel:'Lonchería La Frontera', ropa:0xc85f7a,
+   desde:0, hasta:3, x:ejeX(3)+22, z:ejeZ(2)+34,
+   lineas:[
+     ['Siéntate, mijo, hoy hay caldo de res.',
+      '¿Ya viste cuántos soldados? Dicen que vienen a arreglar esto.',
+      'Yo lo único que quiero es vender burritos en paz.'],
+     ['Vinieron el martes. Piden mil a la semana.',
+      'Le dije a tu mamá que no te metieras. No me hizo caso ella, ni tú.',
+      'Págales y ya, mijo. Yo ya les pago.'],
+     ['Bajé la cortina. Dos cuadras para allá quemaron la tortillería.',
+      'Ya no abro de noche. Nadie abre de noche.'],
+     ['Me voy con mi hermana a Chihuahua. Ya no hay a quién venderle.',
+      'Llévate lo que quede de la despensa, a mí ya no me sirve.',
+      'No me pongas esa cara. Treinta años di de comer aquí.']]},
+
+  {id:'diablo', nombre:'El Diablo', papel:'La Línea', ropa:0x2a2d34,
+   desde:0, hasta:2, x:ejeX(2)+16, z:ejeZ(2)+30,
+   lineas:[
+     ['¿Tú eres el de la maquila? Me dijeron que manejas bien.',
+      'Nomás vas, ves y me dices. Nadie sale lastimado.',
+      'Aquí se paga los viernes. Y se paga bien.'],
+     ['Ya no es reportar. Ahora es cargar.',
+      'Los de Sinaloa se meten por el poniente. Esta plaza es nuestra desde antes de que nacieras.',
+      '¿Traes hambre? Hay carne asada atrás.'],
+     ['Todo el país nos está viendo. Bueno. Que vean.',
+      'Yo no mando a matar chamacos. Eso dilo donde quieras.',
+      'Y ya no te puedes salir. Tú solito te metiste.'],
+     []]},
+
+  {id:'marisol', nombre:'Marisol Vega', papel:'El Fronterizo · policiaca', ropa:0x9d5f2f,
+   desde:1, hasta:3, x:ejeX(4)+14, z:ejeZ(2)+20,
+   lineas:[
+     [],
+     ['¿Viste lo de anoche en la Insurgentes? No me contestes. Ya sé que sí.',
+      'Yo no te voy a preguntar de quién cobras. Todavía.'],
+     ['Mataron al fotógrafo. Veintiuno tenía.',
+      'Mañana sale la plana. Y se la escribimos a ellos, no al gobierno.',
+      '“¿Qué quieren de nosotros?” Porque el Estado no contesta. A ver si ellos sí.'],
+     ['Sigo aquí. Firmando con mi nombre, además.',
+      'Bajaron los muertos. No lo escribas como si alguien hubiera ganado algo bueno.']]},
+
+  {id:'kilo', nombre:'El Kilo', papel:'Gente Nueva', ropa:0x2f7a53,
+   desde:1, hasta:3, x:ejeX(0)+18, z:ejeZ(3)+24,
+   lineas:[
+     [],
+     ['Sinaloense, a mucha honra. Y esta plaza ya es nuestra, nomás que todavía no lo sabe.',
+      'Con nosotros ganas el doble. Piénsalo sin prisa.'],
+     ['A nosotros nunca nos paran los retenes. ¿Ya te fijaste?',
+      'No es suerte, morro. Es que los de arriba cobran de este lado.'],
+     ['Te lo dije. Ganamos.',
+      'Ahora hay menos muertos, ¿verdad? Pues por eso hay menos muertos.']]},
+
+  {id:'luz', nombre:'Luz', papel:'Busca a su hija', ropa:0xd4d6da,
+   desde:2, hasta:3, x:cenX(6), z:cenZ(0),
+   lineas:[
+     [],[],
+     ['No vengo a pedirte nada. Nomás no pases por aquí a toda velocidad.',
+      'Mi hija salió a las siete de la maquila. Eso es todo lo que sé.',
+      'Aquí ponemos las cruces. Las pintamos de rosa para que se vean de lejos.'],
+     ['Sigo buscando. No, no me he cansado.',
+      'Ustedes cuentan muertos. Yo cuento días.']]},
+
+  {id:'yoli', nombre:'Yoli', papel:'Tu hermana', ropa:0x5b3d7a,
+   desde:0, hasta:3, x:ejeX(3)+44, z:ejeZ(2)+54,
+   lineas:[
+     ['¿De dónde sacaste ese dinero? No. No me digas.',
+      'Yo voy a acabar la enfermería aunque tú te hagas pendejo.'],
+     ['Hoy hubo dos en la esquina de la escuela. Dos.',
+      'Nico. ¿En qué andas?'],
+     ['Ya no salgo de noche. Ninguna sale de noche.',
+      'En la escuela nos enseñaron que si oímos balazos nos tiremos al piso. Eso nos enseñan.'],
+     ['Me dieron la visa. Me voy.',
+      'Vente conmigo.',
+      '…Ya sabía que ibas a decir que no.']]},
+];
+
+PERSONAJES.forEach(p=>{
+  p.malla=persona(false,'civil',p.ropa);
+  p.malla.position.set(p.x,0,p.z);
+  p.malla.visible=false;
+});
+const quien=id=>PERSONAJES.find(p=>p.id===id);
+const enEscena=p=>acto>=p.desde&&acto<=p.hasta;
+function actoPersonajes(){
+  for(const p of PERSONAJES)p.malla.visible=enEscena(p);
+}
+
+// Diálogo: una línea a la vez, sin árbol. Avanza con la misma tecla de acción.
+let charla=null, charlaI=0;
+function personajeCerca(){
+  let m=null,md=30;                                  // ~5.5 m
+  for(const p of PERSONAJES){
+    if(!enEscena(p))continue;
+    const d=dist2(p.x,p.z,jugador.x,jugador.z);
+    if(d<md){md=d;m=p;}
+  }
+  return m;
+}
+function decir(p,linea,i,total){
+  charla=p;charlaI=i;
+  ui.diQuien.textContent=p.nombre;
+  ui.diPapel.textContent=p.papel;
+  ui.diTexto.textContent=linea;
+  ui.diMas.innerHTML = i+1<total ? '<b>F</b> SEGUIR' : '<b>F</b> CERRAR';
+  ui.dialogo.classList.add('on');
+}
+function cerrarCharla(){charla=null;ui.dialogo.classList.remove('on');}
+function hablar(p){
+  const l=p.lineas[acto]||[];
+  if(!l.length){cerrarCharla();return;}
+  if(charla===p){                                     // ya hablando: siguiente línea
+    if(charlaI+1>=l.length){cerrarCharla();return;}
+    decir(p,l[charlaI+1],charlaI+1,l.length);
+  }else decir(p,l[0],0,l.length);
+  pip(660,0.05);
+}
+// El encargo lo entrega quien lo dio: su propia frase es el briefing.
+function briefing(p,txt){
+  charla=p;charlaI=1e9;                               // 1e9: siguiente F cierra
+  ui.diQuien.textContent=p.nombre;ui.diPapel.textContent=p.papel;
+  ui.diTexto.textContent=txt;
+  ui.diMas.innerHTML='<b>F</b> CERRAR';
+  ui.dialogo.classList.add('on');
+}
 
 /* ══════════════════════════ ARMAS ══════════════════════════ */
 const ARMAS=[
@@ -1007,10 +1162,10 @@ const ACTOS=[
          'reportar retenes, seguir camionetas, entregar sobres. Todavía no debe nada.',
    dato:'2008 · 1,623 homicidios en Ciudad Juárez', reales:1623,
    encargos:[
-     ['Reportar el retén','Pásate a ver dónde pusieron el retén y avisa. Nadie sale lastimado.'],
-     ['Llevar el sobre','Ni preguntes qué trae. Llévalo y regrésate.'],
-     ['Seguir la camioneta','Que no te vean. Solo queremos saber a dónde llega.'],
-     ['Recoger la cuota','Doña Chayo ya la juntó. Pásale a recogerla.'],
+     ['Reportar el retén','Pásate a ver dónde pusieron el retén y avisa. Nadie sale lastimado.','diablo'],
+     ['Llevar el sobre','Ni preguntes qué trae. Llévalo y regrésate.','diablo'],
+     ['Seguir la camioneta','Que no te vean. Solo queremos saber a dónde llega.','diablo'],
+     ['Recoger la cuota','Doña Chayo ya la juntó. Pásale a recogerla.','chayo'],
    ]},
   {anio:'2009', titulo:'LA PLAZA SE CALIENTA',
    sub:'Acto II · La plaza se calienta',
@@ -1019,10 +1174,10 @@ const ACTOS=[
          'solo maneja. Y el juego no lo celebra: lo anota.',
    dato:'2009 · 2,754 homicidios · la Corte Interamericana condena a México por Campo Algodonero', reales:2754,
    encargos:[
-     ['Cobrar el piso','Tres changarros de la cuadra. Si no pagan, tú nomás reportas.'],
-     ['Sacar el carro','Está quemado. Déjalo lejos y camínate de regreso.'],
-     ['Levantar el encargo','Está en el lote. Ni lo abras.'],
-     ['Cruzar la raya','La plaza de enfrente es de los otros. Entra, entrega y sal.'],
+     ['Cobrar el piso','Tres changarros de la cuadra. Si no pagan, tú nomás reportas.','diablo'],
+     ['Sacar el carro','Está quemado. Déjalo lejos y camínate de regreso.','diablo'],
+     ['Levantar el encargo','Está en el lote. Ni lo abras.','diablo'],
+     ['Cruzar la raya','La plaza de enfrente es de los otros. Entra, entrega y sal.','kilo'],
    ]},
   {anio:'2010', titulo:'EN ALGO ANDABAN',
    sub:'Acto III · En algo andaban',
@@ -1032,10 +1187,10 @@ const ACTOS=[
          'no mejora nada. En julio truena el primer coche bomba de la guerra.',
    dato:'2010 · 3,622 homicidios · 9.9 al día · la ciudad califica a la Federal con 2.2 de 10', reales:3622,
    encargos:[
-     ['Colgar la manta','En el puente peatonal, donde la vean los del noticiero.'],
-     ['Sacar a la reportera','Marisol ya publicó de más. Sácala del centro antes de que la vean.'],
-     ['Perder al convoy','Traes cola federal. Piérdelos y estaciónate donde te digo.'],
-     ['Llevar flores','Sin paga. Es un memorial. Deja las flores y vete.'],
+     ['Colgar la manta','En el puente peatonal, donde la vean los del noticiero.','diablo'],
+     ['Sacar a la reportera','Marisol ya publicó de más. Sácala del centro antes de que la vean.','marisol'],
+     ['Perder al convoy','Traes cola federal. Piérdelos y estaciónate donde te digo.','diablo'],
+     ['Llevar flores','Sin paga. Es un memorial. Deja las flores y vete.','luz'],
    ]},
   {anio:'2011', titulo:'SE ACABÓ PORQUE ALGUIEN GANÓ',
    sub:'Acto IV · Se acabó porque alguien ganó',
@@ -1046,10 +1201,10 @@ const ACTOS=[
          'bando de enfrente.',
    dato:'2011 · 2,086 homicidios · más de 10 mil desde 2008 · 230 mil personas se fueron', reales:2086,
    encargos:[
-     ['Vaciar la casa','Se van. Carga lo que quepa y no vuelvas.'],
-     ['Pagar la última','Última cuota. Después de esta, la lonchería cierra.'],
-     ['Llevar a Yoli','Al puente. No cruzas tú: cruza ella.'],
-     ['Dar la vuelta','Nomás maneja. Mira la ciudad que queda.'],
+     ['Vaciar la casa','Se van. Carga lo que quepa y no vuelvas.','kilo'],
+     ['Pagar la última','Última cuota. Después de esta, la lonchería cierra.','chayo'],
+     ['Llevar a Yoli','Al puente. No cruzas tú: cruza ella.','yoli'],
+     ['Dar la vuelta','Nomás maneja. Mira la ciudad que queda.','luz'],
    ]},
 ];
 const ENCARGOS_POR_ACTO=4;
@@ -1078,11 +1233,14 @@ function puntoCalle(){
   return {x:ejeX(4), z:cenZ(2)};
 }
 function nuevaOferta(){
-  const p=puntoCalle();mision.estado='oferta';mision.x=p.x;mision.z=p.z;
   const e=ACTOS[acto].encargos[hechos%ACTOS[acto].encargos.length];
+  const dador=quien(e[2]);
+  // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
+  const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-3,3), z:dador.z+rnd(2,5)} : puntoCalle();
+  mision.estado='oferta';mision.x=p.x;mision.z=p.z;mision.dador=dador;
   mision.titulo=e[0];mision.texto=e[1];
   mision.gratis = e[0]==='Llevar flores'||e[0]==='Dar la vuelta';
-  ui.mtitulo.textContent='Encargo disponible';
+  ui.mtitulo.textContent = mision.dador ? 'Te busca '+mision.dador.nombre : 'Encargo disponible';
   ui.barra.style.display='none';
   marcador.position.set(p.x,0,p.z);
   pintarMarcador(mision.gratis?0xcfd6e0:0xffc233);
@@ -1096,6 +1254,7 @@ function aceptar(){
   ui.mtitulo.textContent=mision.titulo;
   ui.barra.style.display='block';
   marcador.position.set(p.x,0,p.z);
+  if(mision.dador)briefing(mision.dador,mision.texto);
   aviso3(mision.gratis?'LAS FLORES A BORDO':'ENCARGO A BORDO');pip(880,0.09);
 }
 function completar(){
@@ -1132,7 +1291,7 @@ function avanzarActo(){
   plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
     cerrado.reales.toLocaleString('en-US')+'.';
   placa.classList.add('on');jugando=false;
-  actoValla();avanzaPlaza();actoLoncheria();guardar();
+  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();guardar();
 }
 
 // El juego sí termina. No con un final: con las cifras y una sentencia de 2024.
@@ -1275,7 +1434,7 @@ addEventListener('keydown',e=>{
   if(!jugando)return;
   teclas[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyF'].indexOf(e.code)>=0)e.preventDefault();
-  if(e.code==='KeyF')entrarSalir();
+  if(e.code==='KeyF')accionF();
   if(e.code==='KeyE')disparar();
   if(e.code==='KeyQ')cambiarArma();
   if(e.code==='KeyG')mordida();
@@ -1313,7 +1472,7 @@ if(esTactil)document.getElementById('touch').classList.add('on');
   const bA=document.getElementById('bA'),bB=document.getElementById('bB');
   bA.addEventListener('pointerdown',()=>{inp.z=1;});
   bA.addEventListener('pointerup',()=>{inp.z=0;});
-  bB.addEventListener('pointerdown',entrarSalir);
+  bB.addEventListener('pointerdown',accionF);
   document.getElementById('bC').addEventListener('pointerdown',disparar);
 })();
 
@@ -1335,6 +1494,19 @@ function autoCercano(){
     if(d<md){md=d;mejor=a;}
   }
   return mejor;
+}
+// Una sola tecla de acción. A pie y con alguien enfrente, F habla; si no, F es
+// el carro. El HUD dice cuál de las dos toca, así que no hace falta otra tecla.
+function accionF(){
+  if(charla){                                     // en plática: avanzar o cerrar
+    if(charlaI>=1e8||!enEscena(charla)){cerrarCharla();return;}
+    hablar(charla);return;
+  }
+  if(!jugador.auto){
+    const p=personajeCerca();
+    if(p){hablar(p);return;}
+  }
+  entrarSalir();
 }
 function entrarSalir(){
   if(jugador.auto){
@@ -1405,7 +1577,10 @@ const ui={
   avisoS:document.getElementById('avisoS'),arma:document.getElementById('arma'),
   calle:document.getElementById('calle'),radio:document.getElementById('radio'),
   anio:document.getElementById('anio'),acto:document.getElementById('acto'),
-  cuenta:document.getElementById('cuenta')
+  cuenta:document.getElementById('cuenta'),
+  dialogo:document.getElementById('dialogo'),diQuien:document.getElementById('diQuien'),
+  diPapel:document.getElementById('diPapel'),diTexto:document.getElementById('diTexto'),
+  diMas:document.getElementById('diMas')
 };
 ui.arma.addEventListener('pointerdown',cambiarArma);
 ui.dinero.addEventListener('pointerdown',mordida);
@@ -1649,12 +1824,25 @@ function actPeatones(dt){
   }
 }
 
+// Voltean hacia ti cuando te acercas. Es lo único que los anima, y basta.
+function actPersonajes(dt){
+  for(const p of PERSONAJES){
+    if(!p.malla.visible)continue;
+    const d=dist2(p.x,p.z,jugador.x,jugador.z);
+    if(d<400) p.malla.rotation.y=angLerp(p.malla.rotation.y,
+      Math.atan2(jugador.x-p.x,jugador.z-p.z),1-Math.pow(0.02,dt));
+  }
+  // si te alejas o te subes al carro, la plática se corta sola
+  if(charla&&(jugador.auto||dist2(charla.x,charla.z,jugador.x,jugador.z)>120))cerrarCharla();
+}
+
 function actMision(dt){
   const b=posJugador();
   marcador.rotation.y+=dt*0.9;
   const d=Math.sqrt(dist2(b.x,b.z,mision.x,mision.z));
   if(mision.estado==='oferta'){
-    ui.mtexto.textContent='Recoger a '+Math.round(d)+' m · '+calleDe(mision.x,mision.z)+'.';
+      ui.mtexto.textContent=(mision.dador?mision.dador.nombre+' a ':'Recoger a ')+
+      Math.round(d)+' m · '+calleDe(mision.x,mision.z)+'.';
     if(d<6)aceptar();
   }else{
     mision.tiempo-=dt;
@@ -1779,6 +1967,12 @@ function minimapa(){
                  : a.clase==='trafico'?'#8a97a8':'#4d5563';
     mg.fillRect(X(a.x)-2,Z(a.z)-2,4,4);
   }
+  // personajes
+  for(const p of PERSONAJES){
+    if(!p.malla.visible)continue;
+    if(Math.abs(p.x-b.x)>170||Math.abs(p.z-b.z)>170)continue;
+    mg.fillStyle='#e8eef6';mg.beginPath();mg.arc(X(p.x),Z(p.z),2.6,0,6.283);mg.fill();
+  }
   // puentes
   mg.fillStyle='#d8c37a';
   for(const p of PUENTES)mg.fillRect(X(ejeX(p.i))-2,Z(ZBORDO)-3,4,6);
@@ -1814,12 +2008,12 @@ function actHUD(dt){
   ui.calle.textContent=calleDe(b.x,b.z);
   ui.cuenta.textContent='Muertos: '+(muertos.civil+muertos.sicario+muertos.halcon)+
     (muertos.civil?' · civiles '+muertos.civil:'');
-  const puede=!jugador.auto&&autoCercano();
-  const quiere=!!(puede||jugador.auto);
-  if(quiere!==pistaOn){
-    pistaOn=quiere;ui.pista.classList.toggle('on',quiere);
-  }
-  if(quiere)ui.pistaTxt.textContent=jugador.auto?'Bajar del auto':'Subir al auto';
+  const conQuien=!jugador.auto&&!charla&&personajeCerca();
+  const quiere=!!(conQuien||jugador.auto||(!jugador.auto&&autoCercano()));
+  if(quiere!==pistaOn){pistaOn=quiere;ui.pista.classList.toggle('on',quiere);}
+  if(quiere)ui.pistaTxt.textContent = conQuien ? 'Hablar con '+conQuien.nombre
+                                   : jugador.auto ? 'Bajar del auto' : 'Subir al auto';
+  if(charla)ui.pista.classList.remove('on');
   // la garita: se ve, no se cruza
   if(avisoGarita>0)avisoGarita-=dt;
   else for(const g of garitas){
@@ -1848,7 +2042,7 @@ function bucle(now){
   if(bloqueo>0){bloqueo-=dt;}
   else{
     if(jugador.auto)actAutoJugador(dt); else actJugador(dt);
-    actTrafico(dt);actPeatones(dt);actPersecucion(dt);actMision(dt);
+    actTrafico(dt);actPeatones(dt);actPersecucion(dt);actPersonajes(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
   actCamara(dt);actDiaNoche(dt);actAudio();actHUD(dt);minimapa();
@@ -1879,14 +2073,16 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // Costura de pruebas: solo existe con #test. Deja pilotear el juego desde fuera
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
+    PERSONAJES,personajeCerca,accionF,reaparecer,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
+                 charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
-actoValla();avanzaPlaza();actoLoncheria();
+actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);
