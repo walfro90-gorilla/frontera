@@ -3,9 +3,9 @@
 Sandbox 3D de mundo abierto en un solo archivo HTML. **Ciudad Juárez, 2008–2012**: la guerra
 del narco dramatizada como juego. Eres **Jimmy «El Diamond» Aguilar**, fotorreportero de policiaca
 de El Diario de Juárez. No traes pistola: traes dos lentes y una hora de cierre. Avenidas reales, el Río Bravo, la valla y los cuatro puentes
-internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin dependencias
-instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
-tiempo de carga.
+internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y sin gestor de
+paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
+la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
 **[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 191 KB · WebGL
 
@@ -161,7 +161,9 @@ node prueba.js                # prueba de humo: juega solo los cuatro actos
 
 ## Notas técnicas
 
-Three.js r128 desde CDN, todo lo demás es código propio.
+Three.js r128 en `vendor/`, todo lo demás es código propio. Estaba en un CDN y se trajo al repo
+porque era el único punto de falla externo: si retiraban esa versión, el juego dejaba de arrancar
+sin ningún mensaje.
 
 - **El mapa.** No usa datos de OpenStreetMap: son ejes a mano con las coordenadas de las avenidas
   reales, en su orden y separación relativa. A 1:1 Juárez son 25 km y el 95% sería colonia

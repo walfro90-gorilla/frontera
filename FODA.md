@@ -14,7 +14,7 @@ se marca aquí y se vuelven a medir las cifras de abajo.
 | Documentación | 1,103 líneas entre `CLAUDE.md`, `HISTORIA.md` y `README.md` |
 | Mundo | 231 edificios · 102 autos · 34 peatones · 26 sitios · 6 personajes |
 | Contenido histórico | 16 hechos jugables · 4 actos · 22 fuentes citadas |
-| Dependencias instaladas | 0 · **una por CDN** (Three.js r128) |
+| Dependencias | Three.js r128 (MIT) guardada en `vendor/` · **cero llamadas a la red** |
 
 ---
 
@@ -78,9 +78,9 @@ instalar nada.
 
 ## 🟧 Amenazas
 
-**Three.js desde CDN es un punto único de falla.** Si cdnjs retira r128, el juego muere en silencio.
-Además contradice el «cero assets externos» que presume el README. Es la amenaza más concreta y la
-más barata de quitar.
+~~**Three.js desde CDN es un punto único de falla.**~~ **Resuelta.** Estaba en cdnjs y si retiraban
+r128 el juego moría en silencio. Ahora va en `vendor/`, servido desde el repo: `index.html` no llama
+a ningún dominio externo.
 
 **Sensibilidad del tema.** Las familias siguen vivas. Un titular malintencionado puede hundirlo
 aunque el contenido sea impecable. Mitigado a medias: las reglas editoriales están escritas y son
@@ -101,7 +101,7 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 
 | # | Tarea | Ataca | Tam. | Hecho cuando |
 |---|---|---|---|---|
-| 1 | **Anclar Three.js en el repo** y servirlo local | Amenaza CDN | S | El juego carga con la red del CDN bloqueada, y el README ya no miente sobre dependencias |
+| 1 | ~~Anclar Three.js en el repo~~ ✅ | Amenaza CDN | S | **Hecho.** r128 (MIT, 603 KB) en `vendor/`, verificado que trae las clases que usa el juego. El HTML ya no llama a ningún dominio externo |
 | 2 | **Medir rendimiento**: contador de FPS y de llamadas de dibujo bajo `#perf` | Debilidad de perf | S | Hay cifras de FPS en GPU integrada, escritas en este documento |
 | 3 | **Revisión visual sistema por sistema** con capturas | Debilidad visual | M | Existe una lista de los 20 sistemas con captura y visto bueno de cada uno |
 

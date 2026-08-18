@@ -5,9 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Qué es
 
 Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3981 líneas). Sin build step, sin
-`package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
-texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
-proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
+`package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
+desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
+genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
+accidente. No agregar imágenes, fuentes ni archivos de sonido, y no volver a colgar Three de un CDN:
+era el único punto de falla externo que tenía el proyecto.
 
 El juego es una dramatización de la guerra del narco en Ciudad Juárez, 2008–2012. Antes de tocar
 texto, personajes, facciones, misiones o el mapa: leer `HISTORIA.md`.
