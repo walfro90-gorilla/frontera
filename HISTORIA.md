@@ -310,6 +310,7 @@ técnica, es la premisa.
 | **Monumento a los Trabajadores y Umbral del Milenio** | Los dos del sur, con su año y su sitio. Las formas son interpretación; el lugar, la fecha y lo que significan, no. | ✅ Hecho |
 | **El Chamizal y el asta monumental** | Parque, arboleda, el museo de 1978 y la bandera de 50 × 28 m sobre 100 m de asta, ondeando por vértices. Se mancha 0.16 → 0.43 → 0.79 → 1.00 con el acumulado de muertos. | ✅ Hecho |
 | **La Av. Juárez** como calle de fiesta que se apaga | Dieciséis negocios con neón, apagándose por acto: 16 en 2008, 5 en 2011. Los que cierran se vuelven refaccionaria, forrajería o estética. Bajo de antro por Web Audio según distancia, hora y acto. | ✅ Hecho |
+| **La moto con cápsula** | Vehículo propio de Jimmy, clásica con sidecar. Ágil y frágil, y el único lugar desde donde se puede fotografiar sin bajarse, siempre que frenes. | ✅ Hecho |
 | **La portada** | Periodicazo al cerrar cada nota, con la fecha real del día siguiente al hecho, el titular y las fotos capturadas de verdad desde el lente. | ✅ Hecho |
 | **El crédito de la foto** | Firmar o no firmar en cada cierre. Paga 1.6× contra 0.7×, y firmar te pone nombre ante la facción que sale en la foto: dos niveles de calor de plaza desde 2010. El final cuenta cuántas firmaste. | ✅ Hecho |
 | **Final** con las cifras | Regla de tono 2 y 6: tu contador de muertos junto al de la ciudad, y la sentencia de 2024. | ✅ Hecho |

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3526 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3605 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,20 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### La moto de Jimmy
+
+`MOTO` es un `autos[]` normal de `clase:'moto'`, así que hereda física, colisión, cámara y HUD sin
+código aparte. Lo que la distingue: **`limpiar()` la salta explícitamente** y `entrarSalir()` no le
+cambia la clase a `'robado'`, porque es suya. Si algún día se toca cualquiera de esas dos, la moto
+desaparece a media partida y el jugador se queda a pie sin explicación.
+
+`fisicaAuto()` la trata aparte: más aceleración y giro, menos punta, y **umbral de golpe 13 en vez
+de 22** con casi el doble de daño. Es una clásica con cápsula, no una deportiva.
+
+**Desde el sidecar sí se fotografía**, y es la única excepción a "bájate para la foto". Por eso
+`fotografiar()` y `capturar()` toman el punto de vista de `posJugador()` y no de `jugador.x/z`, que
+está congelado mientras vas montado. Arriba de 9 m/s la toma se rechaza por movida.
 
 ### Línea de tiempo
 

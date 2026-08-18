@@ -156,7 +156,8 @@ const CUADROS=44000;
 // juego: los sitios no se anunciaban y parecía bug del juego.
 const SIT_FIN0=SIT_INI+SIT_PASO*sandbox.window.__frontera.SITIOS.length;
 const MAPA_ABRE=SIT_FIN0+40, MAPA_CIERRA=SIT_FIN0+110;
-const CERCO_INI=SIT_FIN0+260, CERCO_FIN=CERCO_INI+8000;
+const MOTO_A=SIT_FIN0+130, MOTO_B=SIT_FIN0+215;
+const CERCO_INI=SIT_FIN0+300, CERCO_FIN=CERCO_INI+8000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 const sitiosVistos=new Set();
@@ -165,6 +166,7 @@ let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
 let lineaProbada='no se probó', elegido=null;
+let motoQuieta=null, motoRapida=null, motoMontada=false;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
 let corridos=0;
@@ -188,20 +190,23 @@ try{
       if(fase===SIT_PASO-3 && el('sitio').__cls.has('on') &&
          el('sitioNombre').textContent===s0.nombre) sitiosVistos.add(s0.nombre);
     }
+    // Ventana limpia para la moto: el piloto fotografía cada cuadro durante las
+    // escenas, así que satura la cadencia del lente y encima se bajaría del vehículo.
+    const faseMoto = f>=MOTO_A-70 && f<=MOTO_B+2;
     const cerco = f>=CERCO_INI && f<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
-    if(f%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});  // disparar: calienta
+    if(!faseMoto&&f%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});
     if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
     if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
     if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
     // El bucle ahora es asignación → escena → redacción, y en la escena hay que
     // disparar la cámara. Se empuja más seguido y se fotografía sin descanso:
     // la propia cadencia del lente limita cuántas entran.
-    if(!cerco&&!enSitios&&f%200===0){
+    if(!cerco&&!enSitios&&!faseMoto&&f%200===0){
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
     }
-    if(!cerco&&!enSitios&&F.estado().estadoMision==='escena'){
+    if(!cerco&&!enSitios&&!faseMoto&&F.estado().estadoMision==='escena'){
       if(F.jugador.auto)F.accionF();                      // no se fotografía manejando
       F.fotografiar();
     }
@@ -226,6 +231,23 @@ try{
     if(f===CERCO_FIN)F.reaparecer();
     // mapa grande: abrir con pines puestos, dibujar y cerrar
     if(f===MAPA_ABRE-30)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
+    // La moto. Las dos tomas van separadas en el tiempo porque si no, la segunda
+    // cae dentro de la cadencia del lente y nunca llega al chequeo de velocidad.
+    if(f===MOTO_A){
+      if(F.jugador.auto)F.accionF();
+      F.jugador.x=F.MOTO.x;F.jugador.z=F.MOTO.z+1.5;
+      F.accionF();                                   // subirse
+      motoMontada=F.estado().enMoto;
+      F.MOTO.vel=0;el('toast').textContent='';
+      F.fotografiar();
+      motoQuieta=el('toast').textContent||'(sin aviso)';
+    }
+    if(f===MOTO_B){
+      F.MOTO.vel=22;el('toast').textContent='';
+      F.fotografiar();
+      motoRapida=el('toast').textContent||'(sin aviso)';
+      F.MOTO.vel=0;if(F.jugador.auto)F.accionF();    // bajarse
+    }
     // línea de tiempo: abrir, comprobar que pausa, elegir un hecho y cerrar
     if(f===MAPA_ABRE-24){
       F.abrirLinea();
@@ -295,6 +317,7 @@ const est={
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
+  moto:(motoMontada?'se monta':'NO se monta')+' · parado: "'+motoQuieta+'" · rápido: "'+motoRapida+'"',
   pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
   sitios:sitiosVistos.size+' de '+F.SITIOS.length,
@@ -318,6 +341,11 @@ exige(periodicazos>=12,'sale la portada en cada cierre ('+periodicazos+')');
 exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
 exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');
+exige(motoMontada,'la moto de Jimmy se puede montar');
+exige(motoQuieta!=='BÁJATE PARA LA FOTO','desde la moto sí se fotografía (dijo "'+motoQuieta+'")');
+exige(motoRapida==='SALIÓ MOVIDA · FRENA','a velocidad la foto sale movida (dijo "'+motoRapida+'")');
+exige(F.autos.indexOf(F.MOTO)>=0,'la moto sobrevive a limpiar() y a reaparecer()');
+exige(F.MOTO.clase==='moto','la moto nunca se marca como robada');
 exige(!s.periodico,'el juego no se queda con el periódico en pantalla');
 exige(s.registrados>0,'se registraron muertos en las notas ('+s.registrados+')');
 exige(typeof F.CAMARAS[0].sujetos==='number'&&!('blancos' in F.CAMARAS[0]),

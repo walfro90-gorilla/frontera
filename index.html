@@ -1779,11 +1779,60 @@ function mallaAuto(color,clase){
   scene.add(g);return g;
 }
 
+// La moto de Jimmy: clásica, con cápsula de pasajero a la derecha, que es donde
+// va el equipo. Desde ahí se puede fotografiar sin bajarse, pero hay que frenar:
+// a velocidad la foto sale movida.
+function mallaMoto(){
+  const g=new THREE.Group();
+  const matCuadro=new THREE.MeshLambertMaterial({color:0x1f3b2e});
+  const matCromo=new THREE.MeshLambertMaterial({color:0xb9c0c8});
+  const matPiel=new THREE.MeshLambertMaterial({color:0x2a1e16});
+  const bx=-0.45, sx=1.25;                       // eje de la moto y del sidecar
+
+  const cuadro=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,2.5),matCuadro);
+  cuadro.position.set(bx,0.78,0);g.add(cuadro);
+  const tanque=new THREE.Mesh(new THREE.BoxGeometry(0.56,0.42,0.95),matCuadro);
+  tanque.position.set(bx,1.12,0.15);g.add(tanque);
+  const asiento=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.22,0.8),matPiel);
+  asiento.position.set(bx,1.14,-0.72);g.add(asiento);
+  const horq=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,1.5,6),matCromo);
+  horq.position.set(bx,0.95,1.15);horq.rotation.x=0.32;g.add(horq);
+  const manubrio=new THREE.Mesh(new THREE.BoxGeometry(1.05,0.09,0.09),matCromo);
+  manubrio.position.set(bx,1.42,0.95);g.add(manubrio);
+  const escape=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.11,1.7,6),matCromo);
+  escape.position.set(bx-0.28,0.5,-0.5);escape.rotation.x=Math.PI/2;g.add(escape);
+  const faro=new THREE.Mesh(new THREE.SphereGeometry(0.24,8,6),matFaro);
+  faro.position.set(bx,1.25,1.32);g.add(faro);
+
+  // la cápsula del pasajero
+  const casco=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.72,1.9),matCuadro);
+  casco.position.set(sx,0.82,-0.1);g.add(casco);
+  const nariz=new THREE.Mesh(new THREE.ConeGeometry(0.46,0.9,8),matCuadro);
+  nariz.position.set(sx,0.86,1.1);nariz.rotation.x=Math.PI/2;g.add(nariz);
+  const cojin=new THREE.Mesh(new THREE.BoxGeometry(0.74,0.16,1.1),matPiel);
+  cojin.position.set(sx,1.2,-0.2);g.add(cojin);
+  const parabrisas=new THREE.Mesh(new THREE.BoxGeometry(0.86,0.5,0.07),matCristal);
+  parabrisas.position.set(sx,1.42,0.62);parabrisas.rotation.x=-0.28;g.add(parabrisas);
+  for(const zz of [0.35,-0.65]){                 // tirantes al cuadro
+    const t=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.09,0.09),matCromo);
+    t.position.set((bx+sx)/2,0.62,zz);g.add(t);
+  }
+
+  const geoRueda=new THREE.CylinderGeometry(0.44,0.44,0.18,12);
+  [[bx,1.28],[bx,-1.18],[sx,-0.5]].forEach(p=>{
+    const r=new THREE.Mesh(geoRueda,matLlanta);
+    r.rotation.z=Math.PI/2;r.position.set(p[0],0.44,p[1]);g.add(r);
+  });
+  sombra(g,2.9,3.4);
+  scene.add(g);return g;
+}
+
 function nuevoAuto(x,z,ang,clase){
+  const moto=clase==='moto';
   const a={
-    malla:mallaAuto(pick(COLORES),clase),
+    malla: moto?mallaMoto():mallaAuto(pick(COLORES),clase),
     x, z, ang, vel:0, clase, salud:100,
-    hw:1.15, hl:2.35, ni:0, nj:0, ti:0, tj:0
+    hw: moto?1.35:1.15, hl: moto?1.9:2.35, ni:0, nj:0, ti:0, tj:0
   };
   a.malla.position.set(x,0,z);a.malla.rotation.y=ang;
   autos.push(a);return a;
@@ -2048,8 +2097,9 @@ function capturar(w){
     camera.aspect=RTW/RTH;
     camera.fov = w.cono<0.2 ? 20 : 68;                  // teleobjetivo contra gran angular
     camera.updateProjectionMatrix();
-    camera.position.set(jugador.x,1.78,jugador.z);
-    camera.lookAt(jugador.x+Math.sin(camAng)*40,1.5,jugador.z+Math.cos(camAng)*40);
+    const o=posJugador();
+    camera.position.set(o.x,1.78,o.z);
+    camera.lookAt(o.x+Math.sin(camAng)*40,1.5,o.z+Math.cos(camAng)*40);
     renderer.setRenderTarget(rtFoto);
     renderer.render(scene,camera);
     renderer.setRenderTarget(null);
@@ -2089,15 +2139,21 @@ function atropellar(p){
 // Tomar la foto. Misma geometría de cono que tenía el disparo; lo que entra en el
 // encuadre queda registrado. Si en el encuadre está el asunto de la nota, avanza.
 function fotografiar(){
-  if(jugador.auto||bloqueo>0||recarga>0)return;
+  if(bloqueo>0||recarga>0)return;
+  const enMoto = jugador.auto&&jugador.auto.clase==='moto';
+  if(jugador.auto&&!enMoto){aviso3('BÁJATE PARA LA FOTO');return;}
+  if(enMoto&&Math.abs(jugador.auto.vel)>9){
+    recarga=0.4;aviso3('SALIÓ MOVIDA · FRENA');pip(220,0.08,'square');return;
+  }
   const w=CAMARAS[armaIdx];
   recarga=w.cadencia;apuntando=0.45;fogonazoT=0.05;temblor=w.retro;
-  jugador.ang=camAng;
-  const fog=jugador.malla.userData.fogonazo;if(fog)fog.visible=true;
+  if(!enMoto)jugador.ang=camAng;
+  const fog=jugador.malla.userData.fogonazo;if(fog&&!enMoto)fog.visible=true;
   pip(w.tono,0.09,'square');pip(w.tono*0.6,0.05);            // obturador
+  const ojo=posJugador();
   let algo=false;
   // ¿está el asunto de la nota en el encuadre?
-  if(mision.estado==='escena'&&enMira(w,jugador.x,jugador.z,camAng,mision.x,mision.z)){
+  if(mision.estado==='escena'&&enMira(w,ojo.x,ojo.z,camAng,mision.x,mision.z)){
     mision.fotos++;algo=true;
     const toma=capturar(w);if(toma)mision.tomas.push(toma);
     aviso3('FOTO '+mision.fotos+' DE '+mision.pide);
@@ -2105,7 +2161,7 @@ function fotografiar(){
   }
   // gente en el encuadre: contexto para la nota, y a la autoridad no le gusta
   const gente=peatones.filter(p=>p.caido<=0&&!p.encasa&&
-    enMira(w,jugador.x,jugador.z,camAng,p.x,p.z)).slice(0,w.sujetos);
+    enMira(w,ojo.x,ojo.z,camAng,p.x,p.z)).slice(0,w.sujetos);
   if(gente.length){algo=true;retratados+=gente.length;}
   if(!algo)aviso3('NADA EN EL ENCUADRE');
 }
@@ -2599,6 +2655,15 @@ for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
   if(zona[i][j]!=='lote')continue;
   for(let k=0;k<4;k++) nuevoAuto(cenX(i)-14+k*9,cenZ(j)-6,0,'parado');
 }
+// La moto de Jimmy, estacionada afuera del Diario. Es suya: no se convierte en
+// robada, no la borra limpiar() y siempre sale en el mapa para poder volver por ella.
+const MOTO=nuevoAuto(LUGARES.diario.x-9, LUGARES.diario.z+5, Math.PI*0.5, 'moto');
+sitio({x:MOTO.x,z:MOTO.z+4,r:18,tipo:'Tu vehículo',
+  nombre:'La moto con cápsula',
+  texto:'Clásica, con sidecar. Ahí va el equipo y ahí te subes a disparar sin bajarte, que es la '+
+        'única forma de alcanzar una escena antes de que levanten el cordón. Frena para la foto: '+
+        'a velocidad sale movida.'});
+
 for(let k=0;k<10;k++){                      // tráfico del periférico
   const l=rnd(PERIF[0].a+80,PERIF[1].z-80);
   const a=nuevoAuto(k%2?PERIF[0].x:PERIF[2].x, l, 0, 'periferico');
@@ -2749,16 +2814,17 @@ function entrarSalir(){
     jugador.x=a.x-Math.cos(a.ang)*2.6;jugador.z=a.z+Math.sin(a.ang)*2.6;
     chocaEdificios(jugador,0.5);
     jugador.malla.visible=true;jugador.malla.position.set(jugador.x,0,jugador.z);
-    if(a.clase==='robado')a.clase='parado';
+    if(a.clase==='robado')a.clase='parado';   // la moto conserva su clase: es de él
     jugador.auto=null;pip(420,0.07);
   }else{
     const a=autoCercano();
     if(!a)return;
     if(a.clase==='trafico'||a.clase==='parado'){
-      // robarse un carro con dueño adentro se nota
+      // subirse a un carro ajeno se nota
       if(Math.random()<0.5&&cercaDeAlguien(30))subirFed();
     }
-    a.clase='robado';jugador.auto=a;jugador.malla.visible=false;pip(620,0.07);
+    if(a.clase!=='moto')a.clase='robado';
+    jugador.auto=a;jugador.malla.visible=false;pip(a.clase==='moto'?520:620,0.07);
   }
 }
 
@@ -2859,19 +2925,26 @@ function actJugador(dt){
 }
 
 function fisicaAuto(a,dt,acel,giro,freno){
-  const MAX=a.clase==='federal'?44:a.clase==='militar'?34:esPatrulla(a.clase)?40:38;
-  if(acel>0) a.vel+=(a.vel<0?34:15)*dt*acel;
+  const moto=a.clase==='moto';
+  // Más ágil y más frágil que un carro, y con menos punta: es una clásica con
+  // cápsula, no una deportiva.
+  const MAX = moto?33 : a.clase==='federal'?44 : a.clase==='militar'?34
+            : esPatrulla(a.clase)?40 : 38;
+  if(acel>0) a.vel+=(a.vel<0?34:15)*(moto?1.55:1)*dt*acel;
   else if(acel<0) a.vel-=(a.vel>0?30:11)*dt;
   a.vel*=Math.pow(freno?0.06:0.62,dt);
   a.vel=clamp(a.vel,-16,MAX);
   const f=clamp(Math.abs(a.vel)/9,0,1)*(a.vel<0?-1:1);
-  a.ang+=giro*1.9*dt*f;
+  a.ang+=giro*(moto?2.9:1.9)*dt*f;
   const nx=a.x+Math.sin(a.ang)*a.vel*dt, nz=a.z+Math.cos(a.ang)*a.vel*dt;
   const p={x:nx,z:nz};
   if(chocaEdificios(p,2.2)){
     const golpe=Math.abs(a.vel);
     a.vel*=-0.22;
-    if(a===jugador.auto&&golpe>22){jugador.salud-=(golpe-22)*0.9;temblor=0.35;pip(90,0.2,'square');}
+    const tope=moto?13:22;                       // en moto un tope te tumba
+    if(a===jugador.auto&&golpe>tope){
+      jugador.salud-=(golpe-tope)*(moto?1.7:0.9);temblor=moto?0.5:0.35;pip(90,0.2,'square');
+    }
   }
   a.x=p.x;a.z=p.z;
   a.malla.position.set(a.x,0,a.z);
@@ -3011,8 +3084,10 @@ function actPersecucion(dt){
   }
 }
 function limpiar(test){
-  for(let i=autos.length-1;i>=0;i--)
+  for(let i=autos.length-1;i>=0;i--){
+    if(autos[i]===MOTO)continue;                 // la moto de Jimmy no se borra nunca
     if(test(autos[i].clase)){scene.remove(autos[i].malla);autos.splice(i,1);}
+  }
 }
 
 function actPeatones(dt){
@@ -3285,8 +3360,11 @@ function dibujarMundo(g,S,cx,cz,esc,giro,grande){
     if(!a.vivo||lejos(a.x,a.z))continue;
     g.fillStyle='#ffb03a';g.fillRect(X(a.x)-1.5,Z(a.z)-1.5,3,3);
   }
+  if(MOTO&&MOTO!==jugador.auto&&!lejos(MOTO.x,MOTO.z)){    // dónde dejaste la moto
+    g.fillStyle='#ffc233';g.fillRect(X(MOTO.x)-3,Z(MOTO.z)-3,6,6);
+  }
   if(!grande)for(const a of autos){
-    if(a===jugador.auto||lejos(a.x,a.z))continue;
+    if(a===jugador.auto||a===MOTO||lejos(a.x,a.z))continue;
     g.fillStyle = a.clase==='federal'?'#38e0ff' : a.clase==='militar'?'#7f9a5c'
                 : a.clase==='municipal'?'#5c7fd0' : a.clase==='sicario'?'#ff4d5e'
                 : a.clase==='trafico'?'#8a97a8':'#4d5563';
@@ -3489,7 +3567,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,
-    publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},
+    publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},MOTO,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
@@ -3497,6 +3575,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
                  notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
                  firmadas,anonimas,esperandoFirma,periodico:perioAbierto,perioT,
                  linea:lineaAbierta,encargoIdx,cubiertos:Object.keys(publicadas).length,
+                 enMoto:jugador.auto===MOTO,
                  tomas:mision.tomas?mision.tomas.length:0,
                  estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
