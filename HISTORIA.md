@@ -311,6 +311,8 @@ técnica, es la premisa.
 | **El Chamizal y el asta monumental** | Parque, arboleda, el museo de 1978 y la bandera de 50 × 28 m sobre 100 m de asta, ondeando por vértices. Se mancha 0.16 → 0.43 → 0.79 → 1.00 con el acumulado de muertos. | ✅ Hecho |
 | **La Av. Juárez** como calle de fiesta que se apaga | Dieciséis negocios con neón, apagándose por acto: 16 en 2008, 5 en 2011. Los que cierran se vuelven refaccionaria, forrajería o estética. Bajo de antro por Web Audio según distancia, hora y acto. | ✅ Hecho |
 | **La moto con cápsula** | Vehículo propio de Jimmy, clásica con sidecar. Ágil y frágil, y el único lugar desde donde se puede fotografiar sin bajarse, siempre que frenes. | ✅ Hecho |
+| **La ciudad en guerra** | Levantones, balaceras y persecuciones que pasan solas alrededor del jugador, escaladas por año con 2010 al tope. Helicóptero sobrevolando. Sin gore: figuras planas y la cámara no se acerca. | ✅ Hecho |
+| **Nota de banqueta** | Fotografiar un hecho de la calle paga y cuenta. El caos deja de ser decorado y pasa a ser material. | ✅ Hecho |
 | **El chalán y el stand-up** | Beto el camarógrafo va siempre con Jimmy, en la cápsula cuando toca moto. Con las fotos hechas hay que grabar la pieza a cámara, quieto, en el lugar del hecho. | ✅ Hecho |
 | **El noticiero** | Tele de tubo de 2008 con la toma del stand-up, cintillo, mosca, EN VIVO y ticker. Sale después de la portada. | ✅ Hecho |
 | **La portada** | Periodicazo al cerrar cada nota, con la fecha real del día siguiente al hecho, el titular y las fotos capturadas de verdad desde el lente. | ✅ Hecho |

@@ -166,6 +166,7 @@ let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
 let noticieros=0, teleAntes=false, standsVistos=0;
+const tiposVistos=new Set(); let maxSucesos=0, banquetas=0, heliSubio=false;
 let lineaProbada='no se probó', elegido=null;
 let motoQuieta=null, motoRapida=null, motoMontada=false;
 const manchas=[];
@@ -290,6 +291,18 @@ try{
     }
     sandbox.__raf(t);
     if(F.estado().stand)standsVistos++;      // la toma del stand-up ya existe
+    {const e=F.estado();
+     maxSucesos=Math.max(maxSucesos,e.sucesos);
+     if(e.tiposVivos)e.tiposVivos.split(',').forEach(t=>t&&tiposVistos.add(t));
+     if(F.heli.grupo.position.y>10)heliSubio=true;}
+    // fotografiar lo que esté pasando en la calle: nota de banqueta
+    if(!cerco&&!enSitios&&!faseMoto&&F.sucesos.length&&g%17===0){
+      const S=F.sucesos[0];
+      if(!S.fotografiado&&!F.jugador.auto){
+        F.jugador.x=S.x;F.jugador.z=S.z+2;F.fotografiar();
+        if(S.fotografiado)banquetas++;
+      }
+    }
     if(F.estado().esperandoFirma){                       // decidir el crédito de la foto
       const firma=(decisiones%2===0);
       F.resolverFirma(firma);
@@ -341,6 +354,8 @@ const est={
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
   noticieros, standsGrabados:standsVistos>0,
+  sucesosMax:maxSucesos, tiposDeHecho:[...tiposVistos].join(', ')||'ninguno',
+  notasDeBanqueta:banquetas, heli:heliSubio,
   moto:(motoMontada?'se monta':'NO se monta')+' · parado: "'+motoQuieta+'" · rápido: "'+motoRapida+'"',
   pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
@@ -364,6 +379,10 @@ exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
 exige(periodicazos>=12,'sale la portada en cada cierre ('+periodicazos+')');
 exige(noticieros>=12,'sale el noticiero después de la portada ('+noticieros+')');
 exige(standsVistos>0,'se graba el stand-up con el chalán antes de cerrar');
+exige(maxSucesos>=2,'la ciudad produce varios hechos a la vez ('+maxSucesos+')');
+exige(tiposVistos.size>=3,'salen los tres tipos de hecho ('+[...tiposVistos]+')');
+exige(banquetas>0,'un hecho de la calle se puede fotografiar como nota ('+banquetas+')');
+exige(heliSubio,'el helicóptero sobrevuela la ciudad');
 exige(!s.noticiero,'el juego no se queda con la tele en pantalla');
 exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');

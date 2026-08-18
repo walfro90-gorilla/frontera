@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3785 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3981 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,25 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### La ciudad en guerra
+
+`actSucesos()` mantiene entre uno y cuatro hechos vivos cerca del jugador, escalados por `RIOT[acto]`
+(2010 al tope). Cada uno se arma con entidades normales y se borra entero al vencer su vida o al
+alejarse 500 m. Tipos: `levanton`, `balacera`, `persecucion`.
+
+**Las entidades de un suceso no las toca nadie más.** Llevan `quieto`, `presa` o una clase de
+`esAmbiente()`, y con eso las saltan `actPersecucion()` —no persiguen al jugador—, `actTrafico()`,
+`autoCercano()` —no te las puedes robar— y `limpiar()`. Los peatones guionizados llevan `p.guion` y
+`actPeatones()` los ignora. **Si agregas un sistema que recorra `autos[]` o `peatones[]`, respeta
+esas banderas** o los sucesos se deshacen solos.
+
+Fotografiar un hecho paga `PAGO_BANQUETA[acto]` **una vez** (`S.fotografiado`) y suma a `notas` y
+`registrados`: es la nota de banqueta, y es lo que convierte el caos ambiental en material del
+jugador en vez de decorado.
+
+El helicóptero es uno solo, orbitando al jugador a 62 m de altura; `actHeli()` va en el grupo que
+siempre corre y su reflector se prende con `esNoche`.
 
 ### El chalán y el stand-up
 

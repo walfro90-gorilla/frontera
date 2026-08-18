@@ -1802,6 +1802,8 @@ const PINTA={municipal:0x3a4a6e, federal:0x1b1f27, militar:0x4d5340, sicario:0x1
 
 function mallaAuto(color,clase){
   const g=new THREE.Group();
+  if(clase==='federalNPC')clase='federal';
+  if(clase==='militarNPC')clase='militar';
   const oficial=clase==='municipal'||clase==='federal'||clase==='militar';
   const matC=new THREE.MeshLambertMaterial({color:PINTA[clase]!==undefined?PINTA[clase]:color});
   const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(2.05,0.72,4.4),matC);cuerpo.position.y=0.78;g.add(cuerpo);
@@ -1890,6 +1892,7 @@ function nuevoAuto(x,z,ang,clase){
   const moto=clase==='moto';
   const a={
     malla: moto?mallaMoto():mallaAuto(pick(COLORES),clase),
+    quieto:false, presa:null,
     x, z, ang, vel:0, clase, salud:100,
     hw: moto?1.35:1.15, hl: moto?1.9:2.35, ni:0, nj:0, ti:0, tj:0
   };
@@ -1897,6 +1900,9 @@ function nuevoAuto(x,z,ang,clase){
   autos.push(a);return a;
 }
 const esPatrulla=c=>c==='municipal'||c==='federal'||c==='militar';
+// Las de los sucesos ambientales: se pintan como patrulla pero no persiguen al
+// jugador, tienen su propio guion y las administra actSucesos().
+const esAmbiente=c=>c==='malandro'||c==='federalNPC'||c==='militarNPC';
 
 /* ══════════════════════════ PERSONAS ══════════════════════════ */
 const PIEL=[0xd8a877,0xa9754c,0x7a5236,0xefc39a];
@@ -2125,6 +2131,174 @@ function briefing(p,txt){
   ui.dialogo.classList.add('on');
 }
 
+/* ══════════════════════════ LA CIUDAD EN GUERRA ══════════════════════════ */
+// Hechos que pasan solos alrededor del jugador: levantones, balaceras y
+// persecuciones de patrulla a malandro. Nadie los guioniza para él, ocurren y se
+// acaban. Si llega a tiempo y los fotografía, son nota de banqueta.
+//
+// Sin gore: los cuerpos son las mismas figuras planas de siempre y la cámara no
+// se les acerca. Lo que se ve es el movimiento, el fogonazo y el escape.
+const RIOT=[0.4,0.75,1,0.5];                 // 2010 es el año de las 3,622
+const sucesos=[];
+const PAGO_BANQUETA=[60,90,140,110];
+
+function fogonazoEn(x,z,y){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(0.5,6,5),
+    new THREE.MeshBasicMaterial({color:0xffe6a8,transparent:true,opacity:0.9,depthWrite:false}));
+  m.position.set(x,y||1.6,z);scene.add(m);
+  return m;
+}
+function nodoCercaDe(x,z,minD,maxD){
+  for(let k=0;k<30;k++){
+    const i=rndi(0,NX-1), j=rndi(0,NZ-1);
+    const d=Math.sqrt(dist2(ejeX(i),ejeZ(j),x,z));
+    if(d>minD&&d<maxD)return {x:ejeX(i)+rnd(-6,6), z:ejeZ(j)+rnd(-14,14)};
+  }
+  return null;
+}
+
+function nuevoSuceso(){
+  const b=posJugador();
+  const p=nodoCercaDe(b.x,b.z,90,320);
+  if(!p)return;
+  const tipo=pick(['levanton','balacera','persecucion','persecucion']);
+  const S={tipo,x:p.x,z:p.z,t:0,vida:tipo==='persecucion'?34:20,
+           autos:[],gente:[],destellos:[],fotografiado:false};
+  if(tipo==='persecucion'){
+    const m=nuevoAuto(p.x,p.z,rnd(0,6.28),'malandro');
+    m.ni=rndi(0,NX-1);m.nj=rndi(0,NZ-1);
+    const n=vecino(m.ni,m.nj,-1,-1);m.ti=n.i;m.tj=n.j;
+    const pa=nuevoAuto(p.x-Math.sin(m.ang)*22,p.z-Math.cos(m.ang)*22,m.ang,
+      acto>=2?'federalNPC':'militarNPC');
+    pa.presa=m;
+    S.autos.push(m,pa);
+  }else{
+    const a=nuevoAuto(p.x+rnd(-3,3),p.z+rnd(-3,3),rnd(0,6.28),'sicario');
+    a.quieto=true;S.autos.push(a);
+    if(tipo==='levanton'){
+      const v=nuevoAuto(p.x+rnd(6,10),p.z+rnd(-4,4),rnd(0,6.28),'parado');
+      S.autos.push(v);
+    }else{
+      const o=nuevoAuto(p.x+rnd(9,14),p.z+rnd(-5,5),rnd(0,6.28),'sicario');
+      o.quieto=true;S.autos.push(o);
+    }
+    for(let k=0;k<3;k++){
+      const g={malla:persona(false,k?'sicario':'civil'),
+        x:p.x+rnd(-6,6), z:p.z+rnd(-6,6), ang:rnd(0,6.28), caido:0, guion:true, tipo:'civil'};
+      g.malla.position.set(g.x,0,g.z);
+      S.gente.push(g);
+    }
+  }
+  sucesos.push(S);
+}
+function borrarSuceso(k){
+  const S=sucesos[k];
+  for(const a of S.autos){const i=autos.indexOf(a);if(i>=0){scene.remove(a.malla);autos.splice(i,1);}}
+  for(const g of S.gente)scene.remove(g.malla);
+  for(const d of S.destellos)scene.remove(d);
+  sucesos.splice(k,1);
+}
+function actSucesos(dt){
+  const b=posJugador();
+  const meta=Math.round(1+RIOT[acto]*3);
+  if(sucesos.length<meta&&Math.random()<dt*0.55*RIOT[acto])nuevoSuceso();
+  for(let k=sucesos.length-1;k>=0;k--){
+    const S=sucesos[k];
+    S.t+=dt;
+    for(const d of S.destellos)d.visible=false;
+    if(S.tipo==='levanton'){
+      // bajan al conductor y se lo llevan
+      if(S.t>3&&S.gente[0]&&S.gente[0].caido<=0){
+        S.gente[0].caido=99;S.gente[0].malla.rotation.z=Math.PI/2;
+        S.gente[0].malla.position.y=0.5;
+      }
+      S.gente.forEach((g,i)=>{
+        if(i===0||g.caido>0)return;
+        const tx=S.x+Math.cos(S.t*1.2+i)*2.4, tz=S.z+Math.sin(S.t*1.2+i)*2.4;
+        g.ang=angLerp(g.ang,Math.atan2(tx-g.x,tz-g.z),1-Math.pow(0.01,dt));
+        g.x=lerp(g.x,tx,1-Math.pow(0.3,dt));g.z=lerp(g.z,tz,1-Math.pow(0.3,dt));
+        g.malla.position.set(g.x,0,g.z);g.malla.rotation.y=g.ang;
+      });
+      if(S.t>9&&S.autos[0]){                      // se van
+        const a=S.autos[0];a.quieto=false;a.vel=Math.min(a.vel+16*dt,24);
+        a.x+=Math.sin(a.ang)*a.vel*dt;a.z+=Math.cos(a.ang)*a.vel*dt;
+        a.malla.position.set(a.x,0,a.z);
+      }
+    }else if(S.tipo==='balacera'){
+      if(S.t<11&&Math.random()<dt*9){
+        const f=fogonazoEn(S.x+rnd(-7,7),S.z+rnd(-7,7));
+        S.destellos.push(f);
+        if(dist2(S.x,S.z,b.x,b.z)<62500)balazo(0.28,1600);   // se oye a 250 m
+      }
+      if(S.t>7)S.gente.forEach(g=>{
+        if(g.caido>0)return;
+        g.caido=99;g.malla.rotation.z=Math.PI/2;g.malla.position.y=0.5;
+      });
+    }else{
+      const m=S.autos[0], pa=S.autos[1];
+      if(m){                                       // el malandro corre por la traza
+        const tx=ejeX(m.ti), tz=ejeZ(m.tj), dx=tx-m.x, dz=tz-m.z;
+        if(dx*dx+dz*dz<90){const pi=m.ni,pj=m.nj;m.ni=m.ti;m.nj=m.tj;
+          const n=vecino(m.ni,m.nj,pi,pj);m.ti=n.i;m.tj=n.j;}
+        m.ang+=clamp(angDif(m.ang,Math.atan2(dx,dz)),-1,1)*2.3*dt;
+        m.vel=clamp(m.vel+14*dt,0,30);
+        m.x+=Math.sin(m.ang)*m.vel*dt;m.z+=Math.cos(m.ang)*m.vel*dt;
+        m.malla.position.set(m.x,0,m.z);m.malla.rotation.y=m.ang;
+      }
+      if(pa&&m){                                   // y la patrulla atrás
+        fisicaAuto(pa,dt,1,clamp(angDif(pa.ang,Math.atan2(m.x-pa.x,m.z-pa.z))*1.5,-1,1),false);
+        if(pa.malla.userData.torreta){
+          const t=performance.now()*0.006;
+          pa.malla.userData.torreta[0].material.emissiveIntensity=(Math.sin(t)>0?1.6:0.05);
+          pa.malla.userData.torreta[1].material.emissiveIntensity=(Math.sin(t)>0?0.05:1.6);
+        }
+      }
+    }
+    if(S.t>S.vida||dist2(S.x,S.z,b.x,b.z)>250000)borrarSuceso(k);   // 500 m
+  }
+}
+
+/* ══════════════════════════ EL HELICÓPTERO ══════════════════════════ */
+// Sobrevolaba la ciudad todo el día. Da vueltas sobre el jugador, se oye antes de
+// verse, y de noche baja el reflector.
+const heli=(()=>{
+  const g=new THREE.Group();
+  const matC=new THREE.MeshLambertMaterial({color:0x1b1f27});
+  const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(2.6,2.2,7),matC);g.add(cuerpo);
+  const morro=new THREE.Mesh(new THREE.SphereGeometry(1.4,8,6),matCristal);
+  morro.position.z=3.4;morro.scale.set(1,0.85,1.2);g.add(morro);
+  const cola=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.6,6),matC);cola.position.z=-6;g.add(cola);
+  const aleta=new THREE.Mesh(new THREE.BoxGeometry(0.3,2.2,1.2),matC);
+  aleta.position.set(0,1.1,-8.6);g.add(aleta);
+  for(const s of [-1,1]){
+    const p=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.14,3.4,6),matC);
+    p.rotation.x=Math.PI/2;p.position.set(s*1.3,-1.6,0.4);g.add(p);
+  }
+  const rotor=new THREE.Group();
+  for(let k=0;k<4;k++){
+    const pala=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.1,16),matC);
+    pala.rotation.y=k*Math.PI/4;rotor.add(pala);
+  }
+  rotor.position.y=1.9;g.add(rotor);
+  const cola2=new THREE.Mesh(new THREE.BoxGeometry(0.12,3.2,0.3),matC);
+  cola2.position.set(0.4,0,-8.6);g.add(cola2);
+  const luz=new THREE.Mesh(new THREE.ConeGeometry(9,42,12,1,true),
+    new THREE.MeshBasicMaterial({color:0xfff3cf,transparent:true,opacity:0.10,
+      side:THREE.DoubleSide,depthWrite:false}));
+  luz.position.y=-21;g.add(luz);
+  scene.add(g);
+  return {grupo:g,rotor,luz,ang:0,r:170,alt:62};
+})();
+function actHeli(dt){
+  const b=posJugador();
+  heli.ang+=dt*0.16;
+  heli.grupo.position.set(b.x+Math.cos(heli.ang)*heli.r, heli.alt,
+                          b.z+Math.sin(heli.ang)*heli.r);
+  heli.grupo.rotation.y=-heli.ang+Math.PI/2;
+  heli.rotor.rotation.y+=dt*34;
+  heli.luz.visible = esNoche>0.5;
+}
+
 /* ══════════════════════════ EL CHALÁN ══════════════════════════ */
 // Beto, el camarógrafo. Nunca se despega: camina detrás de Jimmy y se sube a la
 // cápsula cuando toca moto. Es quien graba el stand-up, así que la toma del
@@ -2278,6 +2452,19 @@ function fotografiar(){
   const gente=peatones.filter(p=>p.caido<=0&&!p.encasa&&
     enMira(w,ojo.x,ojo.z,camAng,p.x,p.z)).slice(0,w.sujetos);
   if(gente.length){algo=true;retratados+=gente.length;}
+  // Un hecho de la calle también es nota. Se paga una vez por hecho.
+  for(const S of sucesos){
+    if(S.fotografiado)continue;
+    if(!enMira(w,ojo.x,ojo.z,camAng,S.x,S.z))continue;
+    S.fotografiado=true;algo=true;
+    const pg=PAGO_BANQUETA[acto];
+    jugador.dinero+=pg;registrados++;notas++;
+    aviso3('NOTA DE BANQUETA · +$'+pg);
+    radio(S.tipo==='levanton' ? 'Reportan un levantón por '+calleDe(S.x,S.z)+'.'
+        : S.tipo==='balacera' ? 'Balacera por '+calleDe(S.x,S.z)+'. Ya hay unidades en camino.'
+        : 'Persecución de una unidad por '+calleDe(S.x,S.z)+'.');
+    break;
+  }
   if(!algo)aviso3('NADA EN EL ENCUADRE');
 }
 function disparar(){fotografiar();}          // nombre viejo, para no romper llamadas
@@ -2955,7 +3142,7 @@ function leerTeclas(){
 function autoCercano(){
   let mejor=null,md=36;
   for(const a of autos){
-    if(esPatrulla(a.clase))continue;
+    if(esPatrulla(a.clase)||esAmbiente(a.clase)||a.presa||a.quieto)continue;
     const d=dist2(a.x,a.z,jugador.x,jugador.z);
     if(d<md){md=d;mejor=a;}
   }
@@ -3145,7 +3332,7 @@ function actAutoJugador(dt){
 
 function actTrafico(dt){
   for(const a of autos){
-    if(a.clase!=='trafico')continue;
+    if(a.clase!=='trafico'||a.quieto||a.presa)continue;
     const tx=ejeX(a.ti), tz=ejeZ(a.tj);
     const dx=tx-a.x, dz=tz-a.z;
     if(dx*dx+dz*dz<64){
@@ -3196,6 +3383,7 @@ function actPersecucion(dt){
   for(const a of autos){
     const oficial=esPatrulla(a.clase), sic=a.clase==='sicario';
     if(!oficial&&!sic)continue;
+    if(a.quieto||a.presa||esAmbiente(a.clase))continue;   // esos tienen su propio guion
     const d=dist2(a.x,a.z,b.x,b.z);
     if(oficial){nFed++;cercaFed=Math.min(cercaFed,d);}else{nSic++;cercaPlaza=Math.min(cercaPlaza,d);}
     // Lejos: seguir la calle rumbo al jugador. Cerca: írsele encima directo.
@@ -3252,6 +3440,7 @@ function actPersecucion(dt){
 function limpiar(test){
   for(let i=autos.length-1;i>=0;i--){
     if(autos[i]===MOTO)continue;                 // la moto de Jimmy no se borra nunca
+    if(autos[i].quieto||autos[i].presa||esAmbiente(autos[i].clase))continue;
     if(test(autos[i].clase)){scene.remove(autos[i].malla);autos.splice(i,1);}
   }
 }
@@ -3263,6 +3452,7 @@ function actPeatones(dt){
   const queda = esNoche>0.55;
   const fiesta = acto<=1;              // en 2008-09 la Juárez todavía tenía gente de noche
   for(const p of peatones){
+    if(p.guion)continue;                          // los de un suceso van por guion
     p.encasa = queda && p.tipo!=='sicario' && p.caido<=0
                && !(fiesta && sobreLaJuarez(p.x,p.z));
     if(p.encasa){p.malla.visible=false;continue;}
@@ -3537,6 +3727,11 @@ function dibujarMundo(g,S,cx,cz,esc,giro,grande){
     if(!a.vivo||lejos(a.x,a.z))continue;
     g.fillStyle='#ffb03a';g.fillRect(X(a.x)-1.5,Z(a.z)-1.5,3,3);
   }
+  for(const S of sucesos){                                 // hechos en curso
+    if(lejos(S.x,S.z))continue;
+    g.strokeStyle=S.fotografiado?'rgba(79,209,139,.7)':'rgba(255,77,94,.85)';
+    g.lineWidth=2;g.beginPath();g.arc(X(S.x),Z(S.z),grande?9:7,0,TAU);g.stroke();
+  }
   if(MOTO&&MOTO!==jugador.auto&&!lejos(MOTO.x,MOTO.z)){    // dónde dejaste la moto
     g.fillStyle='#ffc233';g.fillRect(X(MOTO.x)-3,Z(MOTO.z)-3,6,6);
   }
@@ -3710,10 +3905,10 @@ function bucle(now){
   else{
     if(jugador.auto)actAutoJugador(dt); else actJugador(dt);
     actTrafico(dt);actPeriferico(dt);actPeatones(dt);actPersecucion(dt);
-    actPersonajes(dt);actChalan(dt);actMision(dt);
+    actPersonajes(dt);actChalan(dt);actSucesos(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
-  actCamara(dt);actDiaNoche(dt);actBandera();actSitios(dt);actColgados();
+  actCamara(dt);actDiaNoche(dt);actBandera();actHeli(dt);actSitios(dt);actColgados();
   actAudio();actHUD(dt);minimapa();
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}
@@ -3746,7 +3941,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,chalan,grabar,
     publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},MOTO,
-    cerrarNoticiero,
+    cerrarNoticiero,sucesos,heli,nuevoSuceso,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
@@ -3754,6 +3949,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
                  notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
                  firmadas,anonimas,esperandoFirma,periodico:perioAbierto,perioT,
                  noticiero:teleAbierta,stand:!!mision.stand,
+                 sucesos:sucesos.length,tiposVivos:sucesos.map(S=>S.tipo).join(','),
                  linea:lineaAbierta,encargoIdx,cubiertos:Object.keys(publicadas).length,
                  enMoto:jugador.auto===MOTO,
                  tomas:mision.tomas?mision.tomas.length:0,

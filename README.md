@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 183 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 191 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -49,6 +49,14 @@ tiempo de carga.
   hechos, en cuatro columnas por año. Los del año en curso se pueden elegir para ir a cubrirlos; los
   de años que ya pasaron quedan como registro —una foto de 2008 no se toma en 2011— y los que
   todavía no ocurren se ven en gris y sin fecha. Cada tarjeta dice si la publicaste y si la firmaste.
+- **La ciudad en guerra.** Alrededor de ti pasan cosas solas, sin guion: **levantones** —bajan al
+  conductor y se lo llevan—, **balaceras** con sus fogonazos que se oyen a doscientos cincuenta
+  metros, y **persecuciones de patrulla a malandro** por la traza. La intensidad sigue al año: pocas
+  en 2008, todas en 2010, menos en 2011. Y un **helicóptero** dando vueltas sobre la ciudad, con
+  reflector cuando oscurece.
+- **Nota de banqueta.** Si llegas a tiempo y lo fotografías, se paga y cuenta como nota. Es lo que
+  hacía un fotógrafo de policiaca: dar vueltas oyendo la radio y disparar lo que se encuentre. Los
+  hechos en curso salen marcados en rojo en el mapa, y en verde cuando ya los cubriste.
 - **Beto, el chalán.** El camarógrafo no se despega: camina detrás de ti y se sube a la cápsula
   cuando vas en moto. Es quien graba, así que la toma del noticiero sale desde donde está él parado.
 - **El stand-up.** Con las fotos hechas queda grabar la pieza a cámara: ponte frente a Beto y pulsa
