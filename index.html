@@ -31,7 +31,8 @@
   /* dinero + calor */
   #tl{position:absolute;top:14px;left:14px;padding:10px 14px 8px;min-width:186px}
   #dinero{font-family:var(--cond);font-size:34px;line-height:.95;letter-spacing:.02em;
-    color:var(--oro);text-shadow:0 0 18px rgba(255,194,51,.35);font-weight:700}
+    color:var(--oro);text-shadow:0 0 18px rgba(255,194,51,.35);font-weight:700;
+    pointer-events:auto;cursor:pointer}
   .calor{margin-top:6px;font-size:14px;letter-spacing:3px;color:rgba(255,255,255,.13);
     display:flex;align-items:center;gap:7px}
   .calor u{font-size:8px;letter-spacing:.14em;color:var(--tenue);text-decoration:none;
@@ -102,6 +103,8 @@
   #placa h3{font-family:var(--cond);font-size:clamp(26px,5vw,52px);letter-spacing:.04em;color:var(--oro)}
   #placa p{max-width:640px;font-size:13px;line-height:1.85;color:#a9b6c7}
   #placa .dato{font-size:11px;letter-spacing:.12em;color:var(--neon);text-transform:uppercase}
+  #placa .cuenta{font-family:var(--cond);font-size:clamp(18px,3vw,30px);letter-spacing:.03em;
+    color:var(--rojo)}
   #placa button{align-self:flex-start;font-family:var(--cond);font-size:20px;letter-spacing:.1em;
     background:var(--oro);color:#0b0e14;border:0;padding:10px 34px;cursor:pointer;border-radius:2px}
 
@@ -209,6 +212,7 @@
   <h3 id="plTitulo">EL QUE NO DEBE NADA</h3>
   <p id="plTexto"></p>
   <div class="dato" id="plDato"></div>
+  <div class="cuenta" id="plCuenta"></div>
   <button id="plSeguir">SEGUIR</button>
 </div>
 
@@ -227,6 +231,7 @@
     <span><i>F</i> Subir o bajar del auto</span>
     <span><i>E</i> Disparar</span>
     <span><i>Q</i> Cambiar arma</span>
+    <span><i>G</i> Dar mordida a la municipal</span>
     <span><i>Mouse</i> Arrastra para girar cámara</span>
     <span><i>Rueda</i> Acercar o alejar</span>
     <span><i>R</i> Enderezar auto</span>
@@ -321,7 +326,7 @@ const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,0.4,2600);
 const hemi=new THREE.HemisphereLight(0xbcd6f5,0x50432f,0.9);
 const sol=new THREE.DirectionalLight(0xfff1d2,1.0);
 scene.add(hemi,sol);
-scene.fog=new THREE.Fog(0x9ec3e0,180,860);
+scene.fog=new THREE.Fog(0x9ec3e0,220,1500);   // llega a El Paso y a las Franklin
 
 addEventListener('resize',()=>{
   camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
@@ -589,6 +594,36 @@ for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++)
   const cruz=new THREE.Mesh(new THREE.BoxGeometry(0.7,5,0.7),matPiedra);
   cruz.position.set(cx,41,cz-16);scene.add(cruz);
 })();
+
+// La lonchería de Doña Chayo, en la esquina donde arrancas. Es el termómetro del
+// juego: abre en 2008, aguanta la cuota, baja cortina y acaba tapiada y quemada.
+// Nadie te lo dice; lo ves al pasar.
+const loncheria=(()=>{
+  const x=ejeX(3)+22, z=ejeZ(2)+26;
+  const matMuro=new THREE.MeshLambertMaterial({color:0xe0c98a});
+  const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(14,4.2,9),
+    [matMuro,matMuro,matTecho,matTecho,matMuro,matMuro]);
+  cuerpo.position.set(x,2.1,z);scene.add(cuerpo);
+  edificios.push({x:x,z:z,hw:7,hd:4.5});
+  const c=lienzo(256,64),g=c.getContext('2d');
+  g.fillStyle='#b4232b';g.fillRect(0,0,256,64);
+  g.fillStyle='#ffe9b0';g.font='bold 26px Arial Narrow, Impact, sans-serif';g.textAlign='center';
+  g.fillText('LONCHERÍA LA FRONTERA',128,42);
+  const matRotulo=new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(c),
+    emissive:0xffffff,emissiveMap:new THREE.CanvasTexture(c),emissiveIntensity:0});
+  const rotulo=new THREE.Mesh(new THREE.PlaneGeometry(12,3),matRotulo);
+  rotulo.position.set(x,5.4,z+4.7);scene.add(rotulo);
+  materialesFachada.push(matRotulo);            // que prenda de noche como todo lo demás
+  const cortina=new THREE.Mesh(new THREE.BoxGeometry(13.4,4,0.4),
+    new THREE.MeshLambertMaterial({color:0x4a4238}));
+  cortina.position.set(x,2,z+4.5);cortina.visible=false;scene.add(cortina);
+  return {matMuro,rotulo,cortina,x,z};
+})();
+function actoLoncheria(){
+  loncheria.rotulo.visible  = acto<3;
+  loncheria.cortina.visible = acto>=2;
+  loncheria.matMuro.color.setHex(acto>=3?0x4a4038 : acto>=2?0xb9a578 : 0xe0c98a);
+}
 
 /* ══════════════════════════ RÍO, BORDO, VALLA Y PUENTES ══════════════════════════ */
 // El Bravo por aquí no es río: es un canal revestido de concreto. Por eso el fondo
@@ -884,16 +919,17 @@ function disparar(){
   recarga=w.cadencia;apuntando=0.45;fogonazoT=0.06;temblor=w.retro;
   jugador.ang=camAng;
   const fog=jugador.malla.userData.fogonazo;if(fog)fog.visible=true;
-  pip(w.tono,0.22,'square');
+  balazo(w.blancos>1?0.55:0.4, w.blancos>1?900:2200);   // la escopeta pega más grave
+  pip(w.tono,0.10,'square');
   const blancos=peatones
-    .filter(p=>p.caido<=0&&enMira(w,jugador.x,jugador.z,camAng,p.x,p.z))
+    .filter(p=>p.caido<=0&&!p.encasa&&enMira(w,jugador.x,jugador.z,camAng,p.x,p.z))
     .sort((a,b)=>dist2(a.x,a.z,jugador.x,jugador.z)-dist2(b.x,b.z,jugador.x,jugador.z))
     .slice(0,w.blancos);
   blancos.forEach(p=>matar(p,true));
   if(!blancos.length&&cercaDeAlguien(60))subirFed();          // el balazo se oye aunque falles
 }
 function cercaDeAlguien(r){
-  for(const p of peatones)if(p.caido<=0&&dist2(p.x,p.z,jugador.x,jugador.z)<r*r)return true;
+  for(const p of peatones)if(p.caido<=0&&!p.encasa&&dist2(p.x,p.z,jugador.x,jugador.z)<r*r)return true;
   return false;
 }
 
@@ -914,6 +950,30 @@ function subirPlaza(){
   calor.faccion=plaza[manzanaI(b.x)][manzanaJ(b.z)];
   aviso3('TE TRAEN GANAS · '+NOMBRE_PLAZA[calor.faccion]);pip(260,0.16,'sawtooth');
 }
+// La municipal se arregla porque La Línea está hecha de policías. La federal no:
+// no por honesta, sino porque cobra más arriba y no de ti.
+const COSTO_MORDIDA=400;
+function mordida(){
+  if(bloqueo>0)return;
+  if(calor.fed<1){aviso3('NADIE TE TRAE');return;}
+  const b=posJugador();
+  let hayFederal=false;
+  for(let i=autos.length-1;i>=0;i--){
+    const a=autos[i];
+    if(!esPatrulla(a.clase))continue;
+    if(dist2(a.x,a.z,b.x,b.z)>1200)continue;             // ~35 m
+    if(a.clase!=='municipal'){hayFederal=true;continue;}
+    if(jugador.dinero<COSTO_MORDIDA){aviso3('NO TE ALCANZA');return;}
+    jugador.dinero-=COSTO_MORDIDA;
+    calor.fed=Math.max(0,calor.fed-1);sinFed=0;
+    scene.remove(a.malla);autos.splice(i,1);
+    aviso3('MORDIDA · −$'+COSTO_MORDIDA);pip(520,0.1);
+    radio('Con la municipal se arregla. Es La Línea con uniforme.');
+    return;
+  }
+  aviso3(hayFederal?'LA FEDERAL NO SE ARREGLA':'NO HAY CON QUIÉN ARREGLAR');
+}
+
 function posJugador(){
   return jugador.auto?{x:jugador.auto.x,z:jugador.auto.z}:{x:jugador.x,z:jugador.z};
 }
@@ -945,7 +1005,7 @@ const ACTOS=[
    texto:'La maquila corta turnos y el 28 de marzo entran 2,500 militares a Juárez. La ciudad '+
          'aplaude el operativo. Nico anda de halcón porque paga el doble que el turno de noche: '+
          'reportar retenes, seguir camionetas, entregar sobres. Todavía no debe nada.',
-   dato:'2008 · 1,623 homicidios en Ciudad Juárez',
+   dato:'2008 · 1,623 homicidios en Ciudad Juárez', reales:1623,
    encargos:[
      ['Reportar el retén','Pásate a ver dónde pusieron el retén y avisa. Nadie sale lastimado.'],
      ['Llevar el sobre','Ni preguntes qué trae. Llévalo y regrésate.'],
@@ -957,7 +1017,7 @@ const ACTOS=[
    texto:'La Línea y Barrio Azteca contra Gente Nueva, Mexicles y Artistas Asesinos, cuadra por '+
          'cuadra. En noviembre pasado mataron al reportero de policiaca de El Diario. Nico ya no '+
          'solo maneja. Y el juego no lo celebra: lo anota.',
-   dato:'2009 · 2,754 homicidios · la Corte Interamericana condena a México por Campo Algodonero',
+   dato:'2009 · 2,754 homicidios · la Corte Interamericana condena a México por Campo Algodonero', reales:2754,
    encargos:[
      ['Cobrar el piso','Tres changarros de la cuadra. Si no pagan, tú nomás reportas.'],
      ['Sacar el carro','Está quemado. Déjalo lejos y camínate de regreso.'],
@@ -970,7 +1030,7 @@ const ACTOS=[
          'mata a quince muchachos. El presidente dice que en algo andaban. Una madre que enterró '+
          'a dos le contesta en cadena nacional. En abril la Policía Federal releva al Ejército y '+
          'no mejora nada. En julio truena el primer coche bomba de la guerra.',
-   dato:'2010 · 3,622 homicidios · 9.9 al día · la ciudad califica a la Federal con 2.2 de 10',
+   dato:'2010 · 3,622 homicidios · 9.9 al día · la ciudad califica a la Federal con 2.2 de 10', reales:3622,
    encargos:[
      ['Colgar la manta','En el puente peatonal, donde la vean los del noticiero.'],
      ['Sacar a la reportera','Marisol ya publicó de más. Sácala del centro antes de que la vean.'],
@@ -984,7 +1044,7 @@ const ACTOS=[
          'secretario de Seguridad Pública sale del sexenio con honores. Trece años después, un '+
          'jurado en Nueva York lo condena a 38 años por haber trabajado todo ese tiempo para el '+
          'bando de enfrente.',
-   dato:'2011 · 2,086 homicidios · más de 10 mil desde 2008 · 230 mil personas se fueron',
+   dato:'2011 · 2,086 homicidios · más de 10 mil desde 2008 · 230 mil personas se fueron', reales:2086,
    encargos:[
      ['Vaciar la casa','Se van. Carga lo que quepa y no vuelvas.'],
      ['Pagar la última','Última cuota. Después de esta, la lonchería cierra.'],
@@ -1019,7 +1079,7 @@ function puntoCalle(){
 }
 function nuevaOferta(){
   const p=puntoCalle();mision.estado='oferta';mision.x=p.x;mision.z=p.z;
-  const e=pick(ACTOS[acto].encargos);
+  const e=ACTOS[acto].encargos[hechos%ACTOS[acto].encargos.length];
   mision.titulo=e[0];mision.texto=e[1];
   mision.gratis = e[0]==='Llevar flores'||e[0]==='Dar la vuelta';
   ui.mtitulo.textContent='Encargo disponible';
@@ -1044,8 +1104,11 @@ function completar(){
   aviso3(mision.pago?'+$'+mision.pago:'ENTREGADO');
   pip(1240,0.12);setTimeout(()=>pip(1560,0.14),90);
   hechos++;
-  if(hechos>=ENCARGOS_POR_ACTO&&acto<ACTOS.length-1){hechos=0;avanzarActo();}
-  else nuevaOferta();
+  guardar();
+  if(hechos>=ENCARGOS_POR_ACTO){
+    if(acto<ACTOS.length-1){hechos=0;avanzarActo();}
+    else cerrar();
+  }else nuevaOferta();
 }
 function fallar(){
   mision.racha=0;aviso3('ENCARGO PERDIDO');pip(180,0.25,'square');nuevaOferta();
@@ -1053,21 +1116,67 @@ function fallar(){
 
 /* ══════════════════════════ PLACA DE ACTO ══════════════════════════ */
 const placa=document.getElementById('placa');
+const plAnio=document.getElementById('plAnio'), plTitulo=document.getElementById('plTitulo');
+const plTexto=document.getElementById('plTexto'), plDato=document.getElementById('plDato');
+const plCuenta=document.getElementById('plCuenta'), plSeguir=document.getElementById('plSeguir');
+let finalizado=false;
+const totalMuertos=()=>muertos.civil+muertos.sicario+muertos.halcon;
+
 function avanzarActo(){
+  const cerrado=ACTOS[acto];
   acto++;
   const a=ACTOS[acto];
-  document.getElementById('plAnio').textContent=a.anio;
-  document.getElementById('plTitulo').textContent=a.titulo;
-  document.getElementById('plTexto').textContent=a.texto;
-  document.getElementById('plDato').textContent=a.dato;
+  plAnio.textContent=a.anio;plTitulo.textContent=a.titulo;
+  plTexto.textContent=a.texto;plDato.textContent=a.dato;
+  // Regla de tono 2: los muertos cuentan, y el jugador nunca le llega a la cifra real.
+  plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
+    cerrado.reales.toLocaleString('en-US')+'.';
   placa.classList.add('on');jugando=false;
-  actoValla();avanzaPlaza();
+  actoValla();avanzaPlaza();actoLoncheria();guardar();
 }
-document.getElementById('plSeguir').addEventListener('click',()=>{
+
+// El juego sí termina. No con un final: con las cifras y una sentencia de 2024.
+function cerrar(){
+  finalizado=true;jugando=false;
+  plAnio.textContent='2012';plTitulo.textContent='SE ACABÓ PORQUE ALGUIEN GANÓ';
+  plTexto.textContent='Nico cruza o se queda; da lo mismo para la cuenta. Sinaloa terminó de '+
+    'ganar la plaza y por eso bajaron los muertos, no porque alguien los defendiera. El '+
+    'secretario que dirigió la guerra contra el narco cobraba del bando que la ganó: en 2024 un '+
+    'jurado en Nueva York lo sentenció a 38 años. El chiste final no lo hizo este juego. Lo hizo '+
+    'lo que pasó.';
+  plDato.textContent='2008–2011 · más de 10 mil asesinatos · 230 mil personas se fueron · '+
+    '10 mil changarros cerrados';
+  plCuenta.textContent='Tú llevas '+totalMuertos()+' muertos'+
+    (muertos.civil?', '+muertos.civil+' de ellos civiles':'')+'. La ciudad llevaba diez mil.';
+  plSeguir.textContent='EMPEZAR DE NUEVO';
+  placa.classList.add('on');
+  try{localStorage.removeItem(CLAVE);}catch(e){}
+}
+
+plSeguir.addEventListener('click',()=>{
+  if(finalizado){if(location.reload)location.reload();return;}
   placa.classList.remove('on');jugando=true;ultimo=performance.now();
   ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
   nuevaOferta();radio(pick(RADIO[acto]));
 });
+const CLAVE='frontera.v1';
+function guardar(){
+  if(location.hash)return;                       // #test y #nuevo no ensucian la partida
+  try{localStorage.setItem(CLAVE,JSON.stringify(
+    {acto,hechos,dinero:jugador.dinero,muertos,racha:mision.racha}));}catch(e){}
+}
+function cargar(){
+  if(location.hash==='#test')return;             // la prueba siempre arranca limpia
+  try{
+    if(location.hash==='#nuevo'){localStorage.removeItem(CLAVE);return;}
+    const g=JSON.parse(localStorage.getItem(CLAVE));
+    if(!g)return;
+    acto=clamp(g.acto|0,0,ACTOS.length-1);hechos=clamp(g.hechos|0,0,ENCARGOS_POR_ACTO-1);
+    jugador.dinero=Math.max(0,g.dinero|0);mision.racha=clamp(g.racha|0,0,5);
+    if(g.muertos)Object.assign(muertos,g.muertos);
+  }catch(e){}
+}
+
 // La valla del Secure Fence Act se construyó entre 2008 y 2009: en el acto I hay huecos.
 function actoValla(){
   const frac=[0.25,0.75,1,1][acto];
@@ -1169,6 +1278,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyF')entrarSalir();
   if(e.code==='KeyE')disparar();
   if(e.code==='KeyQ')cambiarArma();
+  if(e.code==='KeyG')mordida();
   if(e.code==='KeyM')silenciar();
   if(e.code==='KeyR'&&jugador.auto){jugador.auto.vel=0;}
 });
@@ -1246,7 +1356,7 @@ function entrarSalir(){
 }
 
 /* ══════════════════════════ AUDIO ══════════════════════════ */
-let actx,master,motor,motorG,motorF,sirena,sirenaG,mudo=false;
+let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,mudo=false;
 function iniciarAudio(){
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1258,7 +1368,18 @@ function iniciarAudio(){
     sirena=actx.createOscillator();sirena.type='square';sirena.frequency.value=700;
     sirenaG=actx.createGain();sirenaG.gain.value=0;
     sirena.connect(sirenaG);sirenaG.connect(master);sirena.start();
+    // un buffer de ruido con caída exponencial: sirve de balazo y de choque
+    ruido=actx.createBuffer(1,Math.floor(actx.sampleRate*0.4),actx.sampleRate);
+    const d=ruido.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,6);
   }catch(e){}
+}
+function balazo(v,corte){
+  if(!actx||mudo||!ruido)return;
+  const o=actx.createBufferSource();o.buffer=ruido;
+  const f=actx.createBiquadFilter();f.type='lowpass';f.frequency.value=corte;
+  const g=actx.createGain();g.gain.value=v;
+  o.connect(f);f.connect(g);g.connect(master);o.start();
 }
 function pip(f,v,t){
   if(!actx||mudo)return;
@@ -1287,11 +1408,12 @@ const ui={
   cuenta:document.getElementById('cuenta')
 };
 ui.arma.addEventListener('pointerdown',cambiarArma);
+ui.dinero.addEventListener('pointerdown',mordida);
 let toastT=0;
 function aviso3(txt){ui.toast.textContent=txt;ui.toast.classList.add('on');toastT=1.8;}
 
 /* ══════════════════════════ ESTADO GLOBAL ══════════════════════════ */
-let horaDia=0.08, bloqueo=0, temblor=0;
+let horaDia=0.08, bloqueo=0, temblor=0, esNoche=0;
 const camObj=new THREE.Vector3(jugador.x,1.6,jugador.z);
 
 /* ══════════════════════════ ACTUALIZACIONES ══════════════════════════ */
@@ -1344,7 +1466,7 @@ function actAutoJugador(dt){
   const a=jugador.auto;
   fisicaAuto(a,dt,inp.z,-inp.x,inp.freno);
   for(const p of peatones){
-    if(p.caido>0)continue;
+    if(p.caido>0||p.encasa)continue;
     if(dist2(p.x,p.z,a.x,a.z)<5.2&&Math.abs(a.vel)>6){
       matar(p,false);
       subirFed();a.vel*=0.82;temblor=0.25;pip(140,0.16,'square');
@@ -1478,7 +1600,13 @@ function limpiar(test){
 
 function actPeatones(dt){
   const b=posJugador();
+  // Toque de queda de facto: nadie lo decretó, la ciudad se vaciaba sola al oscurecer.
+  // Los civiles se meten a su casa; los sicarios son justo los que salen.
+  const queda = esNoche>0.55;
   for(const p of peatones){
+    p.encasa = queda && p.tipo!=='sicario' && p.caido<=0;
+    if(p.encasa){p.malla.visible=false;continue;}
+    p.malla.visible=true;
     if(p.caido>0){
       p.caido-=dt;
       if(p.caido<=0){
@@ -1547,14 +1675,14 @@ function arrestado(){
   ui.avisoS.textContent='Mordida $'+Math.min(jugador.dinero,300);
   ui.aviso.classList.add('on');
   jugador.dinero=Math.max(0,jugador.dinero-300);
-  setTimeout(reaparecer,2200);
+  guardar();setTimeout(reaparecer,2200);
 }
 function noqueado(){
   bloqueo=2.6;ui.avisoT.textContent='NOQUEADO';ui.avisoT.style.color='#ff4d5e';
   ui.avisoS.textContent='Cruz Roja · $200';
   ui.aviso.classList.add('on');
   jugador.dinero=Math.max(0,jugador.dinero-200);
-  setTimeout(reaparecer,2200);
+  guardar();setTimeout(reaparecer,2200);
 }
 function reaparecer(){
   jugador.auto=null;jugador.salud=100;calor.fed=0;calor.plaza=0;mision.racha=0;
@@ -1601,6 +1729,7 @@ function actDiaNoche(dt){
     f.material.emissiveIntensity=noche*1.4;
   const h=Math.floor((horaDia*24+6)%24), mi=Math.floor(((horaDia*24+6)%1)*60);
   ui.hora.textContent=(h<10?'0':'')+h+':'+(mi<10?'0':'')+mi;
+  esNoche=noche;
   return noche;
 }
 
@@ -1750,11 +1879,14 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // Costura de pruebas: solo existe con #test. Deja pilotear el juego desde fuera
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
-    estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando})};
+    estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
+                 final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
-actoValla();
+cargar();
+ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
+actoValla();avanzaPlaza();actoLoncheria();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);

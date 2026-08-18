@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (1771 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (1903 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -110,6 +110,11 @@ quedan clavados contra las fachadas y nunca te alcanzan — `prueba.js` lo mide 
 y `'sicario'` (te dispara si su facción es la que te trae ganas). `p.faccion` se toma de
 `plaza[bi][bj]` al colocarlo.
 
+**Toque de queda:** `actDiaNoche` publica `esNoche` (0–1) y `actPeatones` marca `p.encasa` cuando
+pasa de 0.55 — los civiles se ocultan y dejan de moverse; los sicarios no. **Todo lo que apunte a
+peatones tiene que filtrar `p.encasa`** además de `p.caido`: disparo, atropello y `cercaDeAlguien`
+ya lo hacen. Olvidarlo deja matar gente invisible.
+
 ### Bucle
 
 `bucle(now)`: `dt` topado a 0.05. `bloqueo>0` congela la simulación (arresto/noqueo) pero cámara,
@@ -147,16 +152,36 @@ avanzado Sinaloa (`avanzaPlaza()`) y qué dice la radio. Cada `ENCARGOS_POR_ACTO
 `avanzarActo()` congela el juego (`jugando=false`) y saca la placa; el botón *SEGUIR* la reanuda y
 pide el siguiente encargo. **Agregar contenido de época = agregar una fila, no código.**
 
-El acto IV no termina: `avanzarActo()` está guardado por `acto<ACTOS.length-1`, así que al llegar a
-2011 el juego sigue dando encargos indefinidamente. Es a propósito —no hay final en el que ganes la
-plaza, ver `HISTORIA.md` §10— pero **falta el cierre**: la placa final con las cifras reales y la
-sentencia de 2024 que pide la regla de tono 6.
+Los encargos de cada acto salen **en secuencia**, no al azar (`encargos[hechos % n]`): el orden de
+la tabla *es* el guion del acto. `fallar()` no incrementa `hechos`, así que un encargo perdido se
+repite en vez de saltarse.
+
+`cerrar()` termina el juego al completar el acto IV: cifras reales, tu contador de muertos junto al
+de la ciudad y la sentencia de 2024 (reglas de tono 2 y 6). Borra la partida guardada y el botón
+recarga. No hay final en el que ganes la plaza, y eso es deliberado — `HISTORIA.md` §10.
+
+### Partida guardada
+
+`localStorage` bajo `CLAVE`, cinco campos, `guardar()` al completar encargo, al avanzar de acto y al
+perder. `cargar()` corre en ARRANQUE **antes** de `actoValla()`/`avanzaPlaza()`/`actoLoncheria()`,
+porque el mundo tiene que quedar en el acto que se cargó. Dos escapes por URL: `#nuevo` borra la
+partida, `#test` ni lee ni escribe (si no, `prueba.js` sería no determinista).
 
 ### Dos calores
 
 `calor.fed` y `calor.plaza`, 0–5 cada uno, con enfriamientos distintos (13 s contra 22 s: el Estado
 olvida antes que el barrio). `calor.faccion` recuerda a quién le pegaste, para que sean sus sicarios
 los que salgan. `actPersecucion()` maneja ambos con el mismo motor.
+
+`mordida()` (tecla `G`, o tocar el dinero en el HUD) baja un nivel de calor federal por $400, pero
+**solo contra una patrulla `'municipal'`**. Federal y militar rechazan. No es balance: es que La
+Línea está hecha de policías municipales y la federal cobra más arriba y no de ti.
+
+### La lonchería
+
+`loncheria` es el único edificio con estado narrativo. `actoLoncheria()` la degrada por acto —
+rótulo, cortina, color de muro— y la llaman `avanzarActo()` y ARRANQUE. Es el termómetro del juego
+y no dice una sola línea: se ve al pasar. Está en la esquina donde arranca el jugador a propósito.
 
 ### Colisiones
 

@@ -1,8 +1,7 @@
 # FRONTERA — Contexto, historia y personajes
 
-Biblia narrativa del juego. Documento de diseño, no de código. El mapeo a los sistemas que ya
-Biblia narrativa del juego. Documento de diseño, no de código. El mapa está en la sección **7**; el
-estado de implementación de cada mecánica, en la **8**.
+Biblia narrativa del juego. Documento de diseño, no de código. El plano del mapa está en la
+sección **7**; el estado de implementación de cada mecánica, en la **8**.
 
 ---
 
@@ -258,7 +257,7 @@ técnica, es la premisa.
 
 | Sistema | Significado | Estado |
 |---|---|---|
-| `mision` → **encargo** | Sobres, cuota, mensaje, paquete, flores. Mismo bucle, texto por acto. | ✅ Hecho (textos generados; falta guion) |
+| `mision` → **encargo** | Sobres, cuota, mensaje, paquete, flores. Mismo bucle, texto por acto. | ✅ Hecho — **en secuencia fija**, así que cada acto se lee como un orden y no como mandados al azar |
 | `estrellas` → **dos calores** | *Federal* (retenes, convoyes) y *plaza* (la facción rival te manda gente). Suben por razones distintas y se enfrían a ritmos distintos. | ✅ Hecho |
 | Pago por baja **invertido** | Sicario paga; civil cuesta $300, truena el calor federal y cierra los negocios de la cuadra. | ✅ Hecho |
 | `peatones[]` **tipados** | Civil, halcón (te reporta), sicario (te dispara si le pegaste a los suyos). | ✅ Hecho |
@@ -268,9 +267,12 @@ técnica, es la premisa.
 | Marcador **veladora** | Cuando el destino es un memorial: otro color, sin pago. | ✅ Hecho |
 | **Cuatro actos** con placa histórica | Año, encargos, corporación, valla y avance de plaza cambian por acto. | ✅ Hecho |
 | **Radio** del carro | Noticias reales del año, incluidas las que el juego no dramatiza. | ✅ Hecho (texto; falta locutor) |
-| Municipal **comprable** | Es La Línea de uniforme: debería aceptar mordida. La federal no. | ⬜ Falta |
-| **Toque de queda** de facto | De noche se vacían los civiles y suben los sicarios. Histórico, no estético. | ⬜ Falta |
+| Municipal **comprable** | $400 y se va. La federal no: no por honesta, sino porque cobra más arriba y no de ti. | ✅ Hecho |
+| **Toque de queda** de facto | De noche se meten los civiles y quedan los sicarios. Histórico, no estético. | ✅ Hecho |
+| **La lonchería de Doña Chayo** | En la esquina del arranque. Abre, aguanta la cuota, baja cortina, acaba tapiada y quemada. El luto sin una sola línea de diálogo. | ✅ Hecho |
+| **Final** con las cifras | Regla de tono 2 y 6: tu contador de muertos junto al de la ciudad, y la sentencia de 2024. | ✅ Hecho |
 | Personajes con los que se hable | Doña Chayo, Marisol, El Diablo, Luz. | ⬜ Falta |
+| El **coche bomba** de julio de 2010 como evento del mundo | Regla: fuera de pantalla, en la radio. | ⬜ Falta |
 
 ---
 

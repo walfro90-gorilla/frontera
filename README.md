@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 78 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 82 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -35,9 +35,18 @@ tiempo de carga.
   que te disparan si le pegaste a los suyos.
 - **Matar civiles cuesta.** Sicarios pagan; un civil te quita $300, te truena el calor federal y
   baja las cortinas de la cuadra: ahí ya no hay encargos por un rato.
-- **Ciclo día/noche de cuatro minutos.** Al anochecer se encienden solas las ventanas, las farolas
-  y los faros de los autos.
+- **Toque de queda de facto.** Nadie lo decretó: al oscurecer los civiles se meten a su casa y los
+  únicos que quedan en la calle son los sicarios. Así era.
+- **La lonchería de Doña Chayo.** En la esquina donde arrancas. Abre en 2008, aguanta la cuota, baja
+  la cortina y acaba tapiada y quemada. Nadie te lo dice; lo ves al pasar.
+- **Mordida.** La municipal se arregla con $400 porque La Línea está hecha de policías. La federal
+  no: no por honesta, sino porque cobra más arriba y no de ti.
+- **Ciclo día/noche de cuatro minutos.** Al anochecer se encienden solas las ventanas, las farolas,
+  los faros de los autos y el rótulo de la lonchería.
 - **Levantón y Cruz Roja.** Perder cuesta dinero, nunca la partida.
+- **Tiene final.** Al cerrar el acto IV salen las cifras reales, tu propio contador de muertos al
+  lado del de la ciudad, y la sentencia de 2024. La partida se guarda sola; `#nuevo` en la URL la
+  borra.
 
 ## Controles
 
@@ -49,13 +58,14 @@ tiempo de carga.
 | `F` | Subir o bajar del auto |
 | `E` | Disparar (solo a pie) |
 | `Q` | Cambiar de arma |
+| `G` | Dar mordida a la municipal ($400) |
 | Arrastrar mouse | Girar cámara |
 | Rueda | Acercar o alejar |
 | `R` | Enderezar auto |
 | `M` | Silenciar |
 
-En dispositivos táctiles aparece un joystick virtual con botones de gas, acción y fuego; el nombre
-del arma en el HUD es tocable para cambiarla.
+En dispositivos táctiles aparece un joystick virtual con botones de gas, acción y fuego. En el HUD,
+el nombre del arma es tocable para cambiarla y el dinero es tocable para dar mordida.
 
 ## Correrlo local
 
@@ -90,12 +100,14 @@ Three.js r128 desde CDN, todo lo demás es código propio.
   de física.
 - **Disparo.** Hitscan por cono: alcance y ángulo contra la dirección de la cámara. Sin proyectiles,
   sin raycaster, sin recorrer geometría.
+- **Balazos.** Un solo buffer de ruido con caída exponencial, generado al arrancar y filtrado
+  distinto por arma: la escopeta pasa por un lowpass más grave que la pistola. Un buffer, dos armas.
+- **Partida guardada.** `localStorage` y `JSON.stringify`. Cinco campos, sin librería.
 - **Audio.** Motor con oscilador sierra filtrado por lowpass mapeado a velocidad; sirena de dos
   tonos; efectos con osciladores de vida corta. Todo Web Audio, cero archivos.
 
 ## Por hacer
 
-- [ ] Encargos guionizados por acto en vez de generados (los textos ya están, falta el guion)
 - [ ] Personajes con los que se hable: Doña Chayo, Marisol, El Diablo, Luz
 - [ ] Motos y variación de manejo por clase de vehículo
 - [ ] Tiendas donde gastar el dinero

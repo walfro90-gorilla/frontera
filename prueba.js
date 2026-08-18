@@ -83,7 +83,7 @@ const sandbox={
   addEventListener(ev,fn){handlers['win:'+ev]=fn;},
   matchMedia:()=>({matches:false}),
   devicePixelRatio:1,innerWidth:1280,innerHeight:720,
-  location:{hash:'#test'},
+  location:{hash:'#test',reload(){}},
   performance,
   setTimeout:(fn,ms)=>{temporizadores.push({fn,t:ahora+(ms||0)});return 0;},
   requestAnimationFrame(fn){sandbox.__raf=fn;},
@@ -118,39 +118,45 @@ pd({clientX:0,clientY:0});                        // dejar el arrastre activo pa
 const F=sandbox.window.__frontera;
 if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 
-// Piloto: camina, gira, dispara y se sube a carros. Para llegar a los marcadores
-// no escribo una IA de navegación: lo empujo al marcador cada tantos cuadros. Lo
-// que se prueba es el recorrido completo del juego, no saber manejar.
-const CUADROS=30000;
-let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9;
+// Piloto en tres fases. El cerco va ANTES de la carrera por los actos porque el
+// juego ahora sí termina: después del final queda congelado y no se puede medir nada.
+//   1) calentarse a pie          2) quedarse quieto y ver si las patrullas llegan
+//   3) empujarlo de marcador en marcador hasta el final
+// Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
+const CUADROS=30000, CERCO_INI=2500, CERCO_FIN=11000;
+let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
+let corridos=0;
 try{
   for(let f=0;f<CUADROS;f++){
+    corridos=f+1;
     t+=16.7;ahora=t;
     for(let k=temporizadores.length-1;k>=0;k--)
       if(temporizadores[k].t<=ahora){const x=temporizadores.splice(k,1)[0];x.fn();}
-    // Fase final: dejar de empujar y quedarse quieto con calor encima, para ver
-    // si las patrullas de verdad llegan o se quedan atoradas en los edificios.
-    const cerco = f>=CUADROS-8000;
+    const cerco = f>=CERCO_INI && f<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
-    if(f%97===0)  kd({code:'KeyE',preventDefault(){}});    // disparar (solo aplica a pie)
-    if(f%307===0) kd({code:'KeyQ',preventDefault(){}});    // cambiar arma
+    if(f%(cerco?31:97)===0) kd({code:'KeyE',preventDefault(){}});   // disparar: calienta
+    if(f%307===0) kd({code:'KeyQ',preventDefault(){}});
     if(!cerco&&f%601===0) kd({code:'KeyF',preventDefault(){}});
-    if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }    // barrer la cámara
+    if(f%40===0){ px+=140;pm({clientX:px,clientY:0}); }
     if(!cerco&&f%400===0){                                 // empujón al marcador
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
     }
-    if(f===CUADROS-8000){                                  // pararlo sobre una calle real
-      const b=F.jugador.auto||F.jugador; b.x=-20; b.z=-70;  // Francisco Villa y Abraham González
+    if(f===CERCO_INI){                                     // pararlo sobre una calle real
+      if(F.jugador.auto)kd({code:'KeyF',preventDefault(){}});   // bajarse
+      F.jugador.x=-20;F.jugador.z=-70;                     // Francisco Villa y A. González
     }
-    if(cerco&&f%600===0){                                  // medir qué tan cerca llegan
+    if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
       const b=F.jugador.auto||F.jugador;let m=1e9;
       for(const a of F.autos)if(a.clase==='federal'||a.clase==='municipal'||a.clase==='militar')
         m=Math.min(m,Math.hypot(a.x-b.x,a.z-b.z));
       cercoMin=Math.min(cercoMin,m);
     }
     sandbox.__raf(t);
-    if(el('placa').__cls.has('on')){seguir();placaVista++;}
+    if(el('placa').__cls.has('on')){
+      if(F.estado().final){finalVisto=true;break;}         // fin del juego: fin de la prueba
+      seguir();placaVista++;
+    }
     actosVistos.add(F.estado().acto);
     if(F.jugador.salud<100||el('avisoT').textContent)muerteVista=el('avisoT').textContent||'daño';
     if(process.env.DEBUG&&f%3000===0)
@@ -164,7 +170,8 @@ try{
   console.error('FALLÓ EL BUCLE:',e.message,'\n',e.stack.split('\n').slice(0,5).join('\n'));
   process.exit(1);
 }
-console.log(CUADROS+' cuadros ok ('+Math.round(CUADROS*16.7/1000)+' s de juego simulado)');
+console.log(corridos+' cuadros ok ('+Math.round(corridos*16.7/1000)+' s de juego simulado'+
+  (finalVisto?', el juego llegó a su final':'')+')');
 const s=F.estado();
 const est={
   acto:s.acto, anio:s.anio, encargosDelActo:s.hechos, placas:placaVista,
@@ -172,6 +179,7 @@ const est={
   calor:JSON.stringify(F.calor), autosVivos:F.autos.length,
   calle:el('calle').textContent, encargo:el('mtitulo').textContent,
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
+  final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
 };
 console.log('estado final:',JSON.stringify(est,null,1));
 // los sistemas tienen que haberse movido, no solo no tronar
@@ -185,4 +193,6 @@ exige(muerteVista,'corrió el castigo por perder (levantado/noqueado o daño)');
 exige(F.autos.length>0,'quedan autos en el mundo');
 exige(F.peatones.length>0,'quedan peatones en el mundo');
 exige(cercoMin<40,'las patrullas alcanzan al jugador en la calle (llegaron a '+Math.round(cercoMin)+' m)');
+exige(finalVisto,'el juego llega a su final y saca la placa de cierre');
+exige(s.cortina,'la lonchería baja la cortina al avanzar los actos');
 process.exit(assertFails?1:0);
