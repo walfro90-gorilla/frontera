@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2382 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2402 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -124,6 +124,10 @@ ciclo día/noche, audio, HUD y minimapa siguen corriendo siempre.
 
 ### Día/noche por materiales compartidos
 
+**`horaDia` 0 es medianoche**, 0.25 amanece, 0.5 mediodía, 0.75 anochece. El reloj del HUD es
+`horaDia*24` **sin corrimientos**: durante mucho tiempo tuvo un `+6` y marcaba las nueve de la
+mañana con el cielo negro. `prueba.js` compara la hora contra `esNoche` y falla si se separan.
+
 `horaDia` ∈ [0,1) es la única variable de tiempo. `actDiaNoche` sube `emissiveIntensity` recorriendo
 `materialesFachada`, `matFoco` y `matFaro` — un puñado de materiales, no miles de mallas. Por eso
 `matEdificio()` cachea en `cacheMat` por `(paleta, repeatU, repeatV)`: las fachadas comparten
@@ -221,7 +225,16 @@ sobre `antros`, porque solo debe prender el neón de los que siguen abiertos. Un
 brilla aunque sea de noche.
 
 El tramo lo construye su propia sección: el generador de manzanas salta `enTramoJuarez(i,j)`
-(`i∈{2,3}, j∈{0,1}`) o los edificios genéricos se encimarían con las fachadas.
+(`i∈{2,3}, j∈{0,1}`) o los edificios genéricos se encimarían con las fachadas. Por eso la sección
+también rellena el interior de esas manzanas: si no, quedan huecas y se ve el desierto por atrás.
+
+**El rótulo va hacia la calle, no hacia adentro.** `cara` es la fachada y `frente = cara - lado*0.35`
+la saca hacia la banqueta. Poner `+` en vez de `−` entierra los dieciséis rótulos dentro de su
+propio muro y no se ve un solo neón, sin ningún error en consola. `prueba.js` tiene la regresión.
+
+**La fachada de la Juárez es familia aparte** (`F_JUAREZ`, 3 columnas × 2 filas). Las texturas de
+`'centro'` traen 5 filas de ventanas por repetición: un local de 10 m con esa textura se ve como un
+edificio de diez pisos. Las filas del tejido tienen que corresponder a la altura real.
 
 ### Colocación de personajes
 

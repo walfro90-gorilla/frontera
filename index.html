@@ -437,6 +437,9 @@ const F_CENTRO =PAL_CENTRO.map(p=>fachada(p[0],p[1],4,5,0.42));
 const F_COLONIA=PAL_COLONIA.map(p=>fachada(p[0],p[1],3,1,0.55));
 const F_MAQUILA=[fachada('#b9bec6','#8d939c',6,1,0.30),fachada('#a7b2b8','#7d868c',6,1,0.30)];
 const F_PASO   =[fachada('#9aa6b4','#77828f',4,6,0.60),fachada('#b0a496','#867c70',4,6,0.60)];
+// La Juárez es de dos y tres plantas: pocas ventanas por tramo o parece rascacielos
+const F_JUAREZ =[fachada('#b9926a','#8d6e4e',3,2,0.50),fachada('#8d95a2','#6b727d',3,2,0.50),
+                 fachada('#a86f63','#7f524a',3,2,0.50),fachada('#9aa08a','#747a66',3,2,0.50)];
 
 const matTecho=new THREE.MeshLambertMaterial({color:0x3a3f47});
 const matLamina=new THREE.MeshLambertMaterial({color:0x8a8f96});
@@ -445,7 +448,8 @@ const materialesFachada=[];
 function matEdificio(fam,idx,ru,rv){
   const k=fam+'|'+idx+'|'+ru+'|'+rv;
   if(cacheMat.has(k))return cacheMat.get(k);
-  const set=fam==='centro'?F_CENTRO:fam==='colonia'?F_COLONIA:fam==='maquila'?F_MAQUILA:F_PASO;
+  const set=fam==='centro'?F_CENTRO:fam==='colonia'?F_COLONIA:fam==='maquila'?F_MAQUILA
+           :fam==='juarez'?F_JUAREZ:F_PASO;
   const [a,b]=set[idx%set.length];
   const m1=a.clone(),m2=b.clone();
   m1.needsUpdate=m2.needsUpdate=true;
@@ -550,8 +554,8 @@ const luminarias=[];
 const geoCaja=new THREE.BoxGeometry(1,1,1);
 
 function bloque(cx,cz,w,d,h,fam,idx,tapa){
-  const ru=Math.max(1,Math.round(w/(fam==='colonia'?7:9)));
-  const rv=Math.max(1,Math.round(h/(fam==='colonia'?4:7)));
+  const ru=Math.max(1,Math.round(w/(fam==='colonia'?7:fam==='juarez'?11:9)));
+  const rv=Math.max(1,Math.round(h/(fam==='colonia'?4:fam==='juarez'?9:7)));
   const mat=matEdificio(fam,idx,ru,rv);
   const techo=tapa||matTecho;
   const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),[mat,mat,techo,techo,mat,mat]);
@@ -727,20 +731,22 @@ function matRotulo(tex,neon){
 
 const antros=[];
 (()=>{
-  const xc=ejeX(JU), medio=anchoX(JU)/2, fondo=8;
+  const xc=ejeX(JU), medio=anchoX(JU)/2, fondo=9;
   const tramos=[[ejeZ(0)+9, ejeZ(1)-14],[ejeZ(1)+14, ejeZ(2)-10]];
   const geoRot=new THREE.PlaneGeometry(10,2.6);
   let k=0;
   for(const lado of [-1,1]){                       // poniente y oriente de la avenida
-    const cx=xc+lado*(medio+fondo/2), frente=xc+lado*(medio+0.25);
+    const cx=xc+lado*(medio+fondo/2);
+    const cara=xc+lado*medio;                    // fachada, pegada a la banqueta
+    const frente=cara-lado*0.35;                 // el rótulo va HACIA la calle, no adentro
     for(const [z0,z1] of tramos){
       const n=4, paso=(z1-z0)/n;
       for(let a=0;a<n;a++,k++){
         const d=NEGOCIOS[k%NEGOCIOS.length], cz=z0+paso*(a+0.5), h=rnd(7.5,12);
-        bloque(cx,cz,fondo,paso-1.5,h,'centro',k%6);
+        bloque(cx,cz,fondo,paso-1.5,h,'juarez',k%4);
         const texA=rotulo(d[0],d[1],d[2],d[3]);
         const rot=new THREE.Mesh(geoRot,matRotulo(texA,true));
-        rot.position.set(frente,h*0.62,cz);
+        rot.position.set(frente,Math.min(h*0.62,6.4),cz);
         rot.rotation.y=lado*Math.PI/2;
         scene.add(rot);
         let matB=null;
@@ -749,10 +755,23 @@ const antros=[];
         }
         const tapia=new THREE.Mesh(new THREE.BoxGeometry(0.5,3.6,paso-2.5),
           new THREE.MeshLambertMaterial({color:0x4a4238}));
-        tapia.position.set(frente-lado*0.3,1.8,cz);tapia.visible=false;scene.add(tapia);
+        tapia.position.set(cara-lado*0.15,1.8,cz);tapia.visible=false;scene.add(tapia);
         antros.push({rot,matNeon:rot.material,matMuerto:matB,tapia,
                      aguante:d[4],nombre:d[0],vivo:true,x:frente,z:cz});
       }
+    }
+  }
+  // Relleno detrás de las fachadas: el generador normal salta estas manzanas,
+  // así que sin esto quedan huecas y se ve el desierto por atrás.
+  for(const [z0,z1] of tramos){
+    const cz=(z0+z1)/2, dz=(z1-z0)-8;
+    for(const lado of [-1,1]){
+      const bi=lado<0?JU-1:JU;
+      const tras=xc+lado*(medio+fondo);
+      const borde=lado<0 ? ejeX(bi)+anchoX(bi)/2+5 : ejeX(bi+1)-anchoX(bi+1)/2-5;
+      const w=Math.abs(borde-tras)-8;
+      if(w<10)continue;
+      bloque((borde+tras)/2,cz,w,dz,rnd(14,30),'centro',rndi(0,5));
     }
   }
 })();
@@ -1744,7 +1763,7 @@ let toastT=0;
 function aviso3(txt){ui.toast.textContent=txt;ui.toast.classList.add('on');toastT=1.8;}
 
 /* ══════════════════════════ ESTADO GLOBAL ══════════════════════════ */
-let horaDia=0.08, bloqueo=0, temblor=0, esNoche=0;
+let horaDia=0.30, bloqueo=0, temblor=0, esNoche=0;   // arranca a las 07:12, recién amanecido
 const camObj=new THREE.Vector3(jugador.x,1.6,jugador.z);
 
 /* ══════════════════════════ ACTUALIZACIONES ══════════════════════════ */
@@ -2074,7 +2093,8 @@ function actDiaNoche(dt){
   matFaro.emissiveIntensity=noche*1.2;
   for(const f of luminarias)if(f.material.emissiveIntensity!==undefined)
     f.material.emissiveIntensity=noche*1.4;
-  const h=Math.floor((horaDia*24+6)%24), mi=Math.floor(((horaDia*24+6)%1)*60);
+  // horaDia 0 = medianoche, 0.25 amanece, 0.5 mediodía, 0.75 anochece. Sin corrimientos.
+  const hh=horaDia*24, h=Math.floor(hh)%24, mi=Math.floor((hh%1)*60);
   ui.hora.textContent=(h<10?'0':'')+h+':'+(mi<10?'0':'')+mi;
   esNoche=noche;
   return noche;

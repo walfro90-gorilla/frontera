@@ -131,6 +131,7 @@ const CUADROS=34000, CERCO_INI=2500, CERCO_FIN=11000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 let mapaProbado='no se probó';
+let relojMal=null, horasVistas=new Set();
 let corridos=0;
 try{
   for(let f=0;f<CUADROS;f++){
@@ -185,6 +186,13 @@ try{
       seguir();placaVista++;
     }
     actosVistos.add(F.estado().acto);
+    // el reloj mentía seis horas: marcaba las nueve de la mañana con el cielo negro
+    {const hh=parseInt(el('hora').textContent,10), n=F.estado().noche;
+     if(!isNaN(hh)){
+       horasVistas.add(hh);
+       if(hh>=11&&hh<=14&&n>0.5)relojMal='dice '+hh+'h con noche '+n.toFixed(2);
+       if((hh>=23||hh<=3)&&n<0.5)relojMal='dice '+hh+'h con noche '+n.toFixed(2);
+     }}
     if(F.jugador.salud<100||el('avisoT').textContent)muerteVista=el('avisoT').textContent||'daño';
     if(process.env.DEBUG&&f%3000===0)
       console.log('f='+f,'acto='+F.estado().acto,'hechos='+F.estado().hechos,
@@ -209,7 +217,8 @@ const est={
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
-  mapa:mapaProbado, pines:F.pines.length,
+  mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
+  horasVistas:horasVistas.size,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
 // los sistemas tienen que haberse movido, no solo no tronar
@@ -234,6 +243,12 @@ const atrapados=F.PERSONAJES.filter(p=>
   F.edificios.some(e=>Math.abs(p.x-e.x)<e.hw+1&&Math.abs(p.z-e.z)<e.hd+1));
 exige(!atrapados.length,'ningún personaje quedó dentro de un edificio ('+
   atrapados.map(p=>p.id)+')');
+// regresión: los 16 rótulos de neón quedaban enterrados dentro de su propia pared
+const enterrados=F.antros.filter(a=>
+  F.edificios.some(e=>Math.abs(a.x-e.x)<e.hw&&Math.abs(a.z-e.z)<e.hd));
+exige(!enterrados.length,'ningún rótulo quedó dentro de su edificio ('+enterrados.length+')');
+exige(!relojMal,'el reloj cuadra con la luz del cielo ('+relojMal+')');
+exige(horasVistas.size>=18,'se recorrió un día completo ('+horasVistas.size+' horas vistas)');
 exige(mapaProbado==='abrió y pausó','el mapa grande abre, pausa, dibuja y cierra ('+mapaProbado+')');
 exige(F.pines.length===3,'los pines sobreviven la partida');
 exige(Math.max(...abiertos)===F.antros.length,'en 2008 la Av. Juárez abre completa');
