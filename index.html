@@ -386,7 +386,16 @@ const ZRIO=-425, ANCHO_RIO=42;                 // canal revestido del Bravo
 const ZBORDO=-386;                             // límite jugable: el bordo mexicano
 const ZVALLA=-462;                             // valla del lado gringo
 const ZPASO=-520;                              // primera fila de El Paso
-const XMIN=-560, XMAX=650, ZSUR=545;
+const XMIN=-560, XMAX=650, ZSUR=545;                 // borde de la mancha urbana
+// El anillo periférico va por fuera de la traza, así que el límite jugable es más
+// ancho que la ciudad. Camino Real al poniente bordeando la sierra, Juan Pablo II
+// cerrando por el sur y el libramiento del aeropuerto por el oriente.
+const PERIF=[
+  {nombre:'Periférico Camino Real', eje:'z', x:-700, a:-380, b:720, ancho:34},
+  {nombre:'Blvd. Juan Pablo II',    eje:'x', z: 720, a:-700, b:800, ancho:34},
+  {nombre:'Libramiento Oriente',    eje:'z', x: 800, a:-380, b:720, ancho:34},
+];
+const LIMX0=-760, LIMX1=870, LIMZ1=790;
 const LARGO_DIA=240;
 
 /* ══════════════════════════ ESCENA ══════════════════════════ */
@@ -861,6 +870,69 @@ function actBandera(){
           'siete hectáreas del otro lado. México las recuperó el 28 de octubre de 1967, tras cien '+
           'años de reclamos y arbitrajes.'});
 })();
+
+/* ══════════════════════════ PERIFÉRICO ══════════════════════════ */
+// El anillo no entra en la retícula de avenidas a propósito: la retícula modela
+// una traza urbana con cruces y esquinas, y un periférico no es eso. Va como
+// sistema aparte, con su propia carpeta, su propio tráfico y sin banquetas.
+const texCarretera=(()=>{
+  const c=lienzo(64,128), g=c.getContext('2d');
+  g.fillStyle='#26292f';g.fillRect(0,0,64,128);
+  g.fillStyle='#e8e2cc';g.fillRect(3,0,2.5,128);g.fillRect(58,0,2.5,128);   // orillas
+  g.fillStyle='#d9c34a';g.fillRect(31,0,2.5,76);                            // raya central
+  for(let i=0;i<70;i++){                                                     // parche y desgaste
+    g.fillStyle='rgba(0,0,0,'+(Math.random()*0.10).toFixed(2)+')';
+    g.fillRect(Math.random()*64,Math.random()*128,3,3);
+  }
+  return new THREE.CanvasTexture(c);
+})();
+for(const p of PERIF){
+  const largo=p.b-p.a, t=texCarretera.clone();
+  t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  t.repeat.set(1,largo/20);
+  const cinta=new THREE.Mesh(new THREE.PlaneGeometry(p.ancho,largo),
+    new THREE.MeshLambertMaterial({map:t}));
+  cinta.rotation.x=-Math.PI/2;
+  if(p.eje==='z') cinta.position.set(p.x,0.05,(p.a+p.b)/2);
+  else {cinta.rotation.z=Math.PI/2;cinta.position.set((p.a+p.b)/2,0.05,p.z);}
+  scene.add(cinta);
+  for(let d=p.a+60; d<p.b-40; d+=130)                                        // alumbrado
+    p.eje==='z' ? farola(p.x+p.ancho/2+5,d) : farola(d,p.z+p.ancho/2+5);
+}
+sitio({x:PERIF[0].x+18,z:-60,r:70,tipo:'Vialidad periférica · 2006',
+  nombre:'Periférico Camino Real',
+  texto:'Abrió en 2006 para bordear la Sierra de Juárez por el poniente. Veintitrés kilómetros '+
+        'que amarran con el Juan Pablo II y con el libramiento del oriente. Sirve para salir de '+
+        'la ciudad sin tener que cruzarla, que en estos años no es poca cosa.'});
+sitio({x:0,z:PERIF[1].z-18,r:80,tipo:'Vialidad periférica',
+  nombre:'Blvd. Juan Pablo II',
+  texto:'Cierra el anillo por el sur y comunica el poniente con el oriente y con el aeropuerto. '+
+        'Es por donde entra y sale la maquila: tráileres a toda hora y colonias nuevas '+
+        'creciéndole encima.'});
+sitio({x:PERIF[2].x-18,z:-60,r:70,tipo:'Vialidad periférica',
+  nombre:'Libramiento Oriente',
+  texto:'El libramiento del aeropuerto. Rodea la ciudad por el oriente para que la carga y el que '+
+        'va de paso no se metan a la traza. De aquí para allá ya es desierto.'});
+
+// Tráfico del anillo: van y vienen por la polilínea, sin grafo de intersecciones.
+const RUTA=[{x:PERIF[0].x,z:PERIF[0].a},{x:PERIF[0].x,z:PERIF[1].z},
+            {x:PERIF[2].x,z:PERIF[1].z},{x:PERIF[2].x,z:PERIF[2].a}];
+function actPeriferico(dt){
+  for(const a of autos){
+    if(a.clase!=='periferico')continue;
+    const t=RUTA[a.ri];
+    const dx=t.x-a.x, dz=t.z-a.z;
+    if(dx*dx+dz*dz<900){
+      a.ri+=a.dir;
+      if(a.ri>=RUTA.length){a.ri=RUTA.length-2;a.dir=-1;}
+      else if(a.ri<0){a.ri=1;a.dir=1;}
+    }
+    a.ang+=clamp(angDif(a.ang,Math.atan2(dx,dz)),-1,1)*1.7*dt;
+    a.vel=clamp(a.vel+10*dt,0,34);                    // se va más rápido que en la ciudad
+    a.x+=Math.sin(a.ang)*a.vel*dt; a.z+=Math.cos(a.ang)*a.vel*dt;
+    a.malla.position.set(a.x,0,a.z);a.malla.rotation.y=a.ang;
+  }
+}
 
 /* ══════════════════════════ PUENTES PEATONALES Y COLGADOS ══════════════════════════ */
 // Los puentes peatonales de las avenidas anchas, y lo que aparecía colgado de
@@ -1830,6 +1902,11 @@ function manzanaJ(z){
   return 0;
 }
 function calleDe(x,z){
+  for(const p of PERIF){                              // ¿vas sobre el anillo?
+    const d = p.eje==='z' ? Math.abs(x-p.x) : Math.abs(z-p.z);
+    const l = p.eje==='z' ? z : x;
+    if(d<p.ancho/2+12 && l>p.a-20 && l<p.b+20)return corto(p.nombre);
+  }
   let bi=0,bd=1e9,bj=0,bdz=1e9;
   for(let i=0;i<NX;i++){const d=Math.abs(x-ejeX(i));if(d<bd){bd=d;bi=i;}}
   for(let j=0;j<NZ;j++){const d=Math.abs(z-ejeZ(j));if(d<bdz){bdz=d;bj=j;}}
@@ -2079,6 +2156,11 @@ for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
   if(zona[i][j]!=='lote')continue;
   for(let k=0;k<4;k++) nuevoAuto(cenX(i)-14+k*9,cenZ(j)-6,0,'parado');
 }
+for(let k=0;k<10;k++){                      // tráfico del periférico
+  const l=rnd(PERIF[0].a+80,PERIF[1].z-80);
+  const a=nuevoAuto(k%2?PERIF[0].x:PERIF[2].x, l, 0, 'periferico');
+  a.ri=k%2?1:3; a.dir=k%2?1:-1;
+}
 for(let k=0;k<16;k++){
   const i=rndi(0,NX-1),j=rndi(0,NZ-1);
   const a=nuevoAuto(ejeX(i),ejeZ(j),0,'trafico');
@@ -2112,9 +2194,9 @@ function chocaEdificios(p,r){
       return true;
     }
   }
-  if(p.x<XMIN){p.x=XMIN;return true;}
-  if(p.x>XMAX){p.x=XMAX;return true;}
-  if(p.z>ZSUR){p.z=ZSUR;return true;}
+  if(p.x<LIMX0){p.x=LIMX0;return true;}
+  if(p.x>LIMX1){p.x=LIMX1;return true;}
+  if(p.z>LIMZ1){p.z=LIMZ1;return true;}
   // el bordo: solo se pasa por la calzada de un puente, y ahí te frena la garita
   if(p.z<ZBORDO&&!enCalzadaDePuente(p.x,r)){p.z=ZBORDO;return true;}
   return false;
@@ -2689,7 +2771,7 @@ const pines=[];
 let mapaAbierto=false;
 
 // encuadre del mapa grande: toda la ciudad más el otro lado del río
-const GX0=XMIN-70, GX1=XMAX+70, GZ0=ZPASO-40, GZ1=ZSUR+60;
+const GX0=LIMX0-30, GX1=LIMX1+30, GZ0=ZPASO-40, GZ1=LIMZ1+30;
 
 function flecha(g,x,y,rot,r,color){
   g.save();g.translate(x,y);g.rotate(rot);
@@ -2707,6 +2789,7 @@ function marcaPin(g,x,y,r,n){
 
 // cx,cz: qué punto del mundo va al centro · esc: píxeles por metro · giro: radianes
 function dibujarMundo(g,S,cx,cz,esc,giro,grande){
+
   const R=(S/2)/esc*1.5+60;                       // radio de mundo a considerar
   const lejos=(x,z)=>Math.abs(x-cx)>R||Math.abs(z-cz)>R;
   g.save();
@@ -2727,6 +2810,12 @@ function dibujarMundo(g,S,cx,cz,esc,giro,grande){
   g.fillStyle='#2a2f38';
   for(let i=0;i<NX;i++)g.fillRect(X(ejeX(i)-anchoX(i)/2),-L,anchoX(i)*esc,L*2);
   for(let j=0;j<NZ;j++)g.fillRect(-L,Z(ejeZ(j)-anchoZ(j)/2),L*2,anchoZ(j)*esc);
+  // el anillo periférico
+  g.fillStyle='#33383f';
+  for(const p of PERIF){
+    if(p.eje==='z') g.fillRect(X(p.x-p.ancho/2),Z(p.a),p.ancho*esc,(p.b-p.a)*esc);
+    else            g.fillRect(X(p.a),Z(p.z-p.ancho/2),(p.b-p.a)*esc,p.ancho*esc);
+  }
   // el río y la valla: la raya que no se cruza
   g.fillStyle='#22404a';g.fillRect(-L,Z(ZRIO-ANCHO_RIO/2),L*2,ANCHO_RIO*esc);
   g.strokeStyle='#c4553f';g.lineWidth=1.5;
@@ -2821,6 +2910,13 @@ function mapaGrande(){
   gg.textAlign='center';gg.fillText('EL PASO, TEXAS · NO CRUZAS',S/2,Z(ZPASO)+6);
   gg.fillStyle='rgba(206,17,38,.75)';gg.font='9px ui-monospace, monospace';
   gg.fillText('EL CHAMIZAL',X(FX),Z(FZ)-15);
+  gg.fillStyle='rgba(200,214,232,.5)';gg.font='9px ui-monospace, monospace';
+  for(const p of PERIF){                              // nombres del anillo
+    gg.save();
+    if(p.eje==='z'){gg.translate(X(p.x)-7,Z((p.a+p.b)/2));gg.rotate(-Math.PI/2);}
+    else gg.translate(X((p.a+p.b)/2),Z(p.z)-8);
+    gg.textAlign='center';gg.fillText(corto(p.nombre),0,0);gg.restore();
+  }
   // encargo
   gg.fillStyle='#ffc233';gg.beginPath();gg.arc(X(mision.x),Z(mision.z),6,0,TAU);gg.fill();
   // jugador
@@ -2902,7 +2998,8 @@ function bucle(now){
   if(bloqueo>0){bloqueo-=dt;}
   else{
     if(jugador.auto)actAutoJugador(dt); else actJugador(dt);
-    actTrafico(dt);actPeatones(dt);actPersecucion(dt);actPersonajes(dt);actMision(dt);
+    actTrafico(dt);actPeriferico(dt);actPeatones(dt);actPersecucion(dt);
+    actPersonajes(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
   actCamara(dt);actDiaNoche(dt);actBandera();actSitios(dt);actColgados();
@@ -2935,7 +3032,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
-    bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,
+    bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,

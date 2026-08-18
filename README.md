@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 140 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 145 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -21,6 +21,9 @@ tiempo de carga.
   Juárez, Francisco Villa, Abraham Lincoln, de las Américas, Waterfill, 16 de Septiembre, Vicente
   Guerrero, Triunfo de la República. Zona Centro con su catedral, el Chamizal junto al río,
   colonias de casas pegadas, maquilas al sur y la Sierra de Juárez al poniente con su letrero.
+- **El anillo periférico.** Camino Real bordeando la sierra por el poniente (abrió en 2006),
+  Blvd. Juan Pablo II cerrando por el sur y el Libramiento Oriente rumbo al aeropuerto. Carretera
+  de verdad: sin banquetas, sin cruces, con su propio tráfico a otra velocidad.
 - **Colgados.** De los puentes peatonales aparecen ejecutados con su manta, como aparecían: uno en
   2008, cuatro en 2010, dos en 2011. Al topártelos la cuadra baja cortinas y la radio lo reporta.
   No dan dinero, no dan puntos y **no se pueden colgar**: son paisaje, y lo que habla es la manta.

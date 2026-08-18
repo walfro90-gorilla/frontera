@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2966 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3063 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -211,6 +211,17 @@ la plática sola si te alejas o te subes al carro.
 hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
 hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
 llamarla directo desde entradas** — todo pasa por `accionF()`.
+
+### Periférico
+
+**El anillo no está en `EJESX`/`EJESZ` a propósito.** La retícula modela una traza urbana con
+cruces, banquetas y manzanas; un periférico no es eso. `PERIF[]` lo describe aparte (eje, posición,
+extremos, ancho), tiene su carpeta propia, su tráfico propio (`actPeriferico`, waypoints de ida y
+vuelta sin grafo) y `calleDe()` lo consulta antes que la retícula.
+
+Por eso hay dos juegos de límites: `XMIN/XMAX/ZSUR` son el borde de la mancha urbana y de la textura
+horneada del suelo; **`LIMX0/LIMX1/LIMZ1` son el límite jugable**, que llega hasta el anillo. Meter
+el anillo a la textura del suelo habría bajado la resolución de toda la ciudad.
 
 ### Colgados y sucesos
 

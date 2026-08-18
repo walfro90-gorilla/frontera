@@ -143,13 +143,19 @@ if(!F){console.error('falta la costura de pruebas __frontera');process.exit(1);}
 //   1) calentarse a pie          2) quedarse quieto y ver si las patrullas llegan
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
-const CUADROS=34000, CERCO_INI=1400, CERCO_FIN=9500;
+const SIT_INI=400, SIT_PASO=44;
+const CUADROS=34000;
+// Las fases van encadenadas al número de sitios. Antes eran números fijos y al
+// crecer la lista la fase de sitios se metió encima de la del mapa, que pausa el
+// juego: los sitios no se anunciaban y parecía bug del juego.
+const SIT_FIN0=SIT_INI+SIT_PASO*sandbox.window.__frontera.SITIOS.length;
+const MAPA_ABRE=SIT_FIN0+40, MAPA_CIERRA=SIT_FIN0+110;
+const CERCO_INI=SIT_FIN0+260, CERCO_FIN=CERCO_INI+8000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 const sitiosVistos=new Set();
 const colgadosPorActo=new Set();
 let bombaVista=false, memorialVisto=false;
-const SIT_INI=400, SIT_PASO=44;
 let mapaProbado='no se probó';
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
@@ -199,9 +205,9 @@ try{
     // y el resto de la corrida se va en arrestos. Reaparecer es lo que haría el juego.
     if(f===CERCO_FIN)F.reaparecer();
     // mapa grande: abrir con pines puestos, dibujar y cerrar
-    if(f===1200)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
-    if(f===1260){F.abrirMapa();mapaProbado=F.estado().mapa&&!F.estado().jugando?'abrió y pausó':'NO pausó';}
-    if(f===1320){F.cerrarMapa();
+    if(f===MAPA_ABRE-30)F.pines.push({x:-120,z:-250},{x:240,z:100},{x:-400,z:300});
+    if(f===MAPA_ABRE){F.abrirMapa();mapaProbado=F.estado().mapa&&!F.estado().jugando?'abrió y pausó':'NO pausó';}
+    if(f===MAPA_CIERRA){F.cerrarMapa();
       if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';}
     if(cerco&&f%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
     if(cerco&&f%60===0){                                   // medir qué tan cerca llegan
