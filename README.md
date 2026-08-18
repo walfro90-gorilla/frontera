@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 155 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 158 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -40,6 +40,10 @@ tiempo de carga.
   La Línea, la plana de «¿Qué quieren de nosotros?».
 - **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
   la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
+- **El crédito de la foto lo decides tú.** En el cierre eliges entre `FOTO: JAIME NIEVES` y
+  `FOTO: EL DIARIO`. Firmar paga 1.6× y construye tu racha, pero **la facción que sale en tus fotos
+  aprende tu nombre** y a partir de 2010 te busca. No firmar paga 0.7×, no te delata y te tumba la
+  racha. Es la decisión que de verdad tomaban las redacciones. El final te dice cuántas firmaste.
 - **Diecinueve sitios que se explican solos.** Párate enfrente y el HUD te dice qué es y por qué
   importa: el asta del Chamizal y su museo, el Estadio Olímpico Benito Juárez, el Monumento a los
   Trabajadores de la maquila, el Umbral del Milenio, el Kentucky Club, el Noa Noa, la catedral y la
@@ -104,6 +108,7 @@ tiempo de carga.
 | `F` | Hablar, o subir y bajar del auto (según lo que tengas enfrente) |
 | `E` | Disparar la cámara (solo a pie) |
 | `Q` | Cambiar de lente |
+| `1` / `2` | Firmar la foto o publicarla sin crédito |
 | `G` | Dar mordida a la municipal ($400) |
 | `T` o clic al minimapa | Abrir el mapa grande |
 | `Esc` | Cerrar el mapa |

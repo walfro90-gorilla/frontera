@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3222 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (3288 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -152,6 +152,17 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+**El crédito de la foto es la decisión central del juego.** `completar()` ya no paga: llama a
+`pedirFirma()`, que pausa y muestra `#firma`. `resolverFirma(firmada)` aplica todo — pago ×1.6 o
+×0.7, racha, `firmadas`/`anonimas` — y de ahí sale el avance de acto. Firmar sube calor de plaza,
+**dos niveles a partir del acto III**, así que la partida se pone cara justo cuando la historia dice
+que se puso cara. Las teclas `1` y `2` se atienden **antes** del guardia de `jugando`, igual que
+`Escape` del mapa, porque la decisión ocurre con el juego pausado.
+
+Si alguien agrega un camino que llame a `resolverFirma` sin pasar por `pedirFirma`, el flag
+`esperandoFirma` lo bloquea salvo que pase `silencio` — que es como el encargo sin paga se salta la
+pregunta.
 
 Lo único que queda de violencia del jugador es `atropellar()`, que es un accidente y **siempre
 cuesta**: nunca paga. `prueba.js` falla si alguien reintroduce una recompensa por víctimas.

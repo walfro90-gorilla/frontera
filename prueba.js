@@ -157,6 +157,7 @@ const sitiosVistos=new Set();
 const colgadosPorActo=new Set();
 let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
+let decisiones=0, firmoAlgo=false, anonimoAlgo=false;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
 let corridos=0;
@@ -224,6 +225,11 @@ try{
       cercoMin=Math.min(cercoMin,m);
     }
     sandbox.__raf(t);
+    if(F.estado().esperandoFirma){                       // decidir el crédito de la foto
+      const firma=(decisiones%2===0);
+      F.resolverFirma(firma);
+      decisiones++; firma?firmoAlgo=true:anonimoAlgo=true;
+    }
     if(el('placa').__cls.has('on')){
       if(F.estado().final){finalVisto=true;break;}         // fin del juego: fin de la prueba
       seguir();placaVista++;
@@ -265,6 +271,7 @@ const est={
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
   final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
   notas:s.notas, registrados:s.registrados, atropellados:s.atropellados,
+  firmadas:s.firmadas, sinFirma:s.anonimas,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
@@ -283,6 +290,9 @@ exige(s.acto>0,'el acto avanzó');
 // El jugador es reportero: publica notas y no cobra por matar. Que nadie
 // reintroduzca una recompensa por víctimas sin que esto falle.
 exige(s.notas>=12,'se publicaron notas en los cuatro actos ('+s.notas+')');
+exige(firmoAlgo&&anonimoAlgo,'el crédito de la foto se decide en las dos direcciones');
+exige(s.firmadas>0&&s.anonimas>0,'se contaron firmadas ('+s.firmadas+') y sin firma ('+s.anonimas+')');
+exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
 exige(s.registrados>0,'se registraron muertos en las notas ('+s.registrados+')');
 exige(typeof F.CAMARAS[0].sujetos==='number'&&!('blancos' in F.CAMARAS[0]),
   'los lentes son lentes, no armas');

@@ -131,6 +131,25 @@
   #mapaCerrar{font-family:var(--cond);font-size:15px;letter-spacing:.1em;background:var(--oro);
     color:#0b0e14;border:0;padding:6px 22px;cursor:pointer;border-radius:2px}
 
+  /* crédito de la foto */
+  #firma{position:fixed;inset:0;z-index:16;background:rgba(6,8,13,.92);display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:6vw;
+    text-align:center}
+  #firma.on{display:flex}
+  #firma h3{font-family:var(--cond);font-size:clamp(24px,5vw,46px);letter-spacing:.03em;
+    color:var(--oro)}
+  #firma p{font-size:12px;line-height:1.7;color:#a9b6c7;max-width:520px}
+  #firma .ops{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  #firma button{display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+    background:rgba(232,238,246,.05);border:1px solid var(--linea);color:var(--texto);
+    padding:14px 20px;cursor:pointer;border-radius:2px;min-width:250px;text-align:left}
+  #firma button:hover{background:rgba(232,238,246,.12);border-color:var(--oro)}
+  #firma button b{font-family:var(--cond);font-size:11px;background:var(--oro);color:#0b0e14;
+    padding:0 7px;border-radius:2px;font-weight:400;letter-spacing:.1em}
+  #firma button span{font-family:var(--mono);font-size:14px;letter-spacing:.06em}
+  #firma button i{font-style:normal;font-size:10px;line-height:1.6;color:var(--tenue);
+    letter-spacing:.04em;max-width:230px}
+
   /* placa de acto */
   #placa{position:fixed;inset:0;z-index:14;background:#06080d;display:none;
     flex-direction:column;justify-content:center;padding:8vw;gap:20px}
@@ -260,6 +279,16 @@
   <div id="mapaPie">
     <span>Clic en el mapa para poner o quitar un pin · máximo 9</span>
     <button id="mapaCerrar">CERRAR</button>
+  </div>
+</div>
+
+<div id="firma">
+  <div class="eyebrow">Cierre de edición</div>
+  <h3 id="firmaNota"></h3>
+  <p>El crédito de la foto lo decides tú. Una vez que sale, sale.</p>
+  <div class="ops">
+    <button id="opFirmar"><b>1</b><span>FOTO: JAIME NIEVES</span><i id="opFirmarD"></i></button>
+    <button id="opAnon"><b>2</b><span>FOTO: EL DIARIO</span><i id="opAnonD"></i></button>
   </div>
 </div>
 
@@ -2177,10 +2206,37 @@ function cerrarEscena(){
   pintarMarcador(0x4fd18b);                  // verde: a la redacción
   aviso3('YA TIENES LA FOTO · A LA REDACCIÓN');pip(1050,0.1);
 }
-function completar(){
-  jugador.dinero+=mision.pago;notas++;registrados+=mision.pide;
-  if(!mision.gratis)mision.racha=Math.min(mision.racha+1,5);
-  aviso3(mision.pago?'PUBLICADA · +$'+mision.pago:'PUBLICADA');
+// El crédito de la foto. Firmar paga más y te pone nombre ante la gente que sale
+// en tus fotos; no firmar es seguro y vale menos. Es la decisión que de verdad
+// tomaban las redacciones: a partir de 2010 muchas dejaron de firmar la policiaca.
+const firmaPanel=document.getElementById('firma');
+let firmadas=0, anonimas=0, esperandoFirma=false;
+function pedirFirma(){
+  if(mision.gratis){resolverFirma(true,true);return;}      // esa no lleva nota
+  esperandoFirma=true;jugando=false;
+  document.getElementById('firmaNota').textContent=mision.titulo;
+  document.getElementById('opFirmarD').textContent=
+    '+$'+Math.round(mision.pago*1.6)+' · construye tu racha · '+
+    (acto>=2?'ya saben quién eres y te van a buscar':'alguien va a saber quién la tomó');
+  document.getElementById('opAnonD').textContent=
+    '+$'+Math.round(mision.pago*0.7)+' · nadie sabe quién fue · pierdes la racha';
+  firmaPanel.classList.add('on');
+}
+function resolverFirma(firmada,silencio){
+  if(!esperandoFirma&&!silencio)return;
+  esperandoFirma=false;firmaPanel.classList.remove('on');
+  jugando=true;ultimo=performance.now();
+  const pago = mision.gratis?0 : Math.round(mision.pago*(firmada?1.6:0.7));
+  jugador.dinero+=pago;notas++;registrados+=mision.pide;
+  if(!mision.gratis){
+    if(firmada){
+      firmadas++;mision.racha=Math.min(mision.racha+1,5);
+      subirPlaza();
+      if(acto>=2){subirPlaza();
+        radio('Andan preguntando en la colonia por el que firma las fotos de El Diario.');}
+    }else{anonimas++;mision.racha=0;}
+  }
+  if(!silencio)aviso3(firmada?'FIRMADA · +$'+pago:'SIN FIRMA · +$'+pago);
   pip(1240,0.12);setTimeout(()=>pip(1560,0.14),90);
   hechos++;
   guardar();
@@ -2189,6 +2245,10 @@ function completar(){
     else cerrar();
   }else nuevaOferta();
 }
+document.getElementById('opFirmar').addEventListener('pointerdown',()=>resolverFirma(true));
+document.getElementById('opAnon').addEventListener('pointerdown',()=>resolverFirma(false));
+
+function completar(){pedirFirma();}
 function fallar(){
   mision.racha=0;aviso3('SE CERRÓ LA EDICIÓN SIN TU NOTA');pip(180,0.25,'square');nuevaOferta();
 }
@@ -2208,8 +2268,8 @@ function avanzarActo(){
   plAnio.textContent=a.anio;plTitulo.textContent=a.titulo;
   plTexto.textContent=a.texto;plDato.textContent=a.dato;
   // Regla de tono 2: los muertos cuentan, y el jugador nunca le llega a la cifra real.
-  plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
-    cerrado.reales.toLocaleString('en-US')+'.';
+  plCuenta.textContent='Registraste '+registrados+' muertos. En '+cerrado.anio+' hubo '+
+    cerrado.reales.toLocaleString('en-US')+'. Firmaste '+firmadas+' de '+notas+' notas.';
   placa.classList.add('on');jugando=false;
   actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
   actoColgados();actoSucesos();guardar();
@@ -2226,8 +2286,8 @@ function cerrar(){
     'lo que pasó.';
   plDato.textContent='2008–2011 · más de 10 mil asesinatos · 230 mil personas se fueron · '+
     '10 mil changarros cerrados';
-  plCuenta.textContent='Tú llevas '+totalMuertos()+' muertos'+
-    (muertos.civil?', '+muertos.civil+' de ellos civiles':'')+'. La ciudad llevaba diez mil.';
+  plCuenta.textContent='Publicaste '+notas+' notas y registraste '+registrados+' muertos. '+
+    'Firmaste '+firmadas+', escondiste '+anonimas+'. La ciudad llevaba diez mil.';
   plSeguir.textContent='EMPEZAR DE NUEVO';
   placa.classList.add('on');
   try{localStorage.removeItem(CLAVE);}catch(e){}
@@ -2365,6 +2425,11 @@ const inp={x:0,z:0,girar:0,correr:false,freno:false};
 let camAng=0,camAlt=0.35,camDist=11,arrastre=false,lx=0,ly=0,jugando=false;
 
 addEventListener('keydown',e=>{
+  if(esperandoFirma){
+    if(e.code==='Digit1'||e.code==='Numpad1')resolverFirma(true);
+    if(e.code==='Digit2'||e.code==='Numpad2')resolverFirma(false);
+    return;
+  }
   if(e.code==='Escape'&&mapaAbierto){cerrarMapa();return;}
   if(e.code==='KeyT'&&(jugando||mapaAbierto)){mapaAbierto?cerrarMapa():abrirMapa();return;}
   if(!jugando)return;
@@ -3188,12 +3253,13 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
-    CAMARAS,fotografiar,LUGARES,
+    CAMARAS,fotografiar,LUGARES,resolverFirma,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
                  notas,registrados,atropellados,fotos:mision.fotos,pide:mision.pide,
+                 firmadas,anonimas,esperandoFirma,
                  estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
                  colgados:colgados.filter(c=>c.grupo.visible).length,
