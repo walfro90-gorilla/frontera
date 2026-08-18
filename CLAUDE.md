@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2402 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (2531 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128** por CDN. Todo lo demás —geometría,
 texturas, audio— se genera por código al cargar. **Cero assets externos**: es una propiedad del
 proyecto, no un accidente. No agregar imágenes, fuentes ni archivos de sonido.
@@ -211,6 +211,22 @@ la plática sola si te alejas o te subes al carro.
 hay alguien cerca a pie, habla; si no, entra o sale del carro. El HUD dice cuál toca, así que no
 hizo falta otra tecla ni otro botón táctil. `entrarSalir()` sigue existiendo pero **ya nadie debe
 llamarla directo desde entradas** — todo pasa por `accionF()`.
+
+### El Chamizal y la bandera
+
+`FX,FZ` es el asta: 100 m, bandera de 50 × 28 m, medidas reales. **Se izó en 1997**, o sea que es de
+época — a diferencia de la X de Sebastián, que es de 2013 y por eso no aparece.
+
+`actBandera()` ondea reescribiendo **solo la Z** de cada vértice de `geoBandera` con dos senos
+desfasados, amplificados por `u` (0 en el asta, 1 en la punta). La malla se construye una vez; por
+cuadro solo se toca el atributo y se marca `needsUpdate`. Se llama **también con el juego pausado**,
+para que no se congele detrás de la placa o del mapa.
+
+`actoBandera()` repinta el lienzo entero —franjas, emblema y manchas— y sube `texBandera.needsUpdate`.
+El nivel sale de `SANGRE[acto]`, que es el **acumulado real** de homicidios 2008→2011 normalizado
+(0.16, 0.43, 0.79, 1.00), más hasta 0.12 de los muertos que lleve el jugador. Es monótono a
+propósito: la sangre no se lava aunque en 2011 bajaran los homicidios. `prueba.js` verifica que
+ondee y que la mancha crezca.
 
 ### Avenida Juárez
 

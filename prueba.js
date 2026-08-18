@@ -36,7 +36,23 @@ const Obj=class{constructor(){this.position=new V3();this.rotation=new V3();
   remove(){return this;}
   lookAt(){}
   updateProjectionMatrix(){}};
-const Geo=class{constructor(){}translate(){return this;}};
+// PlaneGeometry de verdad necesita atributos: la bandera del Chamizal reescribe
+// la Z de cada vértice en cada cuadro para ondear.
+const Attr=class{
+  constructor(n,w,ws){
+    this.count=n;this._x=new Float64Array(n);this._z=new Float64Array(n);
+    this.needsUpdate=false;
+    for(let i=0;i<n;i++)this._x[i]=-w/2+((i%(ws+1))/ws)*w;
+  }
+  getX(i){return this._x[i];} getZ(i){return this._z[i];} setZ(i,v){this._z[i]=v;}
+};
+const Geo=class{
+  constructor(w,h,ws,hs){
+    const cols=(ws|0)||1, rows=(hs|0)||1;
+    this.attributes={position:new Attr((cols+1)*(rows+1), w||1, cols)};
+  }
+  translate(){return this;}
+};
 const Mat=class{constructor(o){Object.assign(this,o||{});
   if(this.map&&!this.map.repeat)this.map.repeat={set(){}};
   this.color=new THREE.Color(o&&o.color);          // THREE real siempre expone un Color
@@ -131,6 +147,7 @@ const CUADROS=34000, CERCO_INI=2500, CERCO_FIN=11000;
 let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=false, cercoMin=1e9, finalVisto=false;
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 let mapaProbado='no se probó';
+const manchas=[];
 let relojMal=null, horasVistas=new Set();
 let corridos=0;
 try{
@@ -186,6 +203,7 @@ try{
       seguir();placaVista++;
     }
     actosVistos.add(F.estado().acto);
+    {const m=F.estado().mancha;if(!manchas.length||manchas[manchas.length-1]!==m)manchas.push(m);}
     // el reloj mentía seis horas: marcaba las nueve de la mañana con el cielo negro
     {const hh=parseInt(el('hora').textContent,10), n=F.estado().noche;
      if(!isNaN(hh)){
@@ -218,6 +236,7 @@ const est={
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
   mapa:mapaProbado, pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
+  banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
   horasVistas:horasVistas.size,
 };
 console.log('estado final:',JSON.stringify(est,null,1));
@@ -255,6 +274,12 @@ const rotulosMalos=F.antros.filter(a=>{
 });
 exige(!rotulosMalos.length,'los rótulos salen del muro y miran a la calle ('+
   rotulosMalos.length+' mal: '+rotulosMalos.map(a=>a.nombre)+')');
+const zs=F.geoBandera.attributes.position;
+let onda=0;
+for(let i=0;i<zs.count;i++)onda=Math.max(onda,Math.abs(zs.getZ(i)));
+exige(onda>0.5,'la bandera del Chamizal ondea (amplitud '+onda.toFixed(2)+' m)');
+exige(manchas.length>=3&&manchas[manchas.length-1]>manchas[0],
+  'la bandera se va manchando acto por acto ('+manchas.map(v=>v.toFixed(2)).join(' → ')+')');
 exige(!relojMal,'el reloj cuadra con la luz del cielo ('+relojMal+')');
 exige(horasVistas.size>=18,'se recorrió un día completo ('+horasVistas.size+' horas vistas)');
 exige(mapaProbado==='abrió y pausó','el mapa grande abre, pausa, dibuja y cierra ('+mapaProbado+')');

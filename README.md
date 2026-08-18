@@ -6,7 +6,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step, sin
 instaladas, sin un solo asset externo: geometría, texturas y audio se generan por código en
 tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 111 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 117 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -21,6 +21,11 @@ tiempo de carga.
   Juárez, Francisco Villa, Abraham Lincoln, de las Américas, Waterfill, 16 de Septiembre, Vicente
   Guerrero, Triunfo de la República. Zona Centro con su catedral, el Chamizal junto al río,
   colonias de casas pegadas, maquilas al sur y la Sierra de Juárez al poniente con su letrero.
+- **El Chamizal y la bandera monumental.** Las 177 hectáreas que el Bravo se llevó en 1864 y que
+  México recuperó en 1967 tras cien años de reclamos, sin un tiro. En 1997 le pusieron el asta:
+  100 metros, bandera de 50 × 28, a quinientos metros de la línea, para celebrarlo. Ondea de verdad
+  —se le reescribe la malla cuadro a cuadro— y **se va manchando de sangre acto por acto**, según el
+  acumulado real de muertos de cada año, más un poco de los que pongas tú. La mancha no se quita.
 - **La Avenida Juárez.** La calle de la fiesta, del puente Santa Fe hacia el sur: bares, antros,
   restaurantes, hoteles, casas de cambio, farmacias de 24 horas y dentistas para el que cruzaba.
   Dieciséis negocios con su neón, que de noche prende. Y que se va apagando: en 2008 abre completa,

@@ -680,6 +680,122 @@ function actoLoncheria(){
   loncheria.matMuro.color.setHex(acto>=3?0x4a4038 : acto>=2?0xb9a578 : 0xe0c98a);
 }
 
+/* ══════════════════════════ EL CHAMIZAL Y LA BANDERA ══════════════════════════ */
+// El Chamizal son 177 hectáreas que el Bravo se llevó en la creciente de 1864 y que
+// México recuperó el 28 de octubre de 1967, después de cien años de reclamos: una
+// victoria diplomática, ganada sin un tiro. El 24 de junio de 1997 le pusieron el
+// asta monumental —100 m de asta, 50 × 28 m de bandera— a quinientos metros de la
+// línea, para celebrarlo.
+//
+// Once años después el Estado tenía su propia guerra matando diez juarenses al día
+// a la vista de esa bandera. Por eso aquí se mancha, y la mancha no se quita: crece
+// con el acumulado real de muertos de cada año.
+const FX=330, FZ=-292, ASTA=100, BW=50, BH=28;
+// acumulado de homicidios 2008→2011 sobre el total, que es de lo que se tiñe
+const SANGRE=[0.16,0.43,0.79,1.00];
+
+function emblema(g,cx,cy,s){
+  g.strokeStyle='#2e6b32';g.lineWidth=s*0.05;                 // corona de laurel y encino
+  g.beginPath();g.arc(cx,cy+s*0.10,s*0.46,Math.PI*0.12,Math.PI*0.88);g.stroke();
+  g.fillStyle='#3f7a3a';                                      // nopal
+  g.beginPath();g.ellipse(cx,cy+s*0.30,s*0.19,s*0.12,0,0,TAU);g.fill();
+  g.fillStyle='#6b4a2f';                                      // águila
+  g.beginPath();g.ellipse(cx-s*0.02,cy+s*0.03,s*0.12,s*0.21,0.16,0,TAU);g.fill();
+  g.beginPath();g.ellipse(cx-s*0.17,cy-s*0.17,s*0.07,s*0.05,-0.4,0,TAU);g.fill();
+  g.beginPath();                                              // ala desplegada
+  g.moveTo(cx+s*0.02,cy-s*0.15);
+  g.quadraticCurveTo(cx+s*0.34,cy-s*0.38,cx+s*0.43,cy-s*0.02);
+  g.quadraticCurveTo(cx+s*0.22,cy-s*0.06,cx+s*0.06,cy+s*0.07);
+  g.closePath();g.fill();
+  g.strokeStyle='#9aa0a8';g.lineWidth=s*0.034;                // serpiente
+  g.beginPath();g.moveTo(cx-s*0.21,cy-s*0.12);
+  g.quadraticCurveTo(cx-s*0.36,cy+s*0.03,cx-s*0.15,cy+s*0.11);g.stroke();
+}
+function sangrar(g,W,H,n){
+  if(n<=0)return;
+  for(let i=0,c=Math.round(12+n*48);i<c;i++){
+    const x=rnd(0,W), y=rnd(0,H*(0.22+n*0.78)), r=rnd(4,30)*(0.4+n);
+    const gr=g.createRadialGradient(x,y,1,x,y,r);
+    gr.addColorStop(0,'rgba(94,7,12,'+(0.28+n*0.5).toFixed(2)+')');
+    gr.addColorStop(1,'rgba(94,7,12,0)');
+    g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,TAU);g.fill();
+  }
+  g.strokeStyle='rgba(74,5,9,'+(0.22+n*0.45).toFixed(2)+')';  // escurrimientos
+  for(let i=0,c=Math.round(n*24);i<c;i++){
+    const x=rnd(0,W), y0=rnd(0,H*0.5);
+    g.lineWidth=rnd(1,5);
+    g.beginPath();g.moveTo(x,y0);g.lineTo(x+rnd(-3,3),y0+rnd(18,110));g.stroke();
+  }
+}
+const lienzoBandera=lienzo(448,256);
+function pintarBandera(n){
+  const c=lienzoBandera, g=c.getContext('2d'), W=c.width, H=c.height;
+  g.fillStyle='#006847';g.fillRect(0,0,W/3,H);                // verde
+  g.fillStyle='#f4f4f4';g.fillRect(W/3,0,W/3,H);              // blanco
+  g.fillStyle='#ce1126';g.fillRect(W*2/3,0,W/3,H);            // rojo
+  emblema(g,W/2,H/2,H*0.78);
+  sangrar(g,W,H,n);
+  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=2;g.strokeRect(1,1,W-2,H-2);
+}
+pintarBandera(SANGRE[0]);
+const texBandera=new THREE.CanvasTexture(lienzoBandera);
+
+const geoBandera=new THREE.PlaneGeometry(BW,BH,30,16);
+const bandera=new THREE.Mesh(geoBandera,
+  new THREE.MeshLambertMaterial({map:texBandera,side:THREE.DoubleSide}));
+bandera.position.set(FX+BW/2,ASTA-BH/2-3,FZ);
+scene.add(bandera);
+(()=>{                                                        // asta y base
+  const matAsta=new THREE.MeshLambertMaterial({color:0xd6dae0});
+  const a=new THREE.Mesh(new THREE.CylinderGeometry(0.7,1.6,ASTA,10),matAsta);
+  a.position.set(FX,ASTA/2,FZ);scene.add(a);
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(7,9,3,12),
+    new THREE.MeshLambertMaterial({color:0xb9bec6}));
+  base.position.set(FX,1.5,FZ);scene.add(base);
+  edificios.push({x:FX,z:FZ,hw:8,hd:8});
+})();
+let manchaBandera=0;
+function actoBandera(){
+  // el acumulado real del año, más un poco de lo que llevas puesto tú
+  manchaBandera=Math.min(1, SANGRE[acto] + Math.min(0.12,
+    (muertos.civil*3+muertos.sicario+muertos.halcon)/300));
+  pintarBandera(manchaBandera);
+  texBandera.needsUpdate=true;
+}
+// Ondear: solo se reescribe la Z de cada vértice, la malla se construye una vez.
+function actBandera(){
+  const p=geoBandera.attributes.position, t=performance.now()/1000;
+  for(let i=0;i<p.count;i++){
+    const u=(p.getX(i)+BW/2)/BW;                              // 0 en el asta, 1 en la punta
+    p.setZ(i,(Math.sin(u*6-t*2.6)*3.4 + Math.sin(u*10.5-t*3.9)*1.2)*u);
+  }
+  p.needsUpdate=true;
+}
+
+// El parque: pasto, arboleda y el museo de 1978.
+(()=>{
+  const matHoja2=new THREE.MeshLambertMaterial({color:0x4c8a44});
+  for(let k=0;k<34;k++){
+    const x=rnd(ejeX(5)+30,ejeX(8)-30), z=rnd(ejeZ(0)+18,ejeZ(1)-18);
+    if(dist2(x,z,FX,FZ)<900)continue;                         // despejado alrededor del asta
+    if(Math.random()<0.45){palmera(x,z);continue;}
+    const g=new THREE.Group();
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.45,4.5,6),matTronco);
+    t.position.y=2.25;g.add(t);
+    const c=new THREE.Mesh(new THREE.SphereGeometry(rnd(2.6,4.2),7,6),matHoja2);
+    c.position.y=6.2;c.scale.y=0.8;g.add(c);
+    g.position.set(x,0,z);scene.add(g);
+  }
+  // Museo de Arqueología e Historia de El Chamizal, edificio de 1978
+  const mx=ejeX(5)+52, mz=cenZ(0);
+  const matMuseo=new THREE.MeshLambertMaterial({color:0xcfc6b4});
+  const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(46,9,30),matMuseo);
+  cuerpo.position.set(mx,4.5,mz);scene.add(cuerpo);
+  edificios.push({x:mx,z:mz,hw:23,hd:15});
+  const cupula=new THREE.Mesh(new THREE.ConeGeometry(17,10,4),matMuseo);
+  cupula.position.set(mx,14,mz);cupula.rotation.y=Math.PI/4;scene.add(cupula);
+})();
+
 /* ══════════════════════════ AVENIDA JUÁREZ ══════════════════════════ */
 // La calle de la fiesta: bares, antros, restaurantes, hoteles, casas de cambio,
 // farmacias y dentistas para el que cruzaba el puente. Con la guerra se vació.
@@ -1455,7 +1571,7 @@ function avanzarActo(){
   plCuenta.textContent='Tú llevas '+totalMuertos()+'. En '+cerrado.anio+' hubo '+
     cerrado.reales.toLocaleString('en-US')+'.';
   placa.classList.add('on');jugando=false;
-  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();guardar();
+  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();guardar();
 }
 
 // El juego sí termina. No con un final: con las cifras y una sentencia de 2024.
@@ -2193,6 +2309,12 @@ function dibujarMundo(g,S,cx,cz,esc,giro,grande){
                 : a.clase==='trafico'?'#8a97a8':'#4d5563';
     g.fillRect(X(a.x)-2,Z(a.z)-2,4,4);
   }
+  // el asta del Chamizal: la referencia que se ve desde toda la ciudad
+  if(!lejos(FX,FZ)){
+    g.fillStyle='#ce1126';g.beginPath();g.arc(X(FX),Z(FZ),grande?5:3.4,0,TAU);g.fill();
+    g.strokeStyle='rgba(206,17,38,.4)';g.lineWidth=1.5;
+    g.beginPath();g.arc(X(FX),Z(FZ),grande?11:7,0,TAU);g.stroke();
+  }
   // puentes
   g.fillStyle='#d8c37a';
   for(const p of PUENTES)g.fillRect(X(ejeX(p.i))-2.5,Z(ZBORDO)-3,5,7);
@@ -2257,6 +2379,8 @@ function mapaGrande(){
   // El Paso, que se ve y no se pisa
   gg.fillStyle='rgba(120,140,165,.5)';gg.font='11px ui-monospace, monospace';
   gg.textAlign='center';gg.fillText('EL PASO, TEXAS · NO CRUZAS',S/2,Z(ZPASO)+6);
+  gg.fillStyle='rgba(206,17,38,.75)';gg.font='9px ui-monospace, monospace';
+  gg.fillText('EL CHAMIZAL',X(FX),Z(FZ)-15);
   // encargo
   gg.fillStyle='#ffc233';gg.beginPath();gg.arc(X(mision.x),Z(mision.z),6,0,TAU);gg.fill();
   // jugador
@@ -2342,7 +2466,7 @@ function bucle(now){
   requestAnimationFrame(bucle);
   let dt=(now-ultimo)/1000;ultimo=now;
   dt=Math.min(dt,0.05);
-  if(!jugando){renderer.render(scene,camera);return;}
+  if(!jugando){actBandera();renderer.render(scene,camera);return;}
   leerTeclas();
   if(bloqueo>0){bloqueo-=dt;}
   else{
@@ -2350,7 +2474,7 @@ function bucle(now){
     actTrafico(dt);actPeatones(dt);actPersecucion(dt);actPersonajes(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
-  actCamara(dt);actDiaNoche(dt);actAudio();actHUD(dt);minimapa();
+  actCamara(dt);actDiaNoche(dt);actBandera();actAudio();actHUD(dt);minimapa();
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}
   renderer.render(scene,camera);
@@ -2379,16 +2503,18 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   // para probar el recorrido completo (encargo → acto → placa) sin ojos humanos.
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
+    bandera,geoBandera,SANGRE,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
                  abiertos:antros.filter(a=>a.vivo).length,mapa:mapaAbierto,pines:pines.length,
+                 mancha:manchaBandera,
                  final:finalizado,noche:esNoche,cortina:loncheria.cortina.visible})};
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
-actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();
+actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);
