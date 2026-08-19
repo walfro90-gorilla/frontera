@@ -126,6 +126,27 @@ juego usa 3,111. Salvárcar se reporta con 15 o 16 muertos y con fecha 30 o 31 d
 ataque cruzó la medianoche; Horizontes del Sur con 13, 14 o 15; octubre con 350, 359 o 400. Cuando
 una cifra se toca, se revisa aquí primero.
 
+### 2011 y 2012
+
+| Fecha | Hecho | En el juego |
+|---|---|---|
+| 10 jun 2011 | **Caravana del Consuelo.** El Movimiento por la Paz recorre casi 3,000 km desde Cuernavaca juntando testimonios y firma, casi a medianoche y al pie del Monumento a Benito Juárez, el **Pacto Ciudadano por la Paz** | Asignación. La única del juego que no es de muertos |
+| 11 jul 2011 | Cuatro sentenciados a **240 años** por Salvárcar. Los testigos hablaron de unos veinte participantes | Asignación, en el memorial |
+| jul 2011 | Cae **«El Diego»**, José Antonio Acosta Hernández, jefe operativo de La Línea, ligado a **más de 1,500 homicidios**. Admite haber ordenado Salvárcar; **once de los quince eran menores** | Asignación, en el cuartel |
+| 2011 | Se retira la Policía Federal. Llega Julián Leyzaola a la municipal, con mejor equipo y sueldos | Radio y cambio de patrullas |
+| 31 dic 2011 | Se disuelve el club **Indios** | Asignación, estadio vacío |
+| 2012 | **751 homicidios**, contra 2,086 en 2011: caída de más del 60% | Acto V completo |
+| 2012 | Reabren cientos de negocios —restaurantes, antros, abarrotes—, tres secundarias nuevas e instalaciones deportivas. La gente vuelve a caminar de noche | La Av. Juárez vuelve a encender neones y la lonchería reabre con otro dueño |
+| 2012 | Juárez deja de encabezar la lista de la ciudad más violenta del mundo | Placa de cierre |
+
+**Discrepancia declarada:** la captura de El Diego se reporta el **29 o el 31 de julio de 2011**
+según la fuente —detención contra presentación pública—; el juego dice «finales de julio».
+
+**Por qué bajó la violencia en 2012 no está resuelto.** Se le atribuye al retiro de los federales, a
+la reforma de la municipal, al trabajo de la sociedad civil, y a que un cártel simplemente terminó
+de ganar la plaza. El juego no elige: pone a cada personaje colgándose la medalla que quiere, y deja
+que el jugador vea que nadie se pone de acuerdo. Ésa es la verdad del año.
+
 ### La ciudad como escenario
 
 - **Cuota / derecho de piso.** ~80% de los negocios pagaban. Entre 2008 y 2009 cerraron **10,000

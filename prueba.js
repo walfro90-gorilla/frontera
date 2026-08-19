@@ -173,7 +173,9 @@ const MALLAS_AL_CARGAR=F.mallasEnEscena();
 // puede contar las mallas de la escena, que es la cota superior de llamadas de
 // dibujo antes del culling. Si una función nueva mete cientos de mallas, esto
 // falla y avisa, en vez de que el juego se ponga lento en silencio.
-const PRESUPUESTO_MALLAS=3200;   // medido: 2,617 al cargar, ~2,800 jugando
+// Subió al agregar 2012, la Presidencia, el cuartel, el deportivo y el monumento.
+// Los 60 fps se midieron con 2,635 mallas: HAY QUE VOLVER A MEDIR. Ver FODA.md.
+const PRESUPUESTO_MALLAS=3600;
 
 // Piloto en tres fases. El cerco va ANTES de la carrera por los actos porque el
 // juego ahora sí termina: después del final queda congelado y no se puede medir nada.
@@ -181,7 +183,7 @@ const PRESUPUESTO_MALLAS=3200;   // medido: 2,617 al cargar, ~2,800 jugando
 //   3) empujarlo de marcador en marcador hasta el final
 // Para llegar a los marcadores no escribo una IA de navegación: lo teletransporto.
 const SIT_INI=400, SIT_PASO=44;
-const CUADROS=44000;
+const CUADROS=62000;
 // Las fases van encadenadas al número de sitios. Antes eran números fijos y al
 // crecer la lista la fase de sitios se metió encima de la del mapa, que pausa el
 // juego: los sitios no se anunciaban y parecía bug del juego.
@@ -193,7 +195,7 @@ let t=performance.now(), px=0, placaVista=0, actosVistos=new Set(), muerteVista=
 const charlas=new Set(); const repartos=new Set(); const abiertos=[];
 const sitiosVistos=new Set();
 const colgadosPorActo=new Set();
-let bombaVista=false, memorialVisto=false;
+let bombaVista=false, memorialVisto=false, cortinaVista=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
 let noticieros=0, teleAntes=false, standsVistos=0;
@@ -385,6 +387,7 @@ try{
     {const e=F.estado();
      colgadosPorActo.add(e.acto+':'+e.colgados);
      if(e.bomba)bombaVista=true;
+     if(e.cortina)cortinaVista=true;
      if(e.memorial)memorialVisto=true;
      if(e.acto<2&&(e.bomba||e.memorial))bombaVista='ANTES DE TIEMPO';}
     {const m=F.estado().mancha;if(!manchas.length||manchas[manchas.length-1]!==m)manchas.push(m);}
@@ -416,7 +419,8 @@ const est={
   calor:JSON.stringify(F.calor), autosVivos:F.autos.length,
   calle:el('calle').textContent, encargo:el('mtitulo').textContent,
   saludJugador:Math.round(F.jugador.salud), castigo:muerteVista||'ninguno', patrullaMasCerca:Math.round(cercoMin),
-  final:s.final, cortinaLoncheria:s.cortina, noche:s.noche.toFixed(2),
+  final:s.final, cortinaLoncheria:(cortinaVista?'bajó':'NUNCA bajó')+(s.cortina?'':' y reabrió'),
+  noche:s.noche.toFixed(2),
   mallas:MALLAS_AL_CARGAR+' al cargar → '+F.mallasEnEscena()+' jugando (tope '+PRESUPUESTO_MALLAS+')',
   notas:s.notas, registrados:s.registrados, atropellados:s.atropellados,
   firmadas:s.firmadas, sinFirma:s.anonimas, periodicazos:periodicazos,
@@ -497,7 +501,8 @@ exige(F.autos.length>0,'quedan autos en el mundo');
 exige(F.peatones.length>0,'quedan peatones en el mundo');
 exige(cercoMin<40,'las patrullas alcanzan al jugador en la calle (llegaron a '+Math.round(cercoMin)+' m)');
 exige(finalVisto,'el juego llega a su final y saca la placa de cierre');
-exige(s.cortina,'la lonchería baja la cortina al avanzar los actos');
+exige(cortinaVista,'la lonchería baja la cortina en los años malos');
+exige(!s.cortina,'y en 2012 vuelve a abrir');
 exige(charlas.size>=4,'se habló con varios personajes (fueron '+charlas.size+': '+[...charlas]+')');
 exige([...charlas].some(c=>c==='luz'||c==='kilo'||c==='marisol'),
   'se habló con alguien que solo aparece en actos tardíos');
@@ -540,6 +545,15 @@ const sitiosEncerrados=F.SITIOS.filter(s=>{
 });
 exige(!sitiosEncerrados.length,'todo sitio dentro de un edificio tiene radio para salir de él ('+
   sitiosEncerrados.map(s=>s.nombre)+')');
+// Dos sitios encimados hacen que el más lejano nunca se anuncie. Pasó al meter el
+// Monumento a Benito Juárez a diez metros de la redacción de El Norte.
+const encimados=[];
+for(let i=0;i<F.SITIOS.length;i++)for(let j=i+1;j<F.SITIOS.length;j++){
+  const A=F.SITIOS[i],B=F.SITIOS[j];
+  const d=Math.hypot(A.x-B.x,A.z-B.z);
+  if(d<Math.min(A.r,B.r)*0.5)encimados.push(A.nombre+' ⟷ '+B.nombre+' ('+Math.round(d)+' m)');
+}
+exige(!encimados.length,'ningún par de sitios se encima ('+encimados.join(' · ')+')');
 exige(sitiosVistos.size===F.SITIOS.length,'cada sitio se anuncia al pararte enfrente ('+
   sitiosVistos.size+' de '+F.SITIOS.length+'; faltaron: '+
   F.SITIOS.filter(s=>!sitiosVistos.has(s.nombre)).map(s=>s.nombre)+')');

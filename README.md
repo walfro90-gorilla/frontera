@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 218 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 223 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -49,7 +49,7 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
   hace tuya de verdad: **desde la moto se dispara la cámara sin bajarse** —es la única forma de
   llegar a una escena antes de que levanten el cordón— pero hay que frenar, porque a más de nueve
   metros por segundo la foto sale movida.
-- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los **veinte
+- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los **veinticuatro
   hechos**, en cuatro columnas por año. **Cualquiera se puede elegir**: si es de otro año, el mundo
   entero se reconfigura a ese año —la valla, el reparto de plazas, la lonchería, quién anda en la
   calle, cuántos negocios de la Juárez siguen abiertos, la mancha de la bandera, los colgados—. Cada
@@ -99,7 +99,7 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
 - **La frontera.** El Bravo como el canal de concreto que es, el bordo, la valla del lado gringo y
   los cuatro puentes internacionales: Paso del Norte, Stanton–Lerdo, Córdova–Américas y Zaragoza.
   Llegas a la garita y ahí te quedas. El Paso se ve, no se pisa.
-- **Cuatro actos, 2008 a 2012.** Cada acto cambia el año, los encargos, quién patrulla la calle y
+- **Cinco actos, 2008 a 2012.** Cada acto cambia el año, los encargos, quién patrulla la calle y
   cuánta valla hay levantada. Entre uno y otro, una placa con lo que pasó de verdad ese año.
 - **Dos calores.** El **federal** (militares y municipales hasta 2010, Policía Federal después) y
   el de **plaza** (la facción a la que le pegaste te manda sicarios). Suben por razones distintas
