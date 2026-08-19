@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4108 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4274 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
@@ -154,6 +154,26 @@ llena con sus propios puntos. Agregar una noticia es agregar una fila y, si hace
 `LUGARES.x` donde se construye el lugar.
 
 `enMira()` cuenta como encuadre cualquier cosa a menos de 6 m: a bocajarro no hay que apuntar.
+
+### Menú y preferencias
+
+`Esc` es contextual: cierra el mapa, la línea o el propio menú si alguno está abierto; si no, abre el
+menú. Volumen y calidad se guardan bajo la clave `frontera.pref`, **aparte de la partida**, para que
+`#nuevo` y *empezar de nuevo* no borren las preferencias de quien juega.
+
+`aplicarCalidad()` toca `pixelRatio`, `fog.far` y `camera.far` en tres niveles. Todo el audio pasa
+por `master`, así que `aplicarVolumen()` es un solo `gain`; `silenciar()` (`M`) sigue siendo un
+interruptor aparte que no pisa el volumen elegido.
+
+### Tutorial
+
+**Se deduce del estado, no es una secuencia guionizada**: `textoTutorial()` mira `mision.estado`, las
+fotos que faltan y dónde está la moto, y devuelve la frase que toca. Por eso no se puede
+desincronizar aunque el jugador haga las cosas en otro orden.
+
+Se apaga con la **primera asignación publicada** (`publicadas`), no con `notas`: las notas de
+banqueta suben ese contador y apagaban el tutorial antes de enseñar nada. `prueba.js` cuenta los
+pasos distintos que aparecen y falla si bajan de cuatro.
 
 ### Diagnóstico de orden de carga
 

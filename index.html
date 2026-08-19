@@ -75,6 +75,14 @@
   #vida{height:100%;width:100%;background:var(--neon);transition:width .18s}
   #cuenta{margin-top:8px;font-size:9px;letter-spacing:.1em;color:var(--tenue)}
 
+  /* tutorial de la primera nota */
+  #tuto{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);
+    padding:9px 16px;max-width:min(520px,88vw);font-size:12px;line-height:1.5;
+    border-left:3px solid var(--oro);opacity:0;transition:opacity .35s;text-align:left}
+  #tuto.on{opacity:1}
+  #tuto b{font-family:var(--cond);font-size:14px;background:var(--oro);color:#0b0e14;
+    padding:0 7px;border-radius:2px;font-weight:400;letter-spacing:.06em}
+
   /* medidor de rendimiento · P o #perf */
   #perf{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(64px);
     padding:7px 11px;font-size:10px;line-height:1.55;letter-spacing:.04em;color:var(--texto);
@@ -138,6 +146,32 @@
     color:var(--tenue);text-transform:uppercase}
   #mapaCerrar{font-family:var(--cond);font-size:15px;letter-spacing:.1em;background:var(--oro);
     color:#0b0e14;border:0;padding:6px 22px;cursor:pointer;border-radius:2px}
+
+  /* menú */
+  #menu{position:fixed;inset:0;z-index:21;background:rgba(6,8,13,.94);display:none;
+    align-items:center;justify-content:center;padding:4vh 4vw}
+  #menu.on{display:flex}
+  #menuCaja{width:min(560px,92vw);max-height:92vh;overflow:auto;padding:26px 28px;
+    background:var(--panel);border:1px solid var(--linea);border-radius:2px}
+  #menuCaja h2{font-family:var(--cond);font-size:44px;letter-spacing:.06em;color:var(--oro);
+    line-height:1;margin-bottom:18px}
+  #menuCaja label{display:block;font-size:10px;letter-spacing:.18em;color:var(--tenue);
+    text-transform:uppercase;margin-bottom:16px}
+  #menuCaja label b{color:var(--neon);font-weight:400}
+  #vol{width:100%;margin-top:7px;accent-color:#ffc233}
+  .ops3{display:flex;gap:7px;margin-top:7px}
+  .ops3 button{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    background:rgba(232,238,246,.05);border:1px solid var(--linea);color:var(--texto);
+    padding:8px 0;cursor:pointer;border-radius:2px}
+  .ops3 button.sel{background:var(--oro);color:#0b0e14;border-color:var(--oro)}
+  #calNota{display:block;font-style:normal;font-size:9px;letter-spacing:.06em;margin-top:6px;
+    text-transform:none;color:var(--tenue)}
+  #menuCaja .ctrls{margin:4px 0 20px;max-width:none}
+  #menuCaja .botones{display:flex;gap:10px;flex-wrap:wrap}
+  #menuCaja .botones button{font-family:var(--cond);font-size:17px;letter-spacing:.08em;
+    border:0;padding:9px 22px;cursor:pointer;border-radius:2px}
+  #menuSeguir{background:var(--oro);color:#0b0e14}
+  #menuNueva{background:rgba(232,238,246,.08);color:var(--texto);border:1px solid var(--linea)!important}
 
   /* línea de tiempo */
   #linea{position:fixed;inset:0;z-index:17;background:rgba(6,8,13,.95);display:none;
@@ -363,6 +397,7 @@
   </div>
 
   <div id="perf" class="panel"></div>
+  <div id="tuto" class="panel"></div>
   <div id="radio" class="panel"></div>
   <div id="sitio" class="panel">
     <div class="eyebrow" id="sitioTipo"></div>
@@ -392,6 +427,26 @@
   <div id="mapaPie">
     <span>Clic en el mapa para poner o quitar un pin · máximo 9</span>
     <button id="mapaCerrar">CERRAR</button>
+  </div>
+</div>
+
+<div id="menu">
+  <div id="menuCaja">
+    <h2>FRONTERA</h2>
+    <label>Volumen <b id="volTxt">50</b>
+      <input type="range" id="vol" min="0" max="100" step="5" value="50"></label>
+    <label>Calidad
+      <div class="ops3">
+        <button data-cal="2">ALTA</button>
+        <button data-cal="1">MEDIA</button>
+        <button data-cal="0">BAJA</button>
+      </div>
+      <i id="calNota"></i></label>
+    <div class="ctrls" id="menuCtrls"></div>
+    <div class="botones">
+      <button id="menuSeguir">SEGUIR JUGANDO</button>
+      <button id="menuNueva">EMPEZAR DE NUEVO</button>
+    </div>
   </div>
 </div>
 
@@ -2797,6 +2852,47 @@ function pedirFirma(){
 // Los dieciséis hechos por año. Los del año en curso se pueden elegir; los de
 // años que ya pasaron quedan como registro, porque una foto de 2008 no se toma
 // en 2011; los de años que no llegan todavía se ven en gris y sin fecha.
+// ── MENÚ ───────────────────────────────────────────────────────────────────
+// Existía todo el audio del mundo y ninguna forma de bajarle salvo M, que apaga
+// todo. Y sin esto no se le puede poner el juego enfrente a nadie más.
+const menuPanel=document.getElementById('menu');
+let menuAbierto=false;
+const calNotas=['Menos resolución y menos alcance de niebla. Para máquinas viejas.',
+                'Equilibrio.','Todo al máximo. Es lo medido a 60 fps.'];
+function pintarMenu(){
+  document.getElementById('vol').value=Math.round(volumen*100);
+  document.getElementById('volTxt').textContent=Math.round(volumen*100);
+  document.querySelectorAll('.ops3 button').forEach(b=>
+    b.classList.toggle('sel',+b.dataset.cal===calidad));
+  document.getElementById('calNota').textContent=calNotas[calidad];
+  const c=document.getElementById('menuCtrls');
+  if(!c.childElementCount)c.innerHTML=document.querySelector('#intro .ctrls').innerHTML;
+}
+function abrirMenu(){
+  if(menuAbierto)return;
+  menuAbierto=true;jugando=false;pintarMenu();menuPanel.classList.add('on');
+}
+function cerrarMenu(){
+  if(!menuAbierto)return;
+  menuAbierto=false;menuPanel.classList.remove('on');
+  jugando=true;ultimo=performance.now();
+}
+document.getElementById('vol').addEventListener('input',e=>{
+  volumen=(+e.target.value)/100;mudo=false;
+  document.getElementById('volTxt').textContent=e.target.value;
+  aplicarVolumen();guardarPref();
+});
+document.querySelectorAll('.ops3 button').forEach(b=>
+  b.addEventListener('pointerdown',()=>{
+    calidad=+b.dataset.cal;aplicarCalidad();guardarPref();pintarMenu();
+  }));
+document.getElementById('menuSeguir').addEventListener('pointerdown',cerrarMenu);
+document.getElementById('menuNueva').addEventListener('pointerdown',()=>{
+  try{localStorage.removeItem(CLAVE);}catch(e){}
+  if(location.reload)location.reload();
+});
+menuPanel.addEventListener('pointerdown',e=>{if(e.target===menuPanel)cerrarMenu();});
+
 const lineaPanel=document.getElementById('linea');
 let lineaAbierta=false;
 function pintarLinea(){
@@ -3112,17 +3208,22 @@ const inp={x:0,z:0,girar:0,correr:false,freno:false};
 let camAng=0,camAlt=0.35,camDist=11,arrastre=false,lx=0,ly=0,jugando=false;
 
 addEventListener('keydown',e=>{
+  if(menuAbierto&&e.code!=='Escape')return;
   if(teleAbierta){cerrarNoticiero();return;}
   if(perioAbierto){cerrarPeriodico();return;}
   if(e.code==='KeyL'&&(jugando||lineaAbierta)){lineaAbierta?cerrarLinea():abrirLinea();return;}
   if(e.code==='KeyP'){perfOn=!perfOn;perfPeorMs=0;perfPicoDraw=0;perfMinFps=999;return;}
-  if(e.code==='Escape'&&lineaAbierta){cerrarLinea();return;}
   if(esperandoFirma){
     if(e.code==='Digit1'||e.code==='Numpad1')resolverFirma(true);
     if(e.code==='Digit2'||e.code==='Numpad2')resolverFirma(false);
     return;
   }
-  if(e.code==='Escape'&&mapaAbierto){cerrarMapa();return;}
+  if(e.code==='Escape'){
+    if(mapaAbierto){cerrarMapa();return;}
+    if(lineaAbierta){cerrarLinea();return;}
+    if(menuAbierto){cerrarMenu();return;}
+    abrirMenu();return;
+  }
   if(e.code==='KeyT'&&(jugando||mapaAbierto)){mapaAbierto?cerrarMapa():abrirMapa();return;}
   if(!jugando)return;
   teclas[e.code]=true;
@@ -3229,7 +3330,7 @@ let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,musica,musicaG,musicaF,
 function iniciarAudio(){
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
-    master=actx.createGain();master.gain.value=0.5;master.connect(actx.destination);
+    master=actx.createGain();master.gain.value=volumen;master.connect(actx.destination);
     motor=actx.createOscillator();motor.type='sawtooth';motor.frequency.value=60;
     motorF=actx.createBiquadFilter();motorF.type='lowpass';motorF.frequency.value=420;
     motorG=actx.createGain();motorG.gain.value=0;
@@ -3275,7 +3376,28 @@ function pip(f,v,t){
   g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.18);
   o.stop(actx.currentTime+0.2);
 }
-function silenciar(){mudo=!mudo;if(master)master.gain.value=mudo?0:0.5;aviso3(mudo?'SILENCIO':'AUDIO');}
+// Preferencias: van aparte de la partida, para que #nuevo no las borre.
+const PREF='frontera.pref';
+let volumen=0.5, calidad=2;
+function aplicarVolumen(){if(master)master.gain.value=mudo?0:volumen;}
+function aplicarCalidad(){
+  renderer.setPixelRatio(Math.min(devicePixelRatio,[0.75,1,1.5][calidad]));
+  renderer.setSize(innerWidth,innerHeight);
+  scene.fog.far=[800,1100,1500][calidad];
+  camera.far=[1400,2000,2600][calidad];camera.updateProjectionMatrix();
+}
+function guardarPref(){
+  try{localStorage.setItem(PREF,JSON.stringify({volumen,calidad}));}catch(e){}
+}
+function cargarPref(){
+  try{
+    const g=JSON.parse(localStorage.getItem(PREF));
+    if(!g)return;
+    if(typeof g.volumen==='number')volumen=clamp(g.volumen,0,1);
+    if(typeof g.calidad==='number')calidad=clamp(g.calidad|0,0,2);
+  }catch(e){}
+}
+function silenciar(){mudo=!mudo;aplicarVolumen();aviso3(mudo?'SILENCIO':'AUDIO');}
 
 /* ══════════════════════════ HUD ══════════════════════════ */
 const ui={
@@ -3292,6 +3414,7 @@ const ui={
   calle:document.getElementById('calle'),radio:document.getElementById('radio'),
   anio:document.getElementById('anio'),acto:document.getElementById('acto'),
   cuenta:document.getElementById('cuenta'),perf:document.getElementById('perf'),
+  tuto:document.getElementById('tuto'),
   dialogo:document.getElementById('dialogo'),diQuien:document.getElementById('diQuien'),
   diPapel:document.getElementById('diPapel'),diTexto:document.getElementById('diTexto'),
   diMas:document.getElementById('diMas'),mapa:document.getElementById('mapa'),
@@ -3979,6 +4102,47 @@ function actHUD(dt){
     if(fogonazoT<=0){const f=jugador.malla.userData.fogonazo;if(f)f.visible=false;}}
 }
 
+/* ══════════════════════════ TUTORIAL ══════════════════════════ */
+// Solo hasta publicar la primera nota. No es una secuencia guionizada: el texto
+// se deduce del estado de la misión, así que no se puede desincronizar ni romper
+// si el jugador hace las cosas en otro orden.
+function textoTutorial(){
+  // Se apaga con la primera ASIGNACIÓN publicada, no con `notas`: las notas de
+  // banqueta suben ese contador y apagaban el tutorial antes de enseñar nada.
+  if(acto>0)return null;
+  for(const k in publicadas)return null;
+  const b=posJugador();
+  if(mision.estado==='asignacion'){
+    if(!jugador.auto&&dist2(MOTO.x,MOTO.z,b.x,b.z)<64)
+      return '<b>F</b> para subirte a tu moto. Es tuya y siempre sale marcada en oro en el mapa.';
+    return 'Eres fotorreportero de policiaca. Ve al <b>marcador dorado</b>: ahí te espera quien te '+
+           'da el encargo. El minimapa gira contigo, la <b>N</b> es el norte.';
+  }
+  if(mision.estado==='escena'){
+    if(mision.fotos===0)
+      return 'Llega al <b>marcador azul</b>. Arrastra el mouse para encuadrar y <b>E</b> dispara '+
+             'la cámara. <b>Q</b> cambia entre gran angular y teleobjetivo.';
+    return 'Te faltan <b>'+(mision.pide-mision.fotos)+'</b> fotos. Si vas en la moto, frena: a '+
+           'velocidad salen movidas.';
+  }
+  if(mision.estado==='grabar')
+    return mision.grabando>0
+      ? 'No te muevas. Beto está grabando.'
+      : 'Ya tienes las fotos. Ponte junto a <b>Beto</b>, tu camarógrafo, y pulsa <b>R</b> para '+
+        'grabar el stand-up.';
+  if(mision.estado==='cierre')
+    return 'Al <b>marcador verde</b>: la redacción de El Diario, antes de que cierre la edición.';
+  return null;
+}
+let tutoT=0;
+function actTutorial(dt){
+  const t=textoTutorial();
+  if(!t){ui.tuto.classList.remove('on');return;}
+  if(ui.tuto.dataset.txt!==t){ui.tuto.dataset.txt=t;ui.tuto.innerHTML=t;tutoT=0;}
+  tutoT+=dt;
+  ui.tuto.classList.toggle('on',tutoT>0.5);
+}
+
 /* ══════════════════════════ MEDIDOR ══════════════════════════ */
 // Se prende con P o abriendo index.html#perf. Existe porque el rendimiento del
 // juego nunca se había medido: prueba.js corre sin GPU y no puede saberlo.
@@ -4035,7 +4199,7 @@ function bucle(now){
     if(jugador.salud<=0)noqueado();
   }
   actCamara(dt);actDiaNoche(dt);actBandera();actHeli(dt);actSitios(dt);actColgados();
-  actAudio();ambienteSuelto(dt);actHUD(dt);minimapa();
+  actAudio();ambienteSuelto(dt);actHUD(dt);actTutorial(dt);minimapa();
   actPerf(dt,now-ultimoPerf);ultimoPerf=now;
   radioCada-=dt;
   if(radioCada<=0){radioCada=rnd(38,70);radio(pick(RADIO[acto]));}
@@ -4068,7 +4232,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,chalan,grabar,
     publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},MOTO,
-    cerrarNoticiero,sucesos,heli,nuevoSuceso,scene,mallasEnEscena,
+    cerrarNoticiero,sucesos,heli,nuevoSuceso,scene,mallasEnEscena,abrirMenu,cerrarMenu,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
@@ -4078,6 +4242,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
                  noticiero:teleAbierta,stand:!!mision.stand,
                  sucesos:sucesos.length,tiposVivos:sucesos.map(S=>S.tipo).join(','),
                  linea:lineaAbierta,encargoIdx,cubiertos:Object.keys(publicadas).length,
+                 menu:menuAbierto,volumen,calidad,tutorial:textoTutorial(),
                  enMoto:jugador.auto===MOTO,jimmyVisible:jugador.malla.visible,
                  tomas:mision.tomas?mision.tomas.length:0,
                  estadoMision:mision.estado,
@@ -4088,6 +4253,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
 }
 
 /* ══════════════════════════ ARRANQUE ══════════════════════════ */
+cargarPref();aplicarCalidad();
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
 actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();

@@ -67,9 +67,10 @@ deadlock y deriva de fases.
 **El balance nunca lo tocó un humano.** Pagos, racha, calor y cadencias salieron de una simulación,
 no de alguien jugando.
 
-**Sin menú, sin control de volumen, sin dificultad.** Accesibilidad limitada a
-`prefers-reduced-motion`. Con el rumor de ciudad recién agregado es la debilidad viva más molesta:
-hay ambiente, motor, sirena, antro y obturador, y ninguna forma de bajarles salvo `M`, que apaga todo.
+~~**Sin menú, sin control de volumen.**~~ **Resuelta.** `Esc` abre menú con volumen, tres niveles de
+calidad y empezar de nuevo; las preferencias se guardan aparte de la partida. Lo que **sigue
+faltando** es dificultad ajustable y accesibilidad más allá de `prefers-reduced-motion`: sin remapeo
+de teclas, sin daltonismo, sin tamaño de texto.
 
 ## 🟦 Oportunidades
 
@@ -121,7 +122,7 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 |---|---|---|---|---|
 | 4 | ~~Bajar mallas~~ ⏸️ **Congelada** | Perf | M | Se midió y **va a 60 fps sin perder un cuadro**. Retomar solo si el medidor baja de 50 fps o si las mallas pasan del presupuesto. Optimizar ahora sería trabajo sin evidencia |
 | 5 | ~~Diagnóstico de orden de carga~~ ✅ | TDZ recurrente | S | **Hecho.** Un fallo de arranque ahora dice sección, línea real de `index.html` y causa probable. Verificado rompiéndolo a propósito |
-| 6 | **Menú**: volumen, calidad (sombras/densidad), reiniciar partida | Accesibilidad | M | Se puede bajar el volumen y la densidad sin tocar código ni la URL |
+| 6 | ~~Menú~~ ✅ | Accesibilidad | M | **Hecho.** `Esc` abre volumen, calidad en tres niveles y empezar de nuevo. Se guarda aparte de la partida |
 | 7 | ~~Ambiente sonoro de ciudad~~ ✅ | Audio pobre | S | **Hecho.** Rumor de fondo que sube junto al periférico y baja de madrugada, más claxon, perro y cortina metálica cada tanto |
 
 ### P2 — Que el juego sea bueno, no solo correcto
@@ -130,7 +131,7 @@ Cada tarea tiene criterio de aceptación, para que «hecho» no se discuta.
 |---|---|---|---|---|
 | 8 | **Playtest con tres juarenses** que no sean el autor | Balance y registro | M | Hay notas de las tres sesiones, con lo que no se entendió y lo que incomodó |
 | 9 | **Ajuste de balance** con lo que salga del playtest | Balance inventado | M | Los números cambiaron por evidencia y quedó anotado por qué |
-| 10 | **Tutorial de treinta segundos**: primera asignación guiada | Curva de entrada | S | Alguien que nunca lo vio publica su primera nota sin preguntar nada |
+| 10 | ~~Tutorial~~ ✅ | Curva de entrada | S | **Hecho.** Guía la primera asignación en siete pasos, deducidos del estado y no guionizados. Se apaga al publicarla |
 | 11 | **Firmar tiene consecuencia narrativa**, no solo calor | Profundidad | M | En el acto IV, firmar o no cambia lo que dicen Marisol y Yoli |
 
 ### P3 — Que exista para alguien más

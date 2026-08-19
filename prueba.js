@@ -112,6 +112,7 @@ const el=id=>{
   if(els[id])return els[id];
   const cls=new Set();
   return els[id]={id,style:{},textContent:'',innerHTML:'',__cls:cls,
+    dataset:{},childElementCount:0,value:'50',
     classList:{add:c=>cls.add(c),remove:c=>cls.delete(c),
       toggle:(c,v)=>{v?cls.add(c):cls.delete(c);}},
     addEventListener(ev,fn){handlers[id+':'+ev]=fn;},
@@ -126,7 +127,7 @@ let ahora=0;
 const sandbox={
   THREE,
   document:{getElementById:id=>id==='c'?Object.assign(mkCanvas(),el(id)):el(id),
-    querySelector:s=>el(s),createElement:()=>mkCanvas()},
+    querySelector:s=>el(s),querySelectorAll:s=>[],createElement:()=>mkCanvas()},
   window:{AudioContext:undefined},
   addEventListener(ev,fn){handlers['win:'+ev]=fn;},
   matchMedia:()=>({matches:false}),
@@ -198,6 +199,8 @@ let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes
 let noticieros=0, teleAntes=false, standsVistos=0;
 const tiposVistos=new Set(); let maxSucesos=0, banquetas=0, heliSubio=false;
 let lineaProbada='no se probó', elegido=null;
+let menuProbado='no se probó', volCambio=null;
+const pasosTuto=new Set();
 let motoQuieta=null, motoRapida=null, motoMontada=false, jimmyEnMoto=null, jimmyEnCarro=null;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
@@ -310,6 +313,16 @@ try{
         if(F.jugador.auto)F.accionF();
       }
     }
+    // menú: abre, pausa, guarda volumen y calidad, y cierra
+    if(g===MAPA_ABRE-52){
+      F.abrirMenu();
+      menuProbado = F.estado().menu&&!F.estado().jugando ? 'abrió y pausó' : 'NO pausó';
+      const vIn=el('vol'); vIn.value='20';
+      if(handlers['vol:input'])handlers['vol:input']({target:vIn});
+      volCambio = Math.abs(F.estado().volumen-0.2)<0.001 ? 'el volumen se aplica' : 'NO se aplica';
+      F.cerrarMenu();
+      if(F.estado().menu||!F.estado().jugando)menuProbado='NO cerró bien';
+    }
     // línea de tiempo: abrir, comprobar que pausa, elegir un hecho y cerrar
     if(g===MAPA_ABRE-24){
       F.abrirLinea();
@@ -335,6 +348,7 @@ try{
     }
     sandbox.__raf(t);
     if(F.estado().stand)standsVistos++;      // la toma del stand-up ya existe
+    {const t=F.estado().tutorial;if(t)pasosTuto.add(t.slice(0,28));}
     {const e=F.estado();
      maxSucesos=Math.max(maxSucesos,e.sucesos);
      if(e.tiposVivos)e.tiposVivos.split(',').forEach(t=>t&&tiposVistos.add(t));
@@ -397,7 +411,8 @@ const est={
   firmadas:s.firmadas, sinFirma:s.anonimas, periodicazos:periodicazos,
   hablóCon:[...charlas].join(', ')||'nadie', repartosDistintos:repartos.size,
   negociosAbiertos:Math.max(...abiertos)+' → '+Math.min(...abiertos)+' de '+F.antros.length,
-  mapa:mapaProbado, linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
+  mapa:mapaProbado, menu:menuProbado+' · '+volCambio, pasosTutorial:pasosTuto.size,
+  linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
   noticieros, standsGrabados:standsVistos>0,
   sucesosMax:maxSucesos, tiposDeHecho:[...tiposVistos].join(', ')||'ninguno',
   notasDeBanqueta:banquetas, heli:heliSubio,
@@ -439,6 +454,10 @@ exige(heliSubio,'el helicóptero sobrevuela la ciudad');
    (m-MALLAS_AL_CARGAR)+' desde el arranque)');}
 exige(!s.noticiero,'el juego no se queda con la tele en pantalla');
 exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+lineaProbada+')');
+exige(menuProbado==='abrió y pausó','el menú abre, pausa y cierra ('+menuProbado+')');
+exige(volCambio==='el volumen se aplica','mover el volumen lo aplica de verdad ('+volCambio+')');
+exige(pasosTuto.size>=4,'el tutorial guía la primera nota paso por paso ('+pasosTuto.size+' pasos)');
+exige(!F.estado().tutorial,'el tutorial se apaga después de la primera nota');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
 exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');
 exige(motoMontada,'la moto de Jimmy se puede montar');

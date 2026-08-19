@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 197 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 205 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -139,6 +139,7 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
 | `Q` | Cambiar de lente |
 | `1` / `2` | Firmar la foto o publicarla sin crédito |
 | `L` o clic al año | Línea de tiempo |
+| `Esc` | Menú: volumen, calidad, empezar de nuevo |
 | `P` | Medidor de FPS y llamadas de dibujo |
 | `R` | Grabar el stand-up (o enderezar el vehículo) |
 | `G` | Dar mordida a la municipal ($400) |
