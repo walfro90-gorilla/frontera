@@ -198,7 +198,7 @@ let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes
 let noticieros=0, teleAntes=false, standsVistos=0;
 const tiposVistos=new Set(); let maxSucesos=0, banquetas=0, heliSubio=false;
 let lineaProbada='no se probó', elegido=null;
-let motoQuieta=null, motoRapida=null, motoMontada=false;
+let motoQuieta=null, motoRapida=null, motoMontada=false, jimmyEnMoto=null, jimmyEnCarro=null;
 const manchas=[];
 let relojMal=null, horasVistas=new Set();
 // Las fases van con un reloj de cuadros CORRIENDO, no de cuadros totales: el
@@ -233,7 +233,7 @@ try{
     }
     // Ventana limpia para la moto: el piloto fotografía cada cuadro durante las
     // escenas, así que satura la cadencia del lente y encima se bajaría del vehículo.
-    const faseMoto = g>=MOTO_A-70 && g<=MOTO_B+2;
+    const faseMoto = g>=MOTO_A-70 && g<=MOTO_B+24;
     const cerco = g>=CERCO_INI && g<CERCO_FIN;
     if(!cerco)kd({code:'KeyW',preventDefault(){}}); else ku({code:'KeyW'});
     if(!faseMoto&&g%(cerco?31:397)===0) kd({code:'KeyE',preventDefault(){}});
@@ -247,6 +247,7 @@ try{
       const b=F.jugador.auto||F.jugador;
       b.x=F.mision.x;b.z=F.mision.z;
     }
+
     if(!cerco&&!enSitios&&!faseMoto&&F.estado().estadoMision==='escena'){
       if(F.jugador.auto)F.accionF();                      // no se fotografía manejando
       F.fotografiar();
@@ -286,15 +287,28 @@ try{
       F.jugador.x=F.MOTO.x;F.jugador.z=F.MOTO.z+1.5;
       F.accionF();                                   // subirse
       motoMontada=F.estado().enMoto;
+      jimmyEnMoto=F.estado().jimmyVisible;      // no debe desaparecer al montarse
       F.MOTO.vel=0;el('toast').textContent='';
       F.fotografiar();
       motoQuieta=el('toast').textContent||'(sin aviso)';
     }
     if(g===MOTO_B){
       F.MOTO.vel=22;el('toast').textContent='';
+      jimmyEnMoto=jimmyEnMoto&&F.estado().jimmyVisible;   // sigue visible al andar
       F.fotografiar();
       motoRapida=el('toast').textContent||'(sin aviso)';
       F.MOTO.vel=0;if(F.jugador.auto)F.accionF();    // bajarse
+    }
+    // y el caso contrario: dentro de un carro normal sí debe ir oculto
+    if(g===MOTO_B+20){
+      const carro=F.autos.find(a=>a.clase==='parado'&&a!==F.MOTO);
+      if(carro){
+        if(F.jugador.auto)F.accionF();
+        F.jugador.x=carro.x;F.jugador.z=carro.z+1.5;
+        F.accionF();
+        jimmyEnCarro=F.jugador.auto&&F.jugador.auto!==F.MOTO ? F.estado().jimmyVisible : 'no subió';
+        if(F.jugador.auto)F.accionF();
+      }
     }
     // línea de tiempo: abrir, comprobar que pausa, elegir un hecho y cerrar
     if(g===MAPA_ABRE-24){
@@ -387,6 +401,8 @@ const est={
   noticieros, standsGrabados:standsVistos>0,
   sucesosMax:maxSucesos, tiposDeHecho:[...tiposVistos].join(', ')||'ninguno',
   notasDeBanqueta:banquetas, heli:heliSubio,
+  jimmy:(jimmyEnMoto?'visible en la moto':'INVISIBLE en la moto')+
+    ' · en carro: '+(jimmyEnCarro===false?'oculto (bien)':jimmyEnCarro),
   moto:(motoMontada?'se monta':'NO se monta')+' · parado: "'+motoQuieta+'" · rápido: "'+motoRapida+'"',
   pines:F.pines.length, reloj:relojMal||'cuadra con la luz',
   banderaMancha:manchas.map(v=>v.toFixed(2)).join(' → '),
@@ -426,6 +442,8 @@ exige(lineaProbada==='abrió y pausó','la línea de tiempo abre y pausa ('+line
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
 exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');
 exige(motoMontada,'la moto de Jimmy se puede montar');
+exige(jimmyEnMoto===true,'Jimmy se ve montado en la moto, no desaparece');
+exige(jimmyEnCarro===false,'dentro de un carro sí se oculta ('+jimmyEnCarro+')');
 exige(motoQuieta!=='BÁJATE PARA LA FOTO','desde la moto sí se fotografía (dijo "'+motoQuieta+'")');
 exige(motoRapida==='SALIÓ MOVIDA · FRENA','a velocidad la foto sale movida (dijo "'+motoRapida+'")');
 exige(F.autos.indexOf(F.MOTO)>=0,'la moto sobrevive a limpiar() y a reaparecer()');

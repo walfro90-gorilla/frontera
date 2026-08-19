@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4087 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4108 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
@@ -232,7 +232,14 @@ desaparece a media partida y el jugador se queda a pie sin explicación.
 `fisicaAuto()` la trata aparte: más aceleración y giro, menos punta, y **umbral de golpe 13 en vez
 de 22** con casi el doble de daño. Es una clásica con cápsula, no una deportiva.
 
-**Desde el sidecar sí se fotografía**, y es la única excepción a "bájate para la foto". Por eso
+**En la moto se le ve montado.** `entrarSalir()` oculta la malla del jugador al subirse a un
+vehículo —correcto en un carro, donde vas adentro— y por eso Jimmy desaparecía en la moto mientras
+Beto sí se veía en la cápsula. Ahora la malla solo se oculta si el vehículo **no** es la moto, y
+`actMoto()` lo sienta cada cuadro en el eje del cuadro, con piernas y brazos doblados y **su sombra
+apagada**, porque la del vehículo ya está debajo. `prueba.js` comprueba las dos caras: visible en la
+moto, oculto dentro de un carro.
+
+**Desde la moto sí se fotografía**, y es la única excepción a "bájate para la foto". Por eso
 `fotografiar()` y `capturar()` toman el punto de vista de `posJugador()` y no de `jugador.x/z`, que
 está congelado mientras vas montado. Arriba de 9 m/s la toma se rechaza por movida.
 

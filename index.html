@@ -1946,7 +1946,7 @@ function persona(esJugador,tipo,ropa){
       g.userData.fogonazo=fog;
     }
   }
-  sombra(g,1.3,1.3);
+  g.userData.sombra=sombra(g,1.3,1.3);
   scene.add(g);return g;
 }
 
@@ -2337,6 +2337,25 @@ const chalan={malla:persona(false,'civil',0x3a4550), x:0, z:0, ang:0, fase:0};
   luminarias.push(luz);
   chalan.x=jugador.x+2;chalan.z=jugador.z-2;
 })();
+// Jimmy montado. La moto es suya y se le ve encima: sentado en el asiento, las
+// piernas dobladas y los brazos al manubrio. Su sombra se apaga porque la del
+// vehículo ya está debajo.
+function actMoto(){
+  const ud=jugador.malla.userData;
+  if(jugador.auto!==MOTO){
+    if(ud.sombra)ud.sombra.visible=true;
+    return;
+  }
+  const c=Math.cos(MOTO.ang), sn=Math.sin(MOTO.ang);
+  const lx=-0.45, lz=-0.5;                      // eje del cuadro, un poco atrás
+  jugador.malla.position.set(MOTO.x+lx*c+lz*sn, 0.44, MOTO.z-lx*sn+lz*c);
+  jugador.malla.rotation.y=MOTO.ang;
+  ud.piernas[0].rotation.x=-1.15;ud.piernas[1].rotation.x=-1.15;
+  ud.brazos[0].rotation.x=-1.30;ud.brazos[1].rotation.x=-1.30;
+  if(ud.sombra)ud.sombra.visible=false;
+  jugador.malla.visible=true;
+}
+
 function actChalan(dt){
   const b=posJugador();
   if(jugador.auto===MOTO){                        // va en la cápsula
@@ -3034,7 +3053,7 @@ sitio({x:MOTO.x,z:MOTO.z+4,r:18,tipo:'Tu vehículo',
   nombre:'La moto con cápsula',
   texto:'Clásica, con sidecar. Ahí va el equipo y ahí te subes a disparar sin bajarte, que es la '+
         'única forma de alcanzar una escena antes de que levanten el cordón. Frena para la foto: '+
-        'a velocidad sale movida.'});
+        'a velocidad sale movida. En la cápsula va Beto con el equipo.'});
 
 for(let k=0;k<10;k++){                      // tráfico del periférico
   const l=rnd(PERIF[0].a+80,PERIF[1].z-80);
@@ -3198,7 +3217,9 @@ function entrarSalir(){
       if(Math.random()<0.5&&cercaDeAlguien(30))subirFed();
     }
     if(a.clase!=='moto')a.clase='robado';
-    jugador.auto=a;jugador.malla.visible=false;pip(a.clase==='moto'?520:620,0.07);
+    jugador.auto=a;
+    jugador.malla.visible = a.clase==='moto';   // en la moto se te ve; en un carro vas adentro
+    pip(a.clase==='moto'?520:620,0.07);
   }
 }
 
@@ -4010,7 +4031,7 @@ function bucle(now){
   else{
     if(jugador.auto)actAutoJugador(dt); else actJugador(dt);
     actTrafico(dt);actPeriferico(dt);actPeatones(dt);actPersecucion(dt);
-    actPersonajes(dt);actChalan(dt);actSucesos(dt);actMision(dt);
+    actPersonajes(dt);actChalan(dt);actMoto();actSucesos(dt);actMision(dt);
     if(jugador.salud<=0)noqueado();
   }
   actCamara(dt);actDiaNoche(dt);actBandera();actHeli(dt);actSitios(dt);actColgados();
@@ -4057,7 +4078,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
                  noticiero:teleAbierta,stand:!!mision.stand,
                  sucesos:sucesos.length,tiposVivos:sucesos.map(S=>S.tipo).join(','),
                  linea:lineaAbierta,encargoIdx,cubiertos:Object.keys(publicadas).length,
-                 enMoto:jugador.auto===MOTO,
+                 enMoto:jugador.auto===MOTO,jimmyVisible:jugador.malla.visible,
                  tomas:mision.tomas?mision.tomas.length:0,
                  estadoMision:mision.estado,
                  mancha:manchaBandera,sitio:sitioActual?sitioActual.nombre:null,
