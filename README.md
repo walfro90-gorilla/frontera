@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 196 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 197 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -41,10 +41,11 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
 - **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
   la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
 - **Tu moto con cápsula.** Una clásica con sidecar, estacionada afuera de El Diario. Es tuya: nadie
-  se la lleva y siempre sale marcada en el mapa. Acelera y gira mejor que un carro, corre menos y
-  **un tope te tumba**. Lo que la hace tuya de verdad: **desde el sidecar se dispara la cámara sin
-  bajarse** —es la única forma de llegar a una escena antes de que levanten el cordón— pero hay que
-  frenar, porque a más de nueve metros por segundo la foto sale movida.
+  se la lleva, siempre sale marcada en el mapa y **se te ve montado en ella**; en la cápsula va Beto
+  con el equipo. Acelera y gira mejor que un carro, corre menos y **un tope te tumba**. Lo que la
+  hace tuya de verdad: **desde la moto se dispara la cámara sin bajarse** —es la única forma de
+  llegar a una escena antes de que levanten el cordón— pero hay que frenar, porque a más de nueve
+  metros por segundo la foto sale movida.
 - **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los dieciséis
   hechos, en cuatro columnas por año. Los del año en curso se pueden elegir para ir a cubrirlos; los
   de años que ya pasaron quedan como registro —una foto de 2008 no se toma en 2011— y los que
