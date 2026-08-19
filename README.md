@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 205 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 210 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -46,10 +46,11 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
   hace tuya de verdad: **desde la moto se dispara la cámara sin bajarse** —es la única forma de
   llegar a una escena antes de que levanten el cordón— pero hay que frenar, porque a más de nueve
   metros por segundo la foto sale movida.
-- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los dieciséis
-  hechos, en cuatro columnas por año. Los del año en curso se pueden elegir para ir a cubrirlos; los
-  de años que ya pasaron quedan como registro —una foto de 2008 no se toma en 2011— y los que
-  todavía no ocurren se ven en gris y sin fecha. Cada tarjeta dice si la publicaste y si la firmaste.
+- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los **diecisiete
+  hechos**, en cuatro columnas por año. **Cualquiera se puede elegir**: si es de otro año, el mundo
+  entero se reconfigura a ese año —la valla, el reparto de plazas, la lonchería, quién anda en la
+  calle, cuántos negocios de la Juárez siguen abiertos, la mancha de la bandera, los colgados—. Cada
+  tarjeta dice si la publicaste y si la firmaste.
 - **La ciudad en guerra.** Alrededor de ti pasan cosas solas, sin guion: **levantones** —bajan al
   conductor y se lo llevan—, **balaceras** con sus fogonazos que se oyen a doscientos cincuenta
   metros, y **persecuciones de patrulla a malandro** por la traza. La intensidad sigue al año: pocas

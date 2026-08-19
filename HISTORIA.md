@@ -313,6 +313,7 @@ técnica, es la premisa.
 | **La moto con cápsula** | Vehículo propio de Jimmy, clásica con sidecar. Ágil y frágil, y el único lugar desde donde se puede fotografiar sin bajarse, siempre que frenes. | ✅ Hecho |
 | **La ciudad en guerra** | Levantones, balaceras y persecuciones que pasan solas alrededor del jugador, escaladas por año con 2010 al tope. Helicóptero sobrevolando. Sin gore: figuras planas y la cámara no se acerca. | ✅ Hecho |
 | **Nota de banqueta** | Fotografiar un hecho de la calle paga y cuenta. El caos deja de ser decorado y pasa a ser material. | ✅ Hecho |
+| **El Grito a solas** | 15 de septiembre de 2010, el Bicentenario: la Presidencia acordonada, el balcón encendido y vacío, la plaza sin nadie. La escena fuerza las once de la noche. | ✅ Hecho |
 | **El chalán y el stand-up** | Beto el camarógrafo va siempre con Jimmy, en la cápsula cuando toca moto. Con las fotos hechas hay que grabar la pieza a cámara, quieto, en el lugar del hecho. | ✅ Hecho |
 | **El noticiero** | Tele de tubo de 2008 con la toma del stand-up, cintillo, mosca, EN VIVO y ticker. Sale después de la portada. | ✅ Hecho |
 | **La portada** | Periodicazo al cerrar cada nota, con la fecha real del día siguiente al hecho, el titular y las fotos capturadas de verdad desde el lente. | ✅ Hecho |

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4274 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4381 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
@@ -270,9 +270,19 @@ está cubriendo, y `nuevaOferta()` lo respeta salvo que ya esté publicado, en c
 `primerPendiente()`. `hechos` sigue existiendo como contador para el avance de acto, pero **la
 verdad de qué se cubrió está en `publicadas`**, que es lo que se guarda y lo que pinta la línea.
 
-`pintarLinea()` reconstruye el panel al abrir; solo los hechos **del año en curso y sin publicar**
-son clicables, porque una foto de 2008 no se toma en 2011. Los de años futuros van en gris y sin
-fecha: la cronología se descubre al avanzar.
+`pintarLinea()` reconstruye el panel al abrir y **cualquier hecho sin publicar es clicable**.
+`irA(a,i)` cambia de acto si hace falta y llama a `mundoEnActo()`, que vuelve a poner **todo** el
+mundo en ese año. Por eso `avanzaPlaza()` reescribe todas las manzanas en vez de solo avanzar el
+frente: sin eso, saltar a un año anterior dejaba el mapa con las plazas del año posterior.
+
+**Los actos ya no miden lo mismo.** 2010 tiene cinco hechos porque ese año pasaron cinco cosas, así
+que el avance usa `actoCompleto()` —todos los de ese acto publicados— y no un contador fijo. El
+índice `encargoIdx` se acota contra `ACTOS[acto].encargos.length` al empezar cada asignación, porque
+si no se arrastra un índice de un acto de cinco a uno de cuatro y revienta.
+
+Cuando un acto queda completo, `primerPendienteGlobal()` decide: si no queda nada, `cerrar()`; si lo
+pendiente está adelante, avance normal con su placa; si quedó algo atrás, `irA()` regresa a ese
+año.
 
 **Las fotos son fotos de verdad.** `capturar(lente)` rinde la escena a un `WebGLRenderTarget` de
 336×189 desde la posición de Jimmy mirando a `camAng`, con `camera.fov` en 20 para el teleobjetivo o

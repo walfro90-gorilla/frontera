@@ -1492,6 +1492,71 @@ const escenaPolicia=new THREE.Group();
           'todo. Los nombres no van aquí.'});
 })();
 
+/* ══════════════════════════ LA PRESIDENCIA ══════════════════════════ */
+// 15 de septiembre de 2010, el Bicentenario. El país entero de gala y aquí el
+// alcalde dio el Grito dentro de la Sala de Cabildo, solo, a puerta cerrada, sin
+// tambores ni música, custodiado por federales y militares. Invitó a la gente a
+// verlo por televisión desde su casa.
+//
+// La plaza vacía la única noche del año que por definición está llena: esa es la
+// foto. No se dramatiza a nadie; lo que se construye es el vacío y el cerco.
+const PRESI={x:ejeX(4)+44,z:ejeZ(0)+42};
+(()=>{
+  liberar(PRESI.x,PRESI.z,44,38);
+  const matCantera=new THREE.MeshLambertMaterial({color:0xcfc3ab});
+  const cuerpo=new THREE.Mesh(new THREE.BoxGeometry(52,15,22),matCantera);
+  cuerpo.position.set(PRESI.x,7.5,PRESI.z-14);scene.add(cuerpo);
+  edificios.push({x:PRESI.x,z:PRESI.z-14,hw:26,hd:11});
+  const remate=new THREE.Mesh(new THREE.BoxGeometry(20,4,23),matCantera);
+  remate.position.set(PRESI.x,17,PRESI.z-14);scene.add(remate);
+  // el balcón, encendido y vacío
+  const balcon=new THREE.Mesh(new THREE.BoxGeometry(13,0.7,2.4),matCantera);
+  balcon.position.set(PRESI.x,9.4,PRESI.z-2.6);scene.add(balcon);
+  const baranda=new THREE.Mesh(new THREE.BoxGeometry(13,1.1,0.25),matPoste);
+  baranda.position.set(PRESI.x,10.2,PRESI.z-1.6);scene.add(baranda);
+  const puerta=new THREE.Mesh(new THREE.BoxGeometry(4.4,5.5,0.4),
+    new THREE.MeshLambertMaterial({color:0x3a2b1e,emissive:0xffdca0,emissiveIntensity:0}));
+  puerta.position.set(PRESI.x,12.4,PRESI.z-3.1);scene.add(puerta);
+  luminarias.push(puerta);
+  // adorno tricolor a lo largo de la fachada
+  const tri=[0x006847,0xf4f4f4,0xce1126];
+  for(let k=0;k<26;k++){
+    const f=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.55,0.2),
+      new THREE.MeshLambertMaterial({color:tri[k%3],emissive:tri[k%3],emissiveIntensity:0}));
+    f.position.set(PRESI.x-24+k*1.92, 13.6+Math.sin(k*0.9)*0.5, PRESI.z-2.9);
+    scene.add(f);luminarias.push(f);
+  }
+  // el cerco: vallas, camionetas y tropa parada
+  const matValla2=new THREE.MeshLambertMaterial({color:0x8d939c});
+  for(let k=0;k<14;k++){
+    const v=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.1,0.2),matValla2);
+    v.position.set(PRESI.x-24+k*3.7,0.55,PRESI.z+9);scene.add(v);
+  }
+  LUGARES.presidencia={x:PRESI.x,z:PRESI.z+18};
+  sitio({x:PRESI.x,z:PRESI.z+20,r:52,tipo:'15 de septiembre de 2010',
+    nombre:'Presidencia Municipal · el Grito a solas',
+    texto:'La noche del Bicentenario, con el país entero de gala, aquí no hubo verbena ni tambores '+
+          'ni gente. El alcalde dio el Grito dentro de la Sala de Cabildo, solo, a puerta cerrada '+
+          'y con la calle tomada por federales y militares. A los juarenses les pidió que lo '+
+          'vieran por televisión, desde su casa.'});
+})();
+// Las camionetas del cerco se crean en el ARRANQUE, no aquí: nuevoAuto() necesita
+// COLORES, que se declara en la sección AUTOS, más abajo. Mismo caso que los
+// colgados, y esta vez el diagnóstico de prueba.js lo señaló de inmediato.
+function cercoPresidencia(){
+  for(let k=0;k<4;k++){
+    const a=nuevoAuto(PRESI.x-20+k*13, PRESI.z+15, 0, k%2?'federalNPC':'militarNPC');
+    a.quieto=true;
+  }
+}
+function tropaEnLaPlaza(){
+  for(let k=0;k<7;k++){
+    const g=persona(false,'civil',0x4d5340);
+    g.position.set(PRESI.x-19+k*6.4, 0, PRESI.z+11.5);
+    g.rotation.y=Math.PI;scene.add(g);
+  }
+}
+
 /* ══════════════════════════ SUCESOS DE 2010 ══════════════════════════ */
 // Los dos hechos que parten el acto III. Ninguno se juega: uno se oye a lo lejos
 // y se visita después; el otro pasa fuera de pantalla, en la radio, y lo único
@@ -2684,6 +2749,9 @@ const ACTOS=[
       'gente, no al presidente.','marisol','calle',3],
      ['El primer coche bomba del país','Diez kilos de C-4 contra federales, en 16 de Septiembre '+
       'y Francisco Villa. Ve por el cráter.','marisol','bomba',3],
+     ['Grito de independencia a solas','Es el Bicentenario y no va a haber verbena. El alcalde va '+
+      'a gritar adentro, solo, con la calle tomada. Quiero la plaza vacía, no al alcalde.',
+      'marisol','presidencia',3],
      ['¿Qué quieren de nosotros?','Mataron a nuestro fotógrafo, de veintiuno. Mañana la plana va '+
       'dirigida a ellos, porque el Estado no contesta. Documenta la redacción cerrando.',
       'marisol','diario',3],
@@ -2720,17 +2788,48 @@ const FECHAS={
   'Villas de Salvárcar':'LUNES 1 DE FEBRERO DE 2010',
   'En algo andaban':'VIERNES 12 DE FEBRERO DE 2010',
   'El primer coche bomba del país':'VIERNES 16 DE JULIO DE 2010',
+  'Grito de independencia a solas':'JUEVES 16 DE SEPTIEMBRE DE 2010',
   '¿Qué quieren de nosotros?':'SEPTIEMBRE DE 2010',
   'Cayó el jefe de La Línea':'SÁBADO 30 DE JULIO DE 2011',
   'Bajan los muertos, por fin':'2011',
   'Se van los Indios':'DICIEMBRE DE 2011',
   'La ciudad que queda':'2011',
 };
-const ENCARGOS_POR_ACTO=4;
+// El acto avanza cuando se cubrieron TODOS sus hechos, no al llegar a un número
+// fijo: 2010 tiene cinco porque ese año pasaron cinco cosas.
+function actoCompleto(){
+  const n=ACTOS[acto].encargos.length;
+  for(let i=0;i<n;i++)if(!(acto+':'+i in publicadas))return false;
+  return true;
+}
 let hechos=0;
 // Qué hechos ya se cubrieron, para la línea de tiempo y para poder elegir.
 const publicadas={};                         // 'acto:indice' -> true si se firmó
 let encargoIdx=0;
+// Poner el mundo entero en un año: valla, plazas, lonchería, reparto, la Juárez,
+// la mancha de la bandera, los colgados y los sucesos.
+function mundoEnActo(){
+  ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
+  actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();
+  actoBandera();actoColgados();actoSucesos();
+  hechos=0;
+  for(let i=0;i<ACTOS[acto].encargos.length;i++)if(acto+':'+i in publicadas)hechos++;
+}
+// Ir a cubrir cualquier hecho, sea del año que sea.
+function irA(a,i){
+  const cambio = a!==acto;
+  acto=clamp(a,0,ACTOS.length-1);
+  encargoIdx=i;
+  if(cambio)mundoEnActo();
+  nuevaOferta();
+  if(cambio)radio('Estamos en '+ACTOS[acto].anio+'.');
+}
+function primerPendienteGlobal(){
+  for(let a=0;a<ACTOS.length;a++)
+    for(let i=0;i<ACTOS[a].encargos.length;i++)
+      if(!(a+':'+i in publicadas))return {a,i};
+  return null;
+}
 function primerPendiente(){
   const n=ACTOS[acto].encargos.length;
   for(let i=0;i<n;i++)if(!(acto+':'+i in publicadas))return i;
@@ -2770,8 +2869,11 @@ function lugarDe(clave){
   return LUGARES[clave];
 }
 function nuevaOferta(){
-  if(acto+':'+encargoIdx in publicadas)encargoIdx=primerPendiente();
-  const e=ACTOS[acto].encargos[encargoIdx];
+  // Los actos ya no miden lo mismo —2010 tiene cinco hechos—, así que el índice
+  // que se traía del acto anterior puede caer fuera de rango.
+  const lista=ACTOS[acto].encargos;
+  if(encargoIdx>=lista.length||(acto+':'+encargoIdx in publicadas))encargoIdx=primerPendiente();
+  const e=lista[encargoIdx];
   const dador=quien(e[2]);
   // el encargo espera donde vive quien lo da; la entrega sí es en cualquier calle
   const p = dador&&enEscena(dador) ? {x:dador.x+rnd(-2,2), z:dador.z+rnd(2,4)} : puntoCalle();
@@ -2787,6 +2889,8 @@ function nuevaOferta(){
 function pintarMarcador(c){matMarcador.color.setHex(c);matAro.color.setHex(c);}
 function aceptar(){
   const p=lugarDe(mision.lugar);
+  // El Grito es a las once de la noche. La escena no funciona a mediodía.
+  if(mision.lugar==='presidencia'){horaDia=0.955;tropaEnLaPlaza();}
   mision.estado='escena';mision.x=p.x;mision.z=p.z;mision.fotos=0;mision.tomas=[];
   mision.grabando=0;mision.stand=null;
   const d=Math.sqrt(dist2(jugador.x,jugador.z,p.x,p.z));
@@ -2900,24 +3004,24 @@ function pintarLinea(){
   riel.innerHTML='';
   ACTOS.forEach((A,a)=>{
     const col=document.createElement('div');
-    col.className='anioCol'+(a===acto?' aqui':'')+(a>acto?' futuro':'');
+    col.className='anioCol'+(a===acto?' aqui':'');
     const h=document.createElement('h4');h.textContent=A.anio;col.appendChild(h);
     A.encargos.forEach((e,i)=>{
       const clave=a+':'+i, hecha=clave in publicadas;
       const activa=(a===acto&&i===encargoIdx&&!hecha);
-      const libre=(a===acto&&!hecha&&!activa);
+      const libre=(!hecha&&!activa);             // cualquier hecho de cualquier año
       const d=document.createElement('div');
       d.className='hecho'+(hecha?' hecha':'')+(activa?' activa':'')+(libre?' libre':'');
-      const fecha=a<=acto?(FECHAS[e[0]]||A.anio):'—';
+      const fecha=FECHAS[e[0]]||A.anio;
       const estado = hecha ? (publicadas[clave]?'PUBLICADA · FIRMADA':'PUBLICADA · SIN FIRMA')
                    : activa ? 'CUBRIENDO AHORA'
                    : a===acto ? 'PENDIENTE · CLIC PARA CUBRIR'
-                   : a<acto ? 'SE QUEDÓ SIN CUBRIR' : 'TODAVÍA NO PASA';
+                   : 'CLIC PARA IR A '+A.anio;
       d.innerHTML='<div class="f">'+fecha+'</div><div class="t">'+e[0]+
                   '</div><div class="e">'+estado+'</div>';
       if(libre)d.addEventListener('pointerdown',()=>{
-        encargoIdx=i;cerrarLinea();nuevaOferta();
-        aviso3('A CUBRIR: '+e[0]);
+        cerrarLinea();irA(a,i);
+        aviso3(ACTOS[a].anio+' · '+e[0]);
       });
       col.appendChild(d);
     });
@@ -2985,9 +3089,11 @@ function cerrarNoticiero(){
   jugando=true;ultimo=performance.now();
   hechos++;
   guardar();
-  if(hechos>=ENCARGOS_POR_ACTO){
-    if(acto<ACTOS.length-1){hechos=0;avanzarActo();}
-    else cerrar();
+  if(actoCompleto()){
+    const p=primerPendienteGlobal();
+    if(!p)cerrar();                              // ya se cubrió todo: final
+    else if(p.a>acto){hechos=0;avanzarActo();}   // avance normal, con su placa
+    else irA(p.a,p.i);                           // quedaron hechos de años previos
   }else nuevaOferta();
 }
 tele.addEventListener('pointerdown',cerrarNoticiero);
@@ -3084,7 +3190,7 @@ function cargar(){
     if(location.hash==='#nuevo'){localStorage.removeItem(CLAVE);return;}
     const g=JSON.parse(localStorage.getItem(CLAVE));
     if(!g)return;
-    acto=clamp(g.acto|0,0,ACTOS.length-1);hechos=clamp(g.hechos|0,0,ENCARGOS_POR_ACTO-1);
+    acto=clamp(g.acto|0,0,ACTOS.length-1);hechos=Math.max(0,g.hechos|0);
     jugador.dinero=Math.max(0,g.dinero|0);mision.racha=clamp(g.racha|0,0,5);
     if(g.muertos)Object.assign(muertos,g.muertos);
     if(g.publicadas)Object.assign(publicadas,g.publicadas);
@@ -3098,12 +3204,12 @@ function actoValla(){
   vallaTramos.forEach((p,k)=>{p.visible = k/vallaTramos.length < frac;});
 }
 // Sinaloa avanza de poniente a oriente, acto por acto.
+// Reescribe TODAS las manzanas, no solo las que avanzan: la línea de tiempo deja
+// saltar a un año anterior y el mapa tiene que poder retroceder.
 function avanzaPlaza(){
   const frente=[2,4,6,8][acto];
-  for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++){
-    if(i<frente-2)plaza[i][j]=1;
-    else if(i<frente)plaza[i][j]=Math.random()<0.6?1:2;
-  }
+  for(let i=0;i<NX-1;i++)for(let j=0;j<NZ-1;j++)
+    plaza[i][j] = i<frente-2 ? 1 : i<frente ? (Math.random()<0.6?1:2) : 0;
 }
 
 /* ══════════════════════════ RADIO ══════════════════════════ */
@@ -4231,8 +4337,9 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
   window.__frontera={jugador,mision,peatones,autos,calor,muertos,marcador,
     PERSONAJES,personajeCerca,accionF,reaparecer,antros,edificios,pines,abrirMapa,cerrarMapa,
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,chalan,grabar,
-    publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},MOTO,
+    publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},irA,MOTO,
     cerrarNoticiero,sucesos,heli,nuevoSuceso,scene,mallasEnEscena,abrirMenu,cerrarMenu,
+    actoCompleto,PRESI,ACTOS,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
@@ -4257,7 +4364,7 @@ cargarPref();aplicarCalidad();
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
 actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
-crearColgados();actoColgados();actoSucesos();
+crearColgados();cercoPresidencia();actoColgados();actoSucesos();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);

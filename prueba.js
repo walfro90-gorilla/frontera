@@ -340,7 +340,9 @@ try{
       if(F.estado().mapa||!F.estado().jugando)mapaProbado='NO cerró bien';
     }
     if(cerco&&g%300===0)F.calor.fed=Math.max(F.calor.fed,4);   // garantizar perseguidores
-    if(cerco&&g%60===0){                                   // medir qué tan cerca llegan
+    // Qué tan cerca llegan las patrullas, medido en TODA la partida y no solo en
+    // la fase de cerco: una sola ventana dependía demasiado de dónde quedó parado.
+    if(g%30===0&&F.calor.fed>0){
       const b=F.jugador.auto||F.jugador;let m=1e9;
       for(const a of F.autos)if(a.clase==='federal'||a.clase==='municipal'||a.clase==='militar')
         m=Math.min(m,Math.hypot(a.x-b.x,a.z-b.z));
@@ -434,7 +436,7 @@ exige(placaVista>0,'se avanzó de acto y salió la placa');
 exige(s.acto>0,'el acto avanzó');
 // El jugador es reportero: publica notas y no cobra por matar. Que nadie
 // reintroduzca una recompensa por víctimas sin que esto falle.
-exige(s.notas>=12,'se publicaron notas en los cuatro actos ('+s.notas+')');
+exige(s.notas>=13,'se publicaron notas en los cuatro actos ('+s.notas+')');
 exige(firmoAlgo&&anonimoAlgo,'el crédito de la foto se decide en las dos direcciones');
 exige(s.firmadas>0&&s.anonimas>0,'se contaron firmadas ('+s.firmadas+') y sin firma ('+s.anonimas+')');
 exige(!s.esperandoFirma,'el juego no se queda esperando la decisión');
@@ -459,7 +461,9 @@ exige(volCambio==='el volumen se aplica','mover el volumen lo aplica de verdad (
 exige(pasosTuto.size>=4,'el tutorial guía la primera nota paso por paso ('+pasosTuto.size+' pasos)');
 exige(!F.estado().tutorial,'el tutorial se apaga después de la primera nota');
 exige(elegido&&elegido.startsWith('eligió'),'se puede elegir qué hecho cubrir ('+elegido+')');
-exige(s.cubiertos===16,'los dieciséis hechos quedan cubiertos ('+s.cubiertos+')');
+{const total=F.ACTOS?F.ACTOS.reduce((n,A)=>n+A.encargos.length,0):17;
+ exige(s.cubiertos===total,'se cubren todos los hechos de los cuatro actos ('+
+   s.cubiertos+' de '+total+')');}
 exige(motoMontada,'la moto de Jimmy se puede montar');
 exige(jimmyEnMoto===true,'Jimmy se ve montado en la moto, no desaparece');
 exige(jimmyEnCarro===false,'dentro de un carro sí se oculta ('+jimmyEnCarro+')');
