@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 212 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 218 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -28,16 +28,19 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
 - **Colgados.** De los puentes peatonales aparecen ejecutados con su manta, como aparecían: uno en
   2008, cuatro en 2010, dos en 2011. Al topártelos la cuadra baja cortinas y la radio lo reporta.
   No dan dinero, no dan puntos y **no se pueden colgar**: son paisaje, y lo que habla es la manta.
-- **El coche bomba y Salvárcar.** Al entrar a 2010 truena algo en el centro y la radio lo cuenta;
-  después puedes ir a ver lo que quedó en 16 de Septiembre y Francisco Villa. Y en el sureste
-  aparece un memorial de quince cruces **sin un solo nombre**. Ninguno de los dos se juega.
+- **El coche bomba y los memoriales.** Al entrar a 2010 truena algo en el centro y la radio lo
+  cuenta; después puedes ir a ver lo que quedó en 16 de Septiembre y Bolivia. Y en el sureste hay un
+  memorial de quince cruces **sin un solo nombre**.
 - **La cámara en lugar del arma.** Gran angular y teleobjetivo. Mismo problema geométrico que
   tenía el arma —alcance y cono— y exactamente el sentido contrario: en vez de quitar a alguien del
   mundo, lo dejas registrado. No hay forma de matar a nadie a propósito en todo el juego.
-- **Cada encargo es una noticia real de ese año.** La entrada del Ejército, la manta de las dos
-  listas en el Monumento al Policía Caído, el asesinato del reportero de policiaca, Campo
-  Algodonero, un colgado en el puente, Villas de Salvárcar, el coche bomba, la caída del jefe de
-  La Línea, la plana de «¿Qué quieren de nosotros?».
+- **Cada encargo es una noticia real de ese año**, con su fecha. Solo 2010 trae ocho: el «en algo
+  andaban», Todos Somos Juárez, el coche bomba, los cinco inocentes presentados como culpables, el
+  Grito a puerta cerrada, la plana de El Diario y los tres mil muertos de diciembre.
+- **Lo que no se juega.** Villas de Salvárcar y Horizontes del Sur, las dos fiestas baleadas, no
+  son misiones ni escenas: son estado del mundo, radio y memorial sin nombres. La regla está escrita
+  en [HISTORIA.md](HISTORIA.md): lo público y cívico puede ser literal, lo íntimo se ficcionaliza o
+  no entra.
 - **Asignación → escena → redacción.** Te buscan, llegas antes de que levanten el cordón, disparas
   la cámara las veces que pida la nota, y regresas a cerrar la edición contra reloj.
 - **Tu moto con cápsula.** Una clásica con sidecar, estacionada afuera de El Diario. Es tuya: nadie
@@ -46,7 +49,7 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
   hace tuya de verdad: **desde la moto se dispara la cámara sin bajarse** —es la única forma de
   llegar a una escena antes de que levanten el cordón— pero hay que frenar, porque a más de nueve
   metros por segundo la foto sale movida.
-- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los **diecisiete
+- **Línea de tiempo.** Clic al año en el HUD (o `L`) y se abre la cronología de los **veinte
   hechos**, en cuatro columnas por año. **Cualquiera se puede elegir**: si es de otro año, el mundo
   entero se reconfigura a ese año —la valla, el reparto de plazas, la lonchería, quién anda en la
   calle, cuántos negocios de la Juárez siguen abiertos, la mancha de la bandera, los colgados—. Cada

@@ -994,8 +994,10 @@ function actoLoncheria(){
 // a la vista de esa bandera. Por eso aquí se mancha, y la mancha no se quita: crece
 // con el acumulado real de muertos de cada año.
 const FX=330, FZ=-292, ASTA=100, BW=50, BH=28;
-// acumulado de homicidios 2008→2011 sobre el total, que es de lo que se tiñe
-const SANGRE=[0.16,0.43,0.79,1.00];
+// Acumulado de homicidios 2008→2011 sobre el total. Los recuentos de 2010 van de
+// 3,000 a 3,622 según si se cuentan homicidios dolosos totales o solo los ligados
+// al crimen organizado, y según la fecha de corte; aquí se usa 3,111.
+const SANGRE=[0.17,0.46,0.78,1.00];   // acumulado 1,623 / 4,377 / 7,488 / 9,574
 
 function emblema(g,cx,cy,s){
   g.strokeStyle='#2e6b32';g.lineWidth=s*0.05;                 // corona de laurel y encino
@@ -1557,6 +1559,79 @@ function tropaEnLaPlaza(){
   }
 }
 
+/* ══════════════════════════ EL CUARTEL Y LA OBRA ══════════════════════════ */
+// Dos caras del mismo año. En abril de 2010 unos 5,000 federales relevaron a
+// cerca de 8,000 soldados; de este cuartel salían los operativos y aquí se
+// presentaba a los detenidos ante las cámaras. En agosto presentaron como
+// autores del coche bomba a cinco hombres que llevaban dos días incomunicados y
+// torturados; salieron libres en 2014 cuando se probó que la única prueba era
+// una confesión arrancada a golpes.
+const CUARTEL={x:ejeX(5)+30,z:ejeZ(3)-26};
+(()=>{
+  liberar(CUARTEL.x,CUARTEL.z,34,30);
+  const matMuro2=new THREE.MeshLambertMaterial({color:0xb0b6bd});
+  bloque(CUARTEL.x,CUARTEL.z-12,40,16,11,'centro',1);
+  for(let k=0;k<10;k++){                       // barda con concertina
+    const b2=new THREE.Mesh(new THREE.BoxGeometry(4,3,0.5),matMuro2);
+    b2.position.set(CUARTEL.x-18+k*4,1.5,CUARTEL.z+6);scene.add(b2);
+  }
+  const templete=new THREE.Mesh(new THREE.BoxGeometry(9,0.6,4),matMuro2);
+  templete.position.set(CUARTEL.x,0.3,CUARTEL.z-1);scene.add(templete);
+  const atril=new THREE.Mesh(new THREE.BoxGeometry(1,1.2,0.6),matPoste);
+  atril.position.set(CUARTEL.x,1.2,CUARTEL.z-1);scene.add(atril);
+  edificios.push({x:CUARTEL.x,z:CUARTEL.z-12,hw:20,hd:8});
+  LUGARES.cuartel={x:CUARTEL.x,z:CUARTEL.z+11};
+  sitio({x:CUARTEL.x,z:CUARTEL.z+12,r:44,tipo:'Policía Federal · 2010',
+    nombre:'Cuartel federal',
+    texto:'En abril de 2010 unos cinco mil federales relevaron a cerca de ocho mil soldados en el '+
+          'patrullaje de la ciudad. De aquí salían los operativos y aquí se presentaba a los '+
+          'detenidos ante las cámaras. En agosto presentaron como autores del coche bomba a cinco '+
+          'hombres detenidos sin orden judicial, incomunicados y torturados. Salieron libres en '+
+          '2014: la única prueba era su confesión.'});
+})();
+function flotillaCuartel(){
+  for(let k=0;k<5;k++){
+    const a=nuevoAuto(CUARTEL.x-16+k*8, CUARTEL.z+2, 0, 'federalNPC');
+    a.quieto=true;
+  }
+}
+
+// Todos Somos Juárez: el programa federal que llegó después de Salvárcar. Obra
+// nueva y reluciente conviviendo con la violencia intacta.
+const DEPORTIVO={x:cenX(6),z:cenZ(5)};
+(()=>{
+  liberar(DEPORTIVO.x,DEPORTIVO.z,40,32);
+  const c=lienzo(256,160), g=c.getContext('2d');
+  g.fillStyle='#2f6b34';g.fillRect(0,0,256,160);
+  g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=3;
+  g.strokeRect(12,12,232,136);
+  g.beginPath();g.moveTo(128,12);g.lineTo(128,148);g.stroke();
+  g.beginPath();g.arc(128,80,24,0,TAU);g.stroke();
+  const cancha=new THREE.Mesh(new THREE.PlaneGeometry(52,34),
+    new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(c)}));
+  cancha.rotation.x=-Math.PI/2;cancha.position.set(DEPORTIVO.x,0.1,DEPORTIVO.z);
+  scene.add(cancha);
+  const matReja=new THREE.MeshLambertMaterial({color:0x9aa0a8});
+  for(const s2 of [-1,1]){
+    const r=new THREE.Mesh(new THREE.BoxGeometry(54,4,0.3),matReja);
+    r.position.set(DEPORTIVO.x,2,DEPORTIVO.z+s2*18);scene.add(r);
+    const p2=new THREE.Mesh(new THREE.BoxGeometry(0.4,6,7),matReja);   // porterías
+    p2.position.set(DEPORTIVO.x+s2*25,3,DEPORTIVO.z);scene.add(p2);
+  }
+  for(let k=0;k<4;k++){
+    const t=k*TAU/4+0.8;
+    farola(DEPORTIVO.x+Math.cos(t)*30,DEPORTIVO.z+Math.sin(t)*22);
+  }
+  LUGARES.deportivo={x:DEPORTIVO.x,z:DEPORTIVO.z+21};
+  sitio({x:DEPORTIVO.x,z:DEPORTIVO.z+22,r:46,tipo:'Todos Somos Juárez · 2010',
+    nombre:'Obra nueva del programa federal',
+    texto:'Después de Villas de Salvárcar llegó Todos Somos Juárez, cerca de cuatrocientos '+
+          'millones de dólares y casi todo el gabinete visitando la frontera. Deportivos, un campo '+
+          'de futbol americano en el CBTIS 128, dos preparatorias en el poniente, Seguro Popular. '+
+          'A los cien días las organizaciones sociales reportaban pocos resultados, y mayo cerró '+
+          'como el mes más violento hasta entonces: 253 asesinatos.'});
+})();
+
 /* ══════════════════════════ SUCESOS DE 2010 ══════════════════════════ */
 // Los dos hechos que parten el acto III. Ninguno se juega: uno se oye a lo lejos
 // y se visita después; el otro pasa fuera de pantalla, en la radio, y lo único
@@ -1587,10 +1662,12 @@ const restosBomba=new THREE.Group();
   LUGARES.bomba={x:BOMBA.x,z:BOMBA.z+16};
   sitio({x:BOMBA.x,z:BOMBA.z+16,r:40,tipo:'15 de julio de 2010',
     nombre:'Aquí estalló el coche bomba',
-    texto:'Diez kilos de C-4 detonados con un teléfono celular contra agentes federales, en '+
-          'represalia por la captura de un operador. Fue el primer coche bomba de esta guerra en '+
-          'todo el país. Lo ordenó el jefe operativo de La Línea, al que agarrarían un año '+
-          'después con más de mil quinientos homicidios encima.'});
+    texto:'Primer coche bomba detonado por un cártel en México, en 16 de Septiembre y Bolivia. '+
+          'La Línea levantó a un civil, lo vistió de policía municipal, le disparó y lo dejó '+
+          'agonizando como señuelo; cuando llegaron los que iban a auxiliarlo, una llamada activó '+
+          'unos diez kilos de Tovex. Murieron cuatro: el civil usado de carnada, un policía '+
+          'federal, un rescatista y el doctor José Guillermo Ortiz Collazo, que salió de su '+
+          'consultorio a una cuadra a ayudar. Once heridos.'});
 })();
 
 // 31 de enero de 2010, Villas de Salvárcar. Pasa fuera de pantalla. Lo único que
@@ -1619,8 +1696,10 @@ const memorial=new THREE.Group();
     texto:'Un comando entró de madrugada a una fiesta de estudiantes y mató a quince muchachos. '+
           'El presidente dijo que en algo andaban. Luz María Dávila, que enterró a dos hijos, se '+
           'le paró enfrente en cadena nacional: «discúlpese, les dijo pandilleros; uno estudiaba '+
-          'la prepa y el otro la UACH». Aquí no van sus nombres: los nombres son de sus familias, '+
-          'no de este juego.'});
+          'la prepa y el otro la UACH». Quince muertos, casi todos de entre quince y veinte años. '+
+          'El nueve meses después, en octubre, otro comando entró a otra fiesta en Horizontes del '+
+          'Sur y mató a trece más, de trece a treinta años, sin un solo detenido. Aquí no van sus '+
+          'nombres: los nombres son de sus familias, no de este juego.'});
 })();
 
 // La cruz rosa. Está en la ciudad desde antes de esta guerra y sigue después.
@@ -1642,7 +1721,9 @@ const memorial=new THREE.Group();
     texto:'Las pintan de rosa para que se vean de lejos. Los asesinatos de mujeres en Juárez son '+
           'anteriores a esta guerra: desde 1993 y sin resolverse. En noviembre de 2009 la Corte '+
           'Interamericana condenó a México por el caso del campo algodonero y obligó a nombrarlo '+
-          'feminicidio. Esto no se juega. Solo está.'});
+          'feminicidio. En 2010 hubo trescientos seis, la cifra más alta en dieciocho años, y ese '+
+          'mismo año Marisela Escobedo llevó su caravana hasta Palacio Nacional exigiendo justicia '+
+          'por su hija; no la recibieron. Esto no se juega. Solo está.'});
 })();
 
 function actoSucesos(){
@@ -2744,8 +2825,8 @@ const ACTOS=[
       'a nombrarlos. Ve a la cruz.','luz','cruzrosa',2],
      ['Colgado en el puente peatonal','Ya lo acordonaron. La manta es la nota, no el cuerpo.',
       'marisol','colgado',2],
-     ['La maquila vuelve a parar','Ochenta mil empleos menos en la industria. Ve al monumento de '+
-      'los trabajadores y tráeme el contraste.','kilo','trabajadores',2],
+     ['La maquila vuelve a parar','La crisis se llevó cerca de noventa mil empleos de maquila. '+
+      'Ve al monumento de los trabajadores y tráeme el contraste.','kilo','trabajadores',2],
    ]},
   {anio:'2010', titulo:'EN ALGO ANDABAN',
    sub:'Acto III · En algo andaban',
@@ -2753,20 +2834,29 @@ const ACTOS=[
          'mata a quince muchachos. El presidente dice que en algo andaban. Una madre que enterró '+
          'a dos le contesta en cadena nacional. En abril la Policía Federal releva al Ejército y '+
          'no mejora nada. En julio truena el primer coche bomba de la guerra.',
-   dato:'2010 · 3,622 homicidios · 9.9 al día · la ciudad califica a la Federal con 2.2 de 10', reales:3622,
+   dato:'2010 · 3,111 homicidios · tasa de 229 por 100 mil · 306 feminicidios · 97% de los expedientes sin un solo responsable señalado', reales:3111,
    encargos:[
      ['Villas de Salvárcar','Quince muchachos en una fiesta de estudiantes. No vas a la casa: '+
       'vas al memorial. Y sin nombres.','luz','memorial',3],
-     ['En algo andaban','El presidente dijo eso y la ciudad salió a contestarle. Quiero a la '+
-      'gente, no al presidente.','marisol','calle',3],
-     ['El primer coche bomba del país','Diez kilos de C-4 contra federales, en 16 de Septiembre '+
-      'y Francisco Villa. Ve por el cráter.','marisol','bomba',3],
+     ['En algo andaban','Lo dijo desde Japón: que en algo andaban. Una madre le contestó de '+
+      'frente en cadena nacional. Quiero a la gente, no al presidente.','marisol','calle',3],
+     ['Todos Somos Juárez','Cuatrocientos millones de dólares y medio gabinete en la frontera. '+
+      'Fotografía la obra nueva, y que se vea la cuadra donde está.','yoli','deportivo',2],
+     ['El primer coche bomba del país','Levantaron a un civil, lo vistieron de policía y lo '+
+      'usaron de señuelo. Cuando llegaron los que iban a auxiliarlo, tronó. Ve por el cráter, en '+
+      '16 de Septiembre y Bolivia.','marisol','bomba',3],
      ['Grito de independencia a solas','Es el Bicentenario y no va a haber verbena. El alcalde va '+
       'a gritar adentro, solo, con la calle tomada. Quiero la plaza vacía, no al alcalde.',
       'marisol','presidencia',3],
+     ['Los cinco del coche bomba','Los presentan hoy ante las cámaras como los autores. Llevan '+
+      'dos días incomunicados y nadie ha visto una orden. Fotografía la presentación completa.',
+      'marisol','cuartel',3],
      ['¿Qué quieren de nosotros?','Mataron a nuestro fotógrafo, de veintiuno. Mañana la plana va '+
       'dirigida a ellos, porque el Estado no contesta. Documenta la redacción cerrando.',
       'marisol','diario',3],
+     ['Tres mil','A las 00:15 el vocero de la Fiscalía anunció que la ciudad llegó a tres mil '+
+      'asesinatos, con dos semanas todavía por delante. Sal a la calle esta noche.',
+      'marisol','calle',2],
    ]},
   {anio:'2011', titulo:'SE ACABÓ PORQUE ALGUIEN GANÓ',
    sub:'Acto IV · Se acabó porque alguien ganó',
@@ -2801,6 +2891,9 @@ const FECHAS={
   'En algo andaban':'VIERNES 12 DE FEBRERO DE 2010',
   'El primer coche bomba del país':'VIERNES 16 DE JULIO DE 2010',
   'Grito de independencia a solas':'JUEVES 16 DE SEPTIEMBRE DE 2010',
+  'Todos Somos Juárez':'FEBRERO DE 2010',
+  'Los cinco del coche bomba':'SÁBADO 14 DE AGOSTO DE 2010',
+  'Tres mil':'MARTES 14 DE DICIEMBRE DE 2010',
   '¿Qué quieren de nosotros?':'SEPTIEMBRE DE 2010',
   'Cayó el jefe de La Línea':'SÁBADO 30 DE JULIO DE 2011',
   'Bajan los muertos, por fin':'2011',
@@ -3234,11 +3327,19 @@ const RADIO=[
    'La Corte Interamericana condena a México por los feminicidios del campo algodonero.',
    'Cerraron diez mil changarros en dos años, informa la Cámara de Comercio.',
    'Reportan enfrentamiento entre Mexicles y Aztecas en el penal.'],
-  ['El presidente dijo que los muchachos de la fiesta en algo andaban. Hay reacciones.',
-   'Una madre le exigió una disculpa en cadena nacional. No se la dio en el momento.',
-   'La Policía Federal releva al Ejército. Encuesta de la UACJ: la califican con 2.2.',
-   'Estalló un coche bomba en el centro. Es el primero de esta guerra en el país.',
-   'El Diario publica en primera plana: ¿Qué quieren de nosotros?'],
+  ['El presidente dijo desde Japón que los muchachos de la fiesta en algo andaban.',
+   'Una madre le exigió una disculpa de frente, en cadena nacional. No se la dio ahí.',
+   'Cinco mil federales relevan a ocho mil soldados en el patrullaje de la ciudad.',
+   'Estalló un coche bomba en 16 de Septiembre y Bolivia. Es el primero del país.',
+   'El Diario publica en primera plana: ¿Qué quieren de nosotros?',
+   'Mayo cerró con 253 asesinatos. Es el mes más violento en lo que va del año.',
+   'Otra fiesta baleada, ahora en Horizontes del Sur. Trece muertos, de trece a treinta años.',
+   'Segunda fiesta atacada en menos de una semana. No hay detenidos.',
+   'Octubre cierra con más de trescientos cincuenta asesinatos. Cincuenta de ellos, mujeres.',
+   'Marisela Escobedo llevó su caravana hasta Palacio Nacional. No la recibieron.',
+   'De dos mil treinta homicidios en lo que va del año, apenas sesenta y siete tienen un '+
+   'sospechoso. Noventa y siete por ciento sin nadie señalado.',
+   'Trescientos seis feminicidios este año, la cifra más alta en dieciocho años.'],
   ['Cayó el jefe operativo de La Línea. Le atribuyen más de mil quinientos homicidios.',
    'Los homicidios bajan por primera vez en cuatro años. Nadie festeja.',
    'Doscientas treinta mil personas se fueron de Juárez desde 2008.',
@@ -4364,7 +4465,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,chalan,grabar,
     publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},irA,MOTO,
     cerrarNoticiero,sucesos,heli,nuevoSuceso,scene,mallasEnEscena,abrirMenu,cerrarMenu,
-    actoCompleto,PRESI,ACTOS,heliSobrePresidencia,
+    actoCompleto,PRESI,ACTOS,heliSobrePresidencia,CUARTEL,DEPORTIVO,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,
@@ -4389,7 +4490,7 @@ cargarPref();aplicarCalidad();
 cargar();
 ui.anio.textContent=ACTOS[acto].anio;ui.acto.textContent=ACTOS[acto].sub;
 actoValla();avanzaPlaza();actoLoncheria();actoPersonajes();actoJuarez();actoBandera();
-crearColgados();cercoPresidencia();actoColgados();actoSucesos();
+crearColgados();cercoPresidencia();flotillaCuartel();actoColgados();actoSucesos();
 nuevaOferta();
 actDiaNoche(0);actCamara(0.016);
 requestAnimationFrame(bucle);

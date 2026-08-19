@@ -34,6 +34,17 @@ Esto es **dramatización**, no documental ni acusación.
   objetivo ni recompensa. Entran como **eco**: una vela, una cruz rosa, un periódico, un noticiero
   de fondo. El jugador nunca dispara a una víctima real dramatizada.
 - **Los civiles no son puntos.** Matar civiles cuesta dinero y calor, no paga. Ya está así en el código.
+- **Regla de sensibilidad por hecho.** Lo **público y cívico** —el coche bomba que cambió la ciudad,
+  la militarización, la cifra de homicidios, el 97% de impunidad, la fabricación de culpables— se
+  puede tratar literal, porque no expone a nadie. Lo **íntimo** —víctimas nombradas, menores de
+  edad, familias identificables— entra ficcionalizado o no entra. Villas de Salvárcar y Horizontes
+  del Sur **no son misiones ni escenas jugables**: son estado del mundo, cosas de las que la ciudad
+  habla. En el momento en que un jugador puede *hacer* una masacre, el marco se rompe y el juego
+  pasa de memoria a espectáculo.
+- **2010 no fue solo violencia.** Fue Luz María Dávila plantándose ante un presidente, el Comité
+  Médico Ciudadano, la caravana de Marisela, El Diario publicando cuando matar periodistas era
+  rutina, y vecinos llevando heridos al hospital en sus propios carros porque las ambulancias no
+  llegaban. Ahí vive la agencia del jugador, y además es la mejor historia.
 - **La bandera manchada no ofende a la bandera.** El asta monumental del Chamizal se izó en 1997
   para celebrar territorio recuperado **sin un tiro**, por vía diplomática. Once años después el
   Estado tenía su propia guerra matando diez juarenses al día a la vista de esa misma bandera. La
@@ -83,6 +94,37 @@ Cifras y hechos que sostienen la ficción. Fuentes al final.
 
 Chihuahua pasó de **14.4** homicidios por 100 mil habitantes antes del operativo a **148.9** dos
 años después. Más de 10 mil asesinatos en la ciudad desde 2008.
+
+### 2010 con detalle
+
+El año peor, y el que el juego cubre con más asignaciones. Cronología con su nivel de sensibilidad,
+que es lo que decide si algo puede ser misión o solo estado del mundo.
+
+| Fecha | Hecho | En el juego |
+|---|---|---|
+| 30–31 ene | **Villas de Salvárcar.** ~20 sicarios cierran la calle e irrumpen en una fiesta de ~60 jóvenes. 15 muertos, casi todos de 15 a 20 años. Lo ordenó el jefe de La Línea por información errónea: creía que ahí había miembros de la pandilla rival | **Nunca jugable.** Radio y memorial sin nombres |
+| feb | **«En algo andaban»**, dicho desde Japón en gira presidencial | Asignación |
+| 11 feb | **Luz María Dávila** le niega la bienvenida al presidente y le exige que se disculpe | Asignación, del lado de la gente |
+| feb | **Todos Somos Juárez**: ~400 millones de dólares, medio gabinete en la frontera, deportivos y preparatorias | Asignación: obra nueva sobre violencia intacta |
+| may | 253 asesinatos, el mes más violento hasta entonces | Radio |
+| 15 jul | **Coche bomba** en 16 de Septiembre y Bolivia. Levantan a un civil, lo visten de policía y lo usan de señuelo; ~10 kg de Tovex. 4 muertos, entre ellos el doctor **José Guillermo Ortiz Collazo**, que salió de su consultorio a ayudar | Asignación y sitio |
+| 11–13 ago | **Cinco inocentes** detenidos sin orden, torturados y presentados como autores del atentado. Libres en 2014 | Asignación: el Estado fabricando culpables |
+| 15 sep | **El Grito a solas**, a puerta cerrada | Asignación |
+| 16 sep | **Luis Carlos Santiago**, fotógrafo de 21 años de El Diario, asesinado | Asignación: la plana que siguió |
+| 22 oct | **Horizontes del Sur.** Otra fiesta, 13 muertos de 13 a 30 años, sin detenidos | **Nunca jugable.** Radio y memorial |
+| oct | Más de 350 asesinatos, 50 de ellos mujeres. Peor mes del año | Radio |
+| 14 dic | **Tres mil** homicidios en el año, con dos semanas por delante | Asignación |
+| 16 dic | **Marisela Escobedo** asesinada frente al Palacio de Gobierno **en la capital**, tras días de plantón | Radio y sitio. Fuera del mapa, y familia litigando |
+
+**Cifras de cierre 2010:** 3,111 homicidios · tasa de **229 por 100 mil**, 35% arriba de Kandahar ·
+**306 feminicidios**, la cifra más alta en 18 años · **97% de los expedientes sin un solo
+responsable señalado** · tercer año consecutivo como la ciudad más violenta del mundo.
+
+**Discrepancias declaradas.** Los recuentos de 2010 van de **3,000 a 3,622** según si se cuentan
+homicidios dolosos totales o solo los ligados al crimen organizado, y según la fecha de corte. El
+juego usa 3,111. Salvárcar se reporta con 15 o 16 muertos y con fecha 30 o 31 de enero porque el
+ataque cruzó la medianoche; Horizontes del Sur con 13, 14 o 15; octubre con 350, 359 o 400. Cuando
+una cifra se toca, se revisa aquí primero.
 
 ### La ciudad como escenario
 
