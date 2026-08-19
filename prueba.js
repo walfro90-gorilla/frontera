@@ -197,6 +197,7 @@ let bombaVista=false, memorialVisto=false;
 let mapaProbado='no se probó';
 let decisiones=0, firmoAlgo=false, anonimoAlgo=false, periodicazos=0, perioAntes=false;
 let noticieros=0, teleAntes=false, standsVistos=0;
+let heliSobrePresi=1e9, gritoVisto=false, gritoNoche=null;
 const tiposVistos=new Set(); let maxSucesos=0, banquetas=0, heliSubio=false;
 let lineaProbada='no se probó', elegido=null;
 let menuProbado='no se probó', volCambio=null;
@@ -354,7 +355,15 @@ try{
     {const e=F.estado();
      maxSucesos=Math.max(maxSucesos,e.sucesos);
      if(e.tiposVivos)e.tiposVivos.split(',').forEach(t=>t&&tiposVistos.add(t));
-     if(F.heli.grupo.position.y>10)heliSubio=true;}
+     if(F.heli.grupo.position.y>10)heliSubio=true;
+     // la noche del Grito el helicóptero se queda sobre la Presidencia
+     if(F.heliSobrePresidencia()){
+       gritoVisto=true;
+       if(gritoNoche===null)gritoNoche=e.noche>0.7;
+       const hp=F.heli.grupo.position;
+       heliSobrePresi=Math.min(heliSobrePresi,
+         Math.hypot(hp.x-F.PRESI.x,hp.z-F.PRESI.z));
+     }}
     // fotografiar lo que esté pasando en la calle: nota de banqueta
     if(!cerco&&!enSitios&&!faseMoto&&F.sucesos.length&&g%17===0){
       const S=F.sucesos[0];
@@ -416,6 +425,9 @@ const est={
   mapa:mapaProbado, menu:menuProbado+' · '+volCambio, pasosTutorial:pasosTuto.size,
   linea:lineaProbada, eleccion:elegido, cubiertos:s.cubiertos,
   noticieros, standsGrabados:standsVistos>0,
+  grito:(gritoVisto?'se cubrió':'NO se cubrió')+' · heli a '+
+    (heliSobrePresi<1e8?Math.round(heliSobrePresi)+' m de la Presidencia':'—')+
+    ' · de noche: '+gritoNoche,
   sucesosMax:maxSucesos, tiposDeHecho:[...tiposVistos].join(', ')||'ninguno',
   notasDeBanqueta:banquetas, heli:heliSubio,
   jimmy:(jimmyEnMoto?'visible en la moto':'INVISIBLE en la moto')+
@@ -447,6 +459,10 @@ exige(maxSucesos>=2,'la ciudad produce varios hechos a la vez ('+maxSucesos+')')
 exige(tiposVistos.size>=3,'salen los tres tipos de hecho ('+[...tiposVistos]+')');
 exige(banquetas>0,'un hecho de la calle se puede fotografiar como nota ('+banquetas+')');
 exige(heliSubio,'el helicóptero sobrevuela la ciudad');
+exige(gritoVisto,'se cubre el Grito a solas de 2010');
+exige(gritoNoche===true,'la escena del Grito ocurre de noche');
+exige(heliSobrePresi<110,'el helicóptero se queda sobre la Presidencia esa noche ('+
+  Math.round(heliSobrePresi)+' m)');
 {const m=F.mallasEnEscena();
  exige(m<=PRESUPUESTO_MALLAS,'la escena cabe en el presupuesto de dibujo ('+m+' mallas, tope '+
    PRESUPUESTO_MALLAS+'). Si subió a propósito, mide FPS antes de subir el tope');

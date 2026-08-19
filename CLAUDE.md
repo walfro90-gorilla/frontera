@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es
 
-Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4381 líneas). Sin build step, sin
+Sandbox 3D de mundo abierto en **un solo archivo**: `index.html` (4406 líneas). Sin build step, sin
 `package.json`, sin linter. Única dependencia: Three.js **r128**, guardada en `vendor/` y servida
 desde el repo — **el juego no le pide nada a la red**. Todo lo demás —geometría, texturas, audio— se
 genera por código al cargar. **Cero assets externos**: es una propiedad del proyecto, no un
@@ -220,8 +220,11 @@ Fotografiar un hecho paga `PAGO_BANQUETA[acto]` **una vez** (`S.fotografiado`) y
 `registrados`: es la nota de banqueta, y es lo que convierte el caos ambiental en material del
 jugador en vez de decorado.
 
-El helicóptero es uno solo, orbitando al jugador a 62 m de altura; `actHeli()` va en el grupo que
-siempre corre y su reflector se prende con `esNoche`.
+El helicóptero es uno solo; `actHeli()` va en el grupo que siempre corre. Normalmente orbita al
+jugador a 62 m y prende el reflector con `esNoche`. **`heliSobrePresidencia()` lo desvía**: mientras
+se cubre el Grito de 2010 se queda sobre `PRESI` a 38 m, con la órbita más cerrada y el cono más
+opaco. El rotor es un tono grave con la palada encima, con ganancia por distancia en tres
+dimensiones —cuenta la altura—, así que se oye antes de verse.
 
 ### El chalán y el stand-up
 

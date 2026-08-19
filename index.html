@@ -2429,14 +2429,26 @@ const heli=(()=>{
   scene.add(g);
   return {grupo:g,rotor,luz,ang:0,r:170,alt:62};
 })();
+// Normalmente da vueltas sobre el jugador. La noche del Grito no: se queda
+// clavado sobre la Presidencia, más bajo y más cerrado, alumbrando la plaza vacía.
+// Era el único ruido esa noche.
+function heliSobrePresidencia(){
+  return mision.lugar==='presidencia' &&
+         (mision.estado==='escena'||mision.estado==='grabar');
+}
 function actHeli(dt){
-  const b=posJugador();
-  heli.ang+=dt*0.16;
-  heli.grupo.position.set(b.x+Math.cos(heli.ang)*heli.r, heli.alt,
-                          b.z+Math.sin(heli.ang)*heli.r);
+  const grito=heliSobrePresidencia();
+  const c = grito ? PRESI : posJugador();
+  const r = grito ? 74 : heli.r;
+  const alt = grito ? 38 : heli.alt;
+  heli.ang += dt*(grito?0.33:0.16);
+  heli.grupo.position.set(c.x+Math.cos(heli.ang)*r, alt, c.z+Math.sin(heli.ang)*r);
   heli.grupo.rotation.y=-heli.ang+Math.PI/2;
   heli.rotor.rotation.y+=dt*34;
-  heli.luz.visible = esNoche>0.5;
+  heli.luz.visible = grito || esNoche>0.5;
+  heli.luz.material.opacity = grito?0.20:0.10;
+  heli.luz.scale.setScalar ? heli.luz.scale.setScalar(grito?0.75:1)
+                           : heli.luz.scale.set(grito?0.75:1,1,grito?0.75:1);
 }
 
 /* ══════════════════════════ EL CHALÁN ══════════════════════════ */
@@ -3432,7 +3444,7 @@ function entrarSalir(){
 
 /* ══════════════════════════ AUDIO ══════════════════════════ */
 let actx,master,motor,motorG,motorF,sirena,sirenaG,ruido,musica,musicaG,musicaF,
-    ambG,ambF,mudo=false;
+    ambG,ambF,heliOsc,heliG,heliF,mudo=false;
 function iniciarAudio(){
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -3461,6 +3473,11 @@ function iniciarAudio(){
     ambF=actx.createBiquadFilter();ambF.type='lowpass';ambF.frequency.value=430;
     ambG=actx.createGain();ambG.gain.value=0;
     ambSrc.connect(ambF);ambF.connect(ambG);ambG.connect(master);ambSrc.start();
+    // el rotor: un tono grave con la palada encima, que se oye antes de verse
+    heliOsc=actx.createOscillator();heliOsc.type='triangle';heliOsc.frequency.value=44;
+    heliF=actx.createBiquadFilter();heliF.type='lowpass';heliF.frequency.value=260;
+    heliG=actx.createGain();heliG.gain.value=0;
+    heliOsc.connect(heliF);heliF.connect(heliG);heliG.connect(master);heliOsc.start();
     // un buffer de ruido con caída exponencial: sirve de balazo y de choque
     ruido=actx.createBuffer(1,Math.floor(actx.sampleRate*0.4),actx.sampleRate);
     const d=ruido.getChannelData(0);
@@ -3965,6 +3982,14 @@ function actAudio(){
     musicaG.gain.value = mudo?0 : 0.085*cerca*viva*(0.3+0.7*golpe)*(0.35+0.65*esNoche);
     musica.frequency.value = 55+golpe*16;
   }
+  if(heliG){
+    const b=posJugador(), hp=heli.grupo.position;
+    const d=Math.hypot(Math.hypot(hp.x-b.x,hp.z-b.z), hp.y);
+    const cerca=clamp(1-d/300,0,1);
+    const pala=0.5+0.5*Math.sin(performance.now()/1000*44);
+    heliG.gain.value = mudo?0 : 0.08*cerca*cerca*(0.35+0.65*pala);
+    heliOsc.frequency.value = 40+pala*12;
+  }
   const a=jugador.auto;
   motorG.gain.value=mudo?0:(a?0.10:0);
   if(a){
@@ -4339,7 +4364,7 @@ if(location.hash==='#test'){                   // abre index.html#test y mira la
     CAMARAS,fotografiar,LUGARES,resolverFirma,cerrarPeriodico,capturar,chalan,grabar,
     publicadas,abrirLinea,cerrarLinea,elegir:(i)=>{encargoIdx=i;nuevaOferta();},irA,MOTO,
     cerrarNoticiero,sucesos,heli,nuevoSuceso,scene,mallasEnEscena,abrirMenu,cerrarMenu,
-    actoCompleto,PRESI,ACTOS,
+    actoCompleto,PRESI,ACTOS,heliSobrePresidencia,
     bandera,geoBandera,SANGRE,SITIOS,colgados,restosBomba,memorial,PEATONALES,PERIF,
     estado:()=>({acto,hechos,anio:ACTOS[acto].anio,camAng,jugando,
                  charla:charla?charla.id:null,enEscena:PERSONAJES.filter(enEscena).length,

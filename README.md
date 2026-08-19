@@ -7,7 +7,7 @@ internacionales, con El Paso enfrente y fuera de tu alcance. Sin build step y si
 paquetes; la única dependencia, Three.js r128, va guardada en el repo. **El juego no le pide nada a
 la red**: geometría, texturas y audio se generan por código en tiempo de carga.
 
-**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 210 KB · WebGL
+**[▶ Jugar](https://walfro90-gorilla.github.io/frontera/)** · 212 KB · WebGL
 
 > Dramatización. Las organizaciones criminales y las corporaciones policiacas llevan su nombre
 > documentado; las personas reales aparecen con nombre paródico. Las víctimas reales de esos
@@ -55,7 +55,9 @@ la red**: geometría, texturas y audio se generan por código en tiempo de carga
   conductor y se lo llevan—, **balaceras** con sus fogonazos que se oyen a doscientos cincuenta
   metros, y **persecuciones de patrulla a malandro** por la traza. La intensidad sigue al año: pocas
   en 2008, todas en 2010, menos en 2011. Y un **helicóptero** dando vueltas sobre la ciudad, con
-  reflector cuando oscurece.
+  reflector cuando oscurece y el rotor oyéndose antes de verse. La noche del Grito no da vueltas
+  sobre ti: se queda clavado sobre la Presidencia, más bajo y más cerrado, alumbrando la plaza
+  vacía. Era el único ruido esa noche.
 - **Nota de banqueta.** Si llegas a tiempo y lo fotografías, se paga y cuenta como nota. Es lo que
   hacía un fotógrafo de policiaca: dar vueltas oyendo la radio y disparar lo que se encuentre. Los
   hechos en curso salen marcados en rojo en el mapa, y en verde cuando ya los cubriste.
